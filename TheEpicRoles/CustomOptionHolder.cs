@@ -153,6 +153,8 @@ namespace TheEpicRoles {
         public static CustomOption swapperSpawnRate;
         public static CustomOption swapperCanCallEmergency;
         public static CustomOption swapperCanOnlySwapOthers;
+        public static CustomOption swapperSwapsNumber;
+        public static CustomOption swapperRechargeTasksNumber;
 
         public static CustomOption seerSpawnRate;
         public static CustomOption seerMode;
@@ -281,6 +283,8 @@ namespace TheEpicRoles {
             activateRoles = CustomOption.Create(1, cs(new Color(0, 1, 217f / 255f, 1f), "Enable Mod And\nBlock Vanilla Roles"), "option", true, null, true);
 
             // Using new id's for the options to not break compatibilty with older versions
+
+
             crewmateRolesCountMin = CustomOption.Create(300, cs(new Color(0, 1, 217f / 255f, 1f), "Minimum Crewmate Roles"), "option", 0f, 0f, 15f, 1f, null, true);
             crewmateRolesCountMax = CustomOption.Create(301, cs(new Color(0, 1, 217f / 255f, 1f), "Maximum Crewmate Roles"), "option", 0f, 0f, 15f, 1f);
             crewmateRolesMax = CustomOption.Create(9020, cs(new Color(0, 1, 217f / 255f, 1f), "Auto Crewmate Roles"), "option", false);
@@ -450,10 +454,15 @@ namespace TheEpicRoles {
             swapperCanCallEmergency = CustomOption.Create(151, "Swapper Can Call\nEmergency Meeting", "crewmate", false, swapperSpawnRate);
             swapperCanOnlySwapOthers = CustomOption.Create(152, "Swapper Can Only\nSwap Others", "crewmate", false, swapperSpawnRate);
 
+            swapperSwapsNumber = CustomOption.Create(153, "Initial Swap Charges", "crewmate", 1f, 0f, 5f, 1f, swapperSpawnRate);
+            swapperRechargeTasksNumber = CustomOption.Create(154, "Number Of Tasks Needed For Recharging", "crewmate", 2f, 1f, 10f, 1f, swapperSpawnRate);
+
+
             seerSpawnRate = CustomOption.Create(160, cs(Seer.color, "Seer"), "crewmate", rates, null, true);
             seerMode = CustomOption.Create(161, "Seer Mode", "crewmate", new string[]{ "Show\nDeath Flash + Souls", "Show\nDeath Flash", "Show\nSouls" }, seerSpawnRate);
             seerLimitSoulDuration = CustomOption.Create(163, "Seer Limit Soul Duration", "crewmate", false, seerSpawnRate);
             seerSoulDuration = CustomOption.Create(162, "Seer Soul Duration", "crewmate", 15f, 0f, 120f, 5f, seerLimitSoulDuration);
+
         
             hackerSpawnRate = CustomOption.Create(170, cs(Hacker.color, "Hacker"), "crewmate", rates, null, true);
             hackerCooldown = CustomOption.Create(171, "Hacker Cooldown", "crewmate", 30f, 5f, 60f, 5f, hackerSpawnRate);

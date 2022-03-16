@@ -414,7 +414,10 @@ namespace TheEpicRoles
         private static Sprite spriteCheck;
         public static bool canCallEmergency = false;
         public static bool canOnlySwapOthers = false;
-
+        public static int charges;
+        public static float rechargeTasksNumber;
+        public static float rechargedTasks;
+ 
         public static byte playerId1 = Byte.MaxValue;
         public static byte playerId2 = Byte.MaxValue;
 
@@ -430,6 +433,9 @@ namespace TheEpicRoles
             playerId2 = Byte.MaxValue;
             canCallEmergency = CustomOptionHolder.swapperCanCallEmergency.getBool();
             canOnlySwapOthers = CustomOptionHolder.swapperCanOnlySwapOthers.getBool();
+            charges = Mathf.RoundToInt(CustomOptionHolder.swapperSwapsNumber.getFloat());
+            rechargeTasksNumber = Mathf.RoundToInt(CustomOptionHolder.swapperRechargeTasksNumber.getFloat());
+            rechargedTasks = Mathf.RoundToInt(CustomOptionHolder.swapperRechargeTasksNumber.getFloat());
         }
     }
 
