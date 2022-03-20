@@ -284,7 +284,19 @@ namespace TheEpicRoles.Patches {
                 __instance.BackgroundBar.material.color = neutralColor;
                 __instance.TeamTitle.text = "Neutral";
                 __instance.TeamTitle.color = neutralColor;
-            }
+            } else {
+                bool isCrew = true;
+                if (roleInfo.color == Palette.ImpostorRed) isCrew = false;
+                if (isCrew) {
+                    __instance.BackgroundBar.material.color = roleInfo.color;
+                    __instance.TeamTitle.text = "Crewmate";
+                    __instance.TeamTitle.color = Color.white;
+                } else {
+                    __instance.BackgroundBar.material.color = roleInfo.color;
+                    __instance.TeamTitle.text = "Impostor";
+                    __instance.TeamTitle.color = Palette.ImpostorRed;
+                }
+            }  
         }
 
         [HarmonyPatch(typeof(IntroCutscene), nameof(IntroCutscene.SetUpRoleText))]
