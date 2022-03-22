@@ -980,7 +980,7 @@ namespace TheEpicRoles.Patches {
 
             // This section may be causing instant game end.
             // Change executioner to jester on murder of target
-            if (target == Executioner.target) {
+            if (target == Executioner.target && AmongUsClient.Instance.AmHost) {
                 MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(PlayerControl.LocalPlayer.NetId, (byte)CustomRPC.ExecutionerTurnsToJester, Hazel.SendOption.Reliable, -1);
                 AmongUsClient.Instance.FinishRpcImmediately(writer);
                 RPCProcedure.executionerTurnsToJester();

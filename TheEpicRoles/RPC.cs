@@ -819,15 +819,8 @@ namespace TheEpicRoles {
         public static void executionerTurnsToJester() {
             PlayerControl player = Executioner.executioner;
             PlayerControl target = Executioner.target;
-//            Executioner.clearAndReload();
+            Executioner.clearAndReload();
             Jester.jester = player;
-            /* *
-            if (player.PlayerId == PlayerControl.LocalPlayer.PlayerId && target != null) {
-                    Transform playerInfoTransform = target.nameText.transform.parent.FindChild("Info");
-                    TMPro.TextMeshPro playerInfo = playerInfoTransform != null ? playerInfoTransform.GetComponent<TMPro.TextMeshPro>() : null;
-                    if (playerInfo != null) playerInfo.text = "";
-            }
-            /* */
         }
 
         public static void guesserShoot(byte killerId, byte dyingTargetId, byte guessedTargetId, byte guessedRoleId) {
