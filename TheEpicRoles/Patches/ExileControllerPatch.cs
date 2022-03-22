@@ -117,7 +117,11 @@ namespace TheEpicRoles.Patches {
             // Jester win condition
             else if (exiled != null && Jester.jester != null && Jester.jester.PlayerId == exiled.PlayerId) {
                 Jester.triggerJesterWin = true;
-            } 
+            }
+            // Executioner win condition
+            else if (exiled != null && Executioner.executioner != null && Executioner.target.PlayerId == exiled.PlayerId) {
+                Executioner.triggerExecutionerWin = true;
+            }
 
             // Reset custom button timers where necessary
             CustomButton.MeetingEndedUpdate();

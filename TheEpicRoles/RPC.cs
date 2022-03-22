@@ -14,6 +14,7 @@ using System;
 namespace TheEpicRoles {
     enum RoleId {
         Jester,
+	Executioner,
         Mayor,
         Engineer,
         Sheriff,
@@ -116,6 +117,8 @@ namespace TheEpicRoles {
         SetPosition,
         SetFirstKill,
         SetGuardianShield,
+	ExecutionerTurnsToJester,
+	ExecutionerSetTarget,
 
         // Ready Status
         SetReadyStatus,
@@ -171,6 +174,9 @@ namespace TheEpicRoles {
                     switch((RoleId)roleId) {
                     case RoleId.Jester:
                         Jester.jester = player;
+                        break;
+                    case RoleId.Executioner:
+                        Executioner.executioner = player;
                         break;
                     case RoleId.Mayor:
                         Mayor.mayor = player;
@@ -653,6 +659,7 @@ namespace TheEpicRoles {
 
             // Other roles
             if (player == Jester.jester) Jester.clearAndReload();
+            if (player == Executioner.executioner) Executioner.clearAndReload();
             if (player == Arsonist.arsonist) Arsonist.clearAndReload();
             if (Guesser.isGuesser(player.PlayerId)) Guesser.clear(player.PlayerId);
             if (!ignoreLovers && (player == Lovers.lover1 || player == Lovers.lover2)) { // The whole Lover couple is being erased
@@ -795,6 +802,29 @@ namespace TheEpicRoles {
                 Transform playerInfoTransform = client.nameText.transform.parent.FindChild("Info");
                 TMPro.TextMeshPro playerInfo = playerInfoTransform != null ? playerInfoTransform.GetComponent<TMPro.TextMeshPro>() : null;
                 if (playerInfo != null) playerInfo.text = "";
+            }
+        }
+
+        // Executioner
+        public static void executionerSetTarget(byte playerId) {
+            Executioner.target = Helpers.playerById(playerId);
+        }
+		/* *
+        public static void executionerTurnsToJester() {
+            PlayerControl player = Executioner.executioner;
+            Executioner.clearAndReload();
+            Mayor.mayor = player;
+        }
+		/* */
+        public static void executionerTurnsToJester() {
+            PlayerControl player = Executioner.executioner;
+            Executionor.clearAndReload();
+            Jester.jester = player;
+
+            if (player.PlayerId == PlayerControl.LocalPlayer.PlayerId && client != null) {
+                    Transform playerInfoTransform = client.nameText.transform.parent.FindChild("Info");
+                    TMPro.TextMeshPro playerInfo = playerInfoTransform != null ? playerInfoTransform.GetComponent<TMPro.TextMeshPro>() : null;
+                    if (playerInfo != null) playerInfo.text = "";
             }
         }
 
@@ -1069,6 +1099,12 @@ namespace TheEpicRoles {
                     break;
                 case (byte)CustomRPC.LawyerPromotesToPursuer:
                     RPCProcedure.lawyerPromotesToPursuer();
+                    break;
+                case (byte)CustomRPC.ExecutionerSetTarget:
+                    RPCProcedure.executionerSetTarget(reader.ReadByte()); 
+                    break;
+                case (byte)CustomRPC.ExecutionerTurnsToJester:
+                    RPCProcedure.executionerTurnsToJester();
                     break;
                 case (byte)CustomRPC.SetBlanked:
                     var pid = reader.ReadByte();

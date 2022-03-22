@@ -21,6 +21,7 @@ namespace TheEpicRoles
 
         public static void clearAndReloadRoles() {
             Jester.clearAndReload();
+            Executioner.clearAndReload();
             Mayor.clearAndReload();
             Engineer.clearAndReload();
             Sheriff.clearAndReload();
@@ -81,6 +82,21 @@ namespace TheEpicRoles
                 hasImpostorVision = CustomOptionHolder.jesterHasImpostorVision.getBool();
                 canBeLawyerClient = CustomOptionHolder.jesterCanBeLawyerClient.getBool();
                 meetingExile = false;
+            }
+        }
+
+        public static class Executioner {
+            public static PlayerControl executioner;
+            public static PlayerControl target;
+            public static Color color = new Color32(120, 90, 50, byte.MaxValue);
+            public static Color targetColor = new Color32(0, 0, 0, byte.MaxValue);
+
+            public static bool triggerExecutionerWin = false;
+
+            public static void clearAndReload() {
+                executioner = null;
+                triggerExecutionerWin = false;
+                target = null;
             }
         }
 

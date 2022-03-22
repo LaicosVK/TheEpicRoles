@@ -978,6 +978,14 @@ namespace TheEpicRoles.Patches {
                 RPCProcedure.lawyerPromotesToPursuer();
             }
 
+            // This section may be causing instant game end.
+            // Change executioner to jester on murder of target
+            if (target == Executioner.target) {
+                MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(PlayerControl.LocalPlayer.NetId, (byte)CustomRPC.ExecutionerTurnsToJester, Hazel.SendOption.Reliable, -1);
+                AmongUsClient.Instance.FinishRpcImmediately(writer);
+                RPCProcedure.executionerTurnsToJester();
+            }
+
             // Cleaner Button Sync
             if (Cleaner.cleaner != null && PlayerControl.LocalPlayer == Cleaner.cleaner && __instance == Cleaner.cleaner && HudManagerStartPatch.cleanerCleanButton != null) 
                 HudManagerStartPatch.cleanerCleanButton.Timer = Cleaner.cleaner.killTimer;
