@@ -369,7 +369,7 @@ namespace TheEpicRoles {
             jesterHasImpostorVision = CustomOption.Create(62, "Jester Has Impostor Vision", "neutral", false, jesterSpawnRate);
             jesterCanBeLawyerClient = CustomOption.Create(8000, "Jester Can Be Client\nOf Lawyer", "neutral", false, jesterSpawnRate);
 
-  	    executionerSpawnRate = CustomOption.Create(615, cs(Executioner.color, "Executioner"), rates, null, true);
+            executionerSpawnRate = CustomOption.Create(615, cs(Executioner.color, "Executioner"), "neutral", rates, null, true);
 
             arsonistSpawnRate = CustomOption.Create(290, cs(Arsonist.color, "Arsonist"), "neutral", rates, null, true);
             arsonistCooldown = CustomOption.Create(291, "Arsonist Cooldown", "neutral", 12.5f, 2.5f, 60f, 2.5f, arsonistSpawnRate);

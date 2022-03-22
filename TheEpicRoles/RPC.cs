@@ -818,11 +818,12 @@ namespace TheEpicRoles {
 		/* */
         public static void executionerTurnsToJester() {
             PlayerControl player = Executioner.executioner;
-            Executionor.clearAndReload();
+            PlayerControl target = Executioner.target;
+            Executioner.clearAndReload();
             Jester.jester = player;
 
-            if (player.PlayerId == PlayerControl.LocalPlayer.PlayerId && client != null) {
-                    Transform playerInfoTransform = client.nameText.transform.parent.FindChild("Info");
+            if (player.PlayerId == PlayerControl.LocalPlayer.PlayerId && target != null) {
+                    Transform playerInfoTransform = target.nameText.transform.parent.FindChild("Info");
                     TMPro.TextMeshPro playerInfo = playerInfoTransform != null ? playerInfoTransform.GetComponent<TMPro.TextMeshPro>() : null;
                     if (playerInfo != null) playerInfo.text = "";
             }

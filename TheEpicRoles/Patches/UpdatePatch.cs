@@ -65,7 +65,7 @@ namespace TheEpicRoles.Patches {
         static void setNameColors() {
             if (Jester.jester != null && Jester.jester == PlayerControl.LocalPlayer)
                 setPlayerNameColor(Jester.jester, Jester.color);
-            } else if (Executioner.executioner != null && Executioner.executioner == PlayerControl.LocalPlayer) { // Make executioner see target
+            else if (Executioner.executioner != null && Executioner.executioner == PlayerControl.LocalPlayer) { // Make executioner see target
                 // Executioner can see their target
                 setPlayerNameColor(Executioner.executioner, Executioner.color);
                 if (Executioner.target != null) {
