@@ -117,7 +117,7 @@ namespace TheEpicRoles {
         SetPosition,
         SetFirstKill,
         SetGuardianShield,
-	ExecutionerTurnsToJester,
+	ExecutionerChangesRole,
 	ExecutionerSetTarget,
 
         // Ready Status
@@ -604,6 +604,9 @@ namespace TheEpicRoles {
                 DestroyableSingleton<RoleManager>.Instance.SetRole(player, RoleTypes.Crewmate);
                 erasePlayerRoles(player.PlayerId, true);
                 Sidekick.sidekick = player;
+		if (Executioner.executioner != null && Executioner.target == player) {
+		  executionerChangesRole();
+		}
                 if (player.PlayerId == PlayerControl.LocalPlayer.PlayerId) PlayerControl.LocalPlayer.moveable = true; 
             }
             Jackal.canCreateSidekick = false;
@@ -816,7 +819,7 @@ namespace TheEpicRoles {
             Mayor.mayor = player;
         }
 		/* */
-        public static void executionerTurnsToJester() {
+        public static void executionerChangesRole() {
             PlayerControl player = Executioner.executioner;
             PlayerControl target = Executioner.target;
             Executioner.clearAndReload();
@@ -1098,8 +1101,8 @@ namespace TheEpicRoles {
                 case (byte)CustomRPC.ExecutionerSetTarget:
                     RPCProcedure.executionerSetTarget(reader.ReadByte()); 
                     break;
-                case (byte)CustomRPC.ExecutionerTurnsToJester:
-                    RPCProcedure.executionerTurnsToJester();
+                case (byte)CustomRPC.ExecutionerChangesRole:
+                    RPCProcedure.executionerChangesRole();
                     break;
                 case (byte)CustomRPC.SetBlanked:
                     var pid = reader.ReadByte();

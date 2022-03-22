@@ -394,9 +394,9 @@ namespace TheEpicRoles.Patches {
                         possibleTargets.Add(p);
                 }
                 if (possibleTargets.Count == 0) {
-                    MessageWriter w = AmongUsClient.Instance.StartRpcImmediately(PlayerControl.LocalPlayer.NetId, (byte)CustomRPC.ExecutionerTurnsToJester, Hazel.SendOption.Reliable, -1);
+                    MessageWriter w = AmongUsClient.Instance.StartRpcImmediately(PlayerControl.LocalPlayer.NetId, (byte)CustomRPC.ExecutionerChangesRole, Hazel.SendOption.Reliable, -1);
                     AmongUsClient.Instance.FinishRpcImmediately(w);
-                    RPCProcedure.executionerTurnsToJester();
+                    RPCProcedure.executionerChangesRole();
                 } else {
                     var target = possibleTargets[TheEpicRoles.rnd.Next(0, possibleTargets.Count)];
                     MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(PlayerControl.LocalPlayer.NetId, (byte)CustomRPC.ExecutionerSetTarget, Hazel.SendOption.Reliable, -1);
