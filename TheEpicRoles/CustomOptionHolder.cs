@@ -71,6 +71,7 @@ namespace TheEpicRoles {
         public static CustomOption jesterCanBeLawyerClient;
 
 	public static CustomOption executionerSpawnRate;
+        public static CustomOption executionerMode;
 
         public static CustomOption arsonistSpawnRate;
         public static CustomOption arsonistCooldown;
@@ -548,8 +549,8 @@ namespace TheEpicRoles {
             blockedRolePairings.Add((byte)RoleId.Phaser, new[] { (byte)RoleId.Camouflager });
             blockedRolePairings.Add((byte)RoleId.Camouflager, new[] { (byte)RoleId.Phaser });
 
-	    blockedRolePairings.Add((byte)RoleId.Executioner, new [] { (byte)RoleId.Jester});
-	    blockedRolePairings.Add((byte)RoleId.Jester, new [] { (byte)RoleId.Executioner}); // Block Exe and Jester from spawning. Likely to change to Lawyer
+            blockedRolePairings.Add((byte)RoleId.Lawyer, new[] { (byte)RoleId.Executioner });
+            blockedRolePairings.Add((byte)RoleId.Executioner, new[] { (byte)RoleId.Lawyer });
 
         }
     }

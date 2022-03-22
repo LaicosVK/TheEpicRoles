@@ -119,7 +119,7 @@ namespace TheEpicRoles {
         SetGuardianShield,
 	ExecutionerChangesRole,
 	ExecutionerSetTarget,
-
+        ExecutionerToPursuer,
         // Ready Status
         SetReadyStatus,
         SetReadyNames,
@@ -823,7 +823,14 @@ namespace TheEpicRoles {
             PlayerControl player = Executioner.executioner;
             PlayerControl target = Executioner.target;
             Executioner.clearAndReload();
-            Jester.jester = player;
+            Lawyer.lawyer = player;
+            Lawyer.target = target;
+        }
+
+        public static void executionerToPursuer() {
+            PlayerControl player = Executioner.executioner;
+            Executioner.clearAndReload();
+            Pursuer.pursuer = player;
         }
 
         public static void guesserShoot(byte killerId, byte dyingTargetId, byte guessedTargetId, byte guessedRoleId) {
@@ -1103,6 +1110,9 @@ namespace TheEpicRoles {
                     break;
                 case (byte)CustomRPC.ExecutionerChangesRole:
                     RPCProcedure.executionerChangesRole();
+                    break;
+                case (byte)CustomRPC.ExecutionerToPursuer:
+                    RPCProcedure.executionerToPursuer();
                     break;
                 case (byte)CustomRPC.SetBlanked:
                     var pid = reader.ReadByte();

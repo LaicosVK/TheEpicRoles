@@ -94,9 +94,9 @@ namespace TheEpicRoles
             public static bool triggerExecutionerWin = false;
 
             public static void clearAndReload() {
-                executioner = null;
-                triggerExecutionerWin = false;
-                target = null;
+              executioner = null;
+              triggerExecutionerWin = false;
+              target = null;
             }
         }
 
