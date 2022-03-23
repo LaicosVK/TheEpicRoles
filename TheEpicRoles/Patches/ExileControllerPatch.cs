@@ -203,6 +203,9 @@ namespace TheEpicRoles.Patches {
 
             if (Lawyer.lawyer != null && PlayerControl.LocalPlayer == Lawyer.lawyer && !Lawyer.lawyer.Data.IsDead)
                 Lawyer.meetings++;
+
+            Log.add(Log.meetingEnd);
+            Log.add(Log.newLine);
         }
     }
 

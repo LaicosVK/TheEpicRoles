@@ -299,9 +299,12 @@ namespace TheEpicRoles.Patches {
                             __instance.playerStates.ToList().ForEach(x => x.gameObject.SetActive(true)); 
                             UnityEngine.Object.Destroy(container.gameObject);
 
-                            MessageWriter murderAttemptWriter = AmongUsClient.Instance.StartRpcImmediately(PlayerControl.LocalPlayer.NetId, (byte)CustomRPC.ShieldedMurderAttempt, Hazel.SendOption.Reliable, -1);
+                            MessageWriter murderAttemptWriter = AmongUsClient.Instance.StartRpcImmediately(PlayerControl.LocalPlayer.NetId, (byte)CustomRPC.ShieldedGuess, Hazel.SendOption.Reliable, -1);
+                            murderAttemptWriter.Write(PlayerControl.LocalPlayer.PlayerId);
+                            murderAttemptWriter.Write(focusedTarget.PlayerId);
+                            murderAttemptWriter.Write((byte)roleInfo.roleId);
                             AmongUsClient.Instance.FinishRpcImmediately(murderAttemptWriter);
-                            RPCProcedure.shieldedMurderAttempt();
+                            RPCProcedure.shieldedGuess(PlayerControl.LocalPlayer.PlayerId, focusedTarget.PlayerId, (byte)roleInfo.roleId);
                             return;
                         }
 
@@ -457,6 +460,9 @@ namespace TheEpicRoles.Patches {
                 if (meetingTarget == null) meetingsCount++;
                 // Save the meeting target
                 target = meetingTarget;
+
+                if (meetingTarget == null) Log.add(Log.meetingStart, __instance);
+                // Log for report of dead body is done in uncheckedCmdReportDeadBody
             }
         }
 

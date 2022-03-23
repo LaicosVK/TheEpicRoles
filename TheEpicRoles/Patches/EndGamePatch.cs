@@ -347,6 +347,7 @@ namespace TheEpicRoles.Patches {
                 roleSummaryTextMesh.text = roleSummaryText.ToString();
             }
             AdditionalTempData.clear();
+            Log.finishLogging();
         }
     }
 

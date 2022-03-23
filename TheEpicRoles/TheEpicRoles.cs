@@ -223,11 +223,18 @@ namespace TheEpicRoles
             // Can be used to enable / disable the handcuff effect on the target's buttons
             public static void setHandcuffedKnows(bool active = true)
             {
+                byte localPlayerId = PlayerControl.LocalPlayer.PlayerId;
                 if (active) {
-                    byte localPlayerId = PlayerControl.LocalPlayer.PlayerId;
                     handcuffedKnows.Add(localPlayerId, handcuffDuration);
                     handcuffedPlayers.RemoveAll(x => x == localPlayerId);
                 }
+
+                byte handcuffStatus = active ? (byte)1 : (byte)0;
+                MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(PlayerControl.LocalPlayer.NetId, (byte)CustomRPC.HandcuffStatus, Hazel.SendOption.Reliable, -1);
+                writer.Write(localPlayerId);
+                writer.Write(handcuffStatus);
+                AmongUsClient.Instance.FinishRpcImmediately(writer);
+                RPCProcedure.handcuffStatus(localPlayerId, handcuffStatus);
 
                 HudManagerStartPatch.setAllButtonsHandcuffedStatus(active);
             }
@@ -655,7 +662,7 @@ namespace TheEpicRoles
         public static PlayerControl mini;
         public static Color color = Color.white;
         public const float defaultColliderRadius = 0.2233912f;
-            public const float defaultColliderOffset = 0.3636057f;
+        public const float defaultColliderOffset = 0.3636057f;
 
         public static float growingUpDuration = 400f;
         public static bool miniEvilGuessable = true;

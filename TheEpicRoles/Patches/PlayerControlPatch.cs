@@ -534,7 +534,10 @@ namespace TheEpicRoles.Patches {
             int numberOfTasks = playerTotal - playerCompleted;
 
             if (numberOfTasks <= Snitch.taskCountForReveal && (PlayerControl.LocalPlayer.Data.Role.IsImpostor || (Snitch.includeTeamJackal && (PlayerControl.LocalPlayer == Jackal.jackal || PlayerControl.LocalPlayer == Sidekick.sidekick)))) {
-                if (Snitch.localArrows.Count == 0) Snitch.localArrows.Add(new Arrow(Color.blue));
+                if (Snitch.localArrows.Count == 0) {
+                    Snitch.localArrows.Add(new Arrow(Color.blue));
+                    Log.add(Log.snitchRevealSelf, Snitch.snitch, PlayerControl.LocalPlayer);
+                }
                 if (Snitch.localArrows.Count != 0 && Snitch.localArrows[0] != null) {
                     Snitch.localArrows[0].arrow.SetActive(true);
                     Snitch.localArrows[0].Update(Snitch.snitch.transform.position);
@@ -550,6 +553,7 @@ namespace TheEpicRoles.Patches {
                     if (!p.Data.IsDead && (arrowForImp || arrowForTeamJackal)) {
                         if (arrowIndex >= Snitch.localArrows.Count) {
                             Snitch.localArrows.Add(new Arrow(Palette.ImpostorRed));
+                            Log.add(Log.snitchRevealEvil, Snitch.snitch, p);
                         }
                         if (arrowIndex < Snitch.localArrows.Count && Snitch.localArrows[arrowIndex] != null) {
                             Snitch.localArrows[arrowIndex].arrow.SetActive(true);
@@ -712,11 +716,15 @@ namespace TheEpicRoles.Patches {
             // Camouflage reset and set Morphling look if necessary
             if (oldCamouflageTimer > 0f && Camouflager.camouflageTimer <= 0f) {
                 Camouflager.resetCamouflage();
+                Log.add(Log.camouflageExpired, Camouflager.camouflager);
                 if (Morphling.morphTimer > 0f && Morphling.morphling != null && Morphling.morphTarget != null) {
                     PlayerControl target = Morphling.morphTarget;
                     Morphling.morphling.setLook(target.Data.PlayerName, target.Data.DefaultOutfit.ColorId, target.Data.DefaultOutfit.HatId, target.Data.DefaultOutfit.VisorId, target.Data.DefaultOutfit.SkinId, target.Data.DefaultOutfit.PetId);
                 }
             }
+
+            if (oldMorphTimer > 0f && Morphling.morphTimer <= 0f && Morphling.morphling != null)
+                Log.add(Log.morphExpired, Morphling.morphling);
 
             // Morphling reset (only if camouflage is inactive)
             if (Camouflager.camouflageTimer <= 0f && oldMorphTimer > 0f && Morphling.morphTimer <= 0f && Morphling.morphling != null)
@@ -955,6 +963,7 @@ namespace TheEpicRoles.Patches {
             if ((Lovers.lover1 != null && target == Lovers.lover1) || (Lovers.lover2 != null && target == Lovers.lover2)) {
                 PlayerControl otherLover = target == Lovers.lover1 ? Lovers.lover2 : Lovers.lover1;
                 if (otherLover != null && !otherLover.Data.IsDead && Lovers.bothDie) {
+                    Log.add(Log.loverPartnerKill, otherLover);
                     otherLover.MurderPlayer(otherLover);
                 }
             }
@@ -1014,6 +1023,10 @@ namespace TheEpicRoles.Patches {
                 })));
             }
             if (Seer.deadBodyPositions != null) Seer.deadBodyPositions.Add(target.transform.position);
+            // Log Seer flash
+            if (Seer.seer != null && !Seer.seer.Data.IsDead && Seer.seer != target && Seer.mode <= 1) {
+                Log.add(Log.seerFlash, Seer.seer);
+            }
 
             // Tracker store body positions
             if (Tracker.deadBodyPositions != null) Tracker.deadBodyPositions.Add(target.transform.position);
@@ -1055,6 +1068,10 @@ namespace TheEpicRoles.Patches {
                     if (p == 1f && renderer != null) renderer.enabled = false;
                 })));
             }
+            // Log Bait kill flash
+            if (Bait.bait != null && target == Bait.bait && Bait.showKillFlash) {
+                Log.add(Log.baitFlash, Bait.bait);
+            }
         }
     }
 
@@ -1075,7 +1092,7 @@ namespace TheEpicRoles.Patches {
 
     [HarmonyPatch(typeof(KillAnimation), nameof(KillAnimation.CoPerformKill))]
     class KillAnimationCoPerformKillPatch {
-        public static bool hideNextAnimation = true;
+        public static bool hideNextAnimation = false;
         public static void Prefix(KillAnimation __instance, [HarmonyArgument(0)]ref PlayerControl source, [HarmonyArgument(1)]ref PlayerControl target) {
             if (hideNextAnimation)
                 source = target;
@@ -1116,8 +1133,10 @@ namespace TheEpicRoles.Patches {
             // Lover suicide trigger on exile
             if ((Lovers.lover1 != null && __instance == Lovers.lover1) || (Lovers.lover2 != null && __instance == Lovers.lover2)) {
                 PlayerControl otherLover = __instance == Lovers.lover1 ? Lovers.lover2 : Lovers.lover1;
-                if (otherLover != null && !otherLover.Data.IsDead && Lovers.bothDie)
+                if (otherLover != null && !otherLover.Data.IsDead && Lovers.bothDie) {
+                    Log.add(Log.loverPartnerKill, otherLover, showCoords: false);
                     otherLover.Exiled();
+                }
             }
             
             // Sidekick promotion trigger on exile

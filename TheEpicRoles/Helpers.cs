@@ -105,13 +105,14 @@ namespace TheEpicRoles {
             MessageWriter writer;
 
             // Vampire: Try to murder the bitten player
-            MurderAttemptResult vampireBite = checkMuderAttempt(Vampire.vampire, Vampire.bitten, true);
-            if (vampireBite == MurderAttemptResult.PerformKill) {
+            MurderAttemptResult vampireBiteCheck = checkMuderAttempt(Vampire.vampire, Vampire.bitten, true);
+            if (vampireBiteCheck == MurderAttemptResult.PerformKill) {
                 Helpers.uncheckedMurderPlayer(Vampire.vampire, Vampire.bitten, false);
+                Log.add(Log.killByBite, Vampire.vampire, Vampire.bitten);
             }
             // Shifter: Kill if shifted player is a bad role and shifter wasn't already killed by vampire bite.
             if (Shifter.shifter != null && Shifter.diesBeforeMeeting && !Shifter.shifter.Data.IsDead && Shifter.futureShift != null && Shifter.checkTargetIsBad(Shifter.futureShift) &&
-                (Vampire.bitten == null || vampireBite != MurderAttemptResult.PerformKill || Vampire.bitten != Shifter.shifter))
+                (Vampire.bitten == null || vampireBiteCheck != MurderAttemptResult.PerformKill || Vampire.bitten != Shifter.shifter))
             {
                 Helpers.uncheckedMurderPlayer(Shifter.shifter, Shifter.shifter, false);
 
@@ -388,6 +389,30 @@ namespace TheEpicRoles {
             }
             
             return team;
+        }
+
+        public static string getMapName (byte mapId) {
+            switch (mapId) {
+                case 0:
+                    return "The Skeld";
+                case 1:
+                    return "MIRA HQ";
+                case 2:
+                    return "Polus";
+                case 3:
+                    return "dlekS ehT";
+                case 4:
+                    return "Airship";
+                default:
+                    return "unknown";
+            }
+        }
+        public static void sendBlankFired(PlayerControl player, PlayerControl target) {
+            MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(PlayerControl.LocalPlayer.NetId, (byte)CustomRPC.BlankFired, Hazel.SendOption.Reliable, -1);
+            writer.Write(player.PlayerId);
+            writer.Write(target.PlayerId);
+            AmongUsClient.Instance.FinishRpcImmediately(writer);
+            RPCProcedure.blankFired(PlayerControl.LocalPlayer.PlayerId, target.PlayerId);
         }
     }
 }

@@ -131,6 +131,7 @@ namespace TheEpicRoles {
         {
             if (!TheEpicRolesPlugin.DebugMode.Value) return;
 
+            /*
             // Spawn dummys
             if (Input.GetKeyDown(KeyCode.F)) {
                 var playerControl = UnityEngine.Object.Instantiate(AmongUsClient.Instance.PlayerPrefab);
@@ -154,6 +155,7 @@ namespace TheEpicRoles {
                 AmongUsClient.Instance.FinishRpcImmediately(writer);
                 RPCProcedure.forceEnd();
             }
+            */
         }
 
         public static string RandomString(int length)

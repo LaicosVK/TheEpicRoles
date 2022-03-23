@@ -425,6 +425,7 @@ namespace TheEpicRoles {
                         Morphling.sampledTarget = Morphling.currentTarget;
                         morphlingButton.Sprite = Morphling.getMorphSprite();
                         morphlingButton.EffectDuration = 1f;
+                        Log.add(Log.morphlinSample, Morphling.morphling, Morphling.currentTarget);
                     }
                 },
                 () => { return Morphling.morphling != null && Morphling.morphling == PlayerControl.LocalPlayer && !PlayerControl.LocalPlayer.Data.IsDead; },
@@ -504,6 +505,7 @@ namespace TheEpicRoles {
                    if (Hacker.cantMove) PlayerControl.LocalPlayer.moveable = false;
                    PlayerControl.LocalPlayer.NetTransform.Halt(); // Stop current movement 
                    Hacker.chargesAdminTable--;
+                   Log.add(Log.hackerAdminTable, Hacker.hacker);
                },
                () => { return Hacker.hacker != null && Hacker.hacker == PlayerControl.LocalPlayer && !PlayerControl.LocalPlayer.Data.IsDead;},
                () => {
@@ -563,6 +565,7 @@ namespace TheEpicRoles {
                    PlayerControl.LocalPlayer.NetTransform.Halt(); // Stop current movement 
 
                    Hacker.chargesVitals--;
+                   Log.add(Log.hackerVitals, Hacker.hacker);
                },
                () => { return Hacker.hacker != null && Hacker.hacker == PlayerControl.LocalPlayer && !PlayerControl.LocalPlayer.Data.IsDead && PlayerControl.GameOptions.MapId != 0 && PlayerControl.GameOptions.MapId != 3; },
                () => {
@@ -666,7 +669,9 @@ namespace TheEpicRoles {
                             HudManager.Instance.StartCoroutine(Effects.Lerp(Vampire.delay, new Action<float>((p) => { // Delayed action
                                 if (p == 1f) {
                                     // Perform kill if possible and reset bitten (regardless whether the kill was successful or not)
-                                    Helpers.checkMuderAttemptAndKill(Vampire.vampire, Vampire.bitten, showAnimation: false);
+                                    if (Helpers.checkMuderAttemptAndKill(Vampire.vampire, Vampire.bitten, showAnimation: false) == MurderAttemptResult.PerformKill) {
+                                        Log.add(Log.killByBite);
+                                    }
                                     MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(PlayerControl.LocalPlayer.NetId, (byte)CustomRPC.VampireSetBitten, Hazel.SendOption.Reliable, -1);
                                     writer.Write(byte.MaxValue);
                                     writer.Write(byte.MaxValue);
@@ -680,6 +685,7 @@ namespace TheEpicRoles {
                     } else if (murder == MurderAttemptResult.BlankKill) {
                         vampireKillButton.Timer = vampireKillButton.MaxTimer;
                         vampireKillButton.HasEffect = false;
+                        Helpers.sendBlankFired(Vampire.vampire, Vampire.currentTarget);
                     } else {
                         vampireKillButton.HasEffect = false;
                     }
@@ -1334,6 +1340,9 @@ namespace TheEpicRoles {
                         witchSpellButton.Timer = witchSpellButton.MaxTimer;
                         if (Witch.triggerBothCooldowns)
                             Witch.witch.killTimer = PlayerControl.GameOptions.KillCooldown;
+                        if (attempt == MurderAttemptResult.BlankKill) {
+                            Helpers.sendBlankFired(Witch.witch, Witch.spellCastingTarget);
+                        }
                     } else {
                         witchSpellButton.Timer = 0f;
                     }

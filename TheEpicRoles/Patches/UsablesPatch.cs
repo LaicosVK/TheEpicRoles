@@ -79,10 +79,11 @@ namespace TheEpicRoles.Patches {
             if (!canUse) return false; // No need to execute the native method as using is disallowed anyways
 
             bool isEnter = !PlayerControl.LocalPlayer.inVent;
-            
+
+            MessageWriter writer;
             if (__instance.name.StartsWith("JackInTheBoxVent_")) {
                 __instance.SetButtons(isEnter && canMoveInVents);
-                MessageWriter writer = AmongUsClient.Instance.StartRpc(PlayerControl.LocalPlayer.NetId, (byte)CustomRPC.UseUncheckedVent, Hazel.SendOption.Reliable);
+                writer = AmongUsClient.Instance.StartRpc(PlayerControl.LocalPlayer.NetId, (byte)CustomRPC.UseUncheckedVent, Hazel.SendOption.Reliable);
                 writer.WritePacked(__instance.Id);
                 writer.Write(PlayerControl.LocalPlayer.PlayerId);
                 writer.Write(isEnter ? byte.MaxValue : (byte)0);
@@ -93,10 +94,18 @@ namespace TheEpicRoles.Patches {
 
             if(isEnter) {
                 PlayerControl.LocalPlayer.MyPhysics.RpcEnterVent(__instance.Id);
+
             } else {
                 PlayerControl.LocalPlayer.MyPhysics.RpcExitVent(__instance.Id);
             }
             __instance.SetButtons(isEnter && canMoveInVents);
+
+            writer = AmongUsClient.Instance.StartRpc(PlayerControl.LocalPlayer.NetId, (byte)CustomRPC.VentUsed, Hazel.SendOption.Reliable);
+            writer.Write(PlayerControl.LocalPlayer.PlayerId);
+            writer.WritePacked(__instance.Id);
+            writer.Write(isEnter ? (byte)1 : (byte)0);
+            writer.EndMessage();
+            RPCProcedure.ventUsed(PlayerControl.LocalPlayer.PlayerId, __instance.Id, isEnter ? (byte)1 : (byte)0);
             return false;
         }
     }
@@ -149,6 +158,8 @@ namespace TheEpicRoles.Patches {
                         Witch.witch.killTimer = HudManagerStartPatch.witchSpellButton.Timer = HudManagerStartPatch.witchSpellButton.MaxTimer;
                     else if (PlayerControl.LocalPlayer == Phaser.phaser)
                         Phaser.phaser.killTimer = HudManagerStartPatch.phaserCurseButton.Timer = HudManagerStartPatch.phaserCurseButton.MaxTimer;
+
+                    Helpers.sendBlankFired(PlayerControl.LocalPlayer, __instance.currentTarget);
                 }
                 __instance.SetTarget(null);
             }

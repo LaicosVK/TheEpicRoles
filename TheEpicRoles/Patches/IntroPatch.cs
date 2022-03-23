@@ -50,9 +50,10 @@ namespace TheEpicRoles.Patches {
                     BountyHunter.cooldownText.transform.localPosition = bottomLeft + new Vector3(0f, -1f, -1f);
                     BountyHunter.cooldownText.gameObject.SetActive(true);
                 }
-            } 
-
             }
+
+            Log.startLogging();
+        }
     }
 
     [HarmonyPatch]
