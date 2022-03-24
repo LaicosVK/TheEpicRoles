@@ -390,7 +390,7 @@ namespace TheEpicRoles.Patches {
             if (Executioner.executioner != null) {
                 var possibleTargets = new List<PlayerControl>();
                 foreach (PlayerControl p in PlayerControl.AllPlayerControls) {
-                    if (!p.Data.IsDead && !p.Data.Disconnected && p != Lovers.lover1 && p != Lovers.lover2 && !p.Data.Role.IsImpostor && p != Jackal.jackal && p != Executioner.executioner)
+                    if (!p.Data.IsDead && !p.Data.Disconnected && p != Lovers.lover1 && p != Lovers.lover2 && !p.Data.Role.IsImpostor && p != Jackal.jackal && !RoleInfo.getRoleInfoForPlayer(p).FirstOrDefault().isNeutral)
                         possibleTargets.Add(p);
                 }
                 if (possibleTargets.Count == 0) {

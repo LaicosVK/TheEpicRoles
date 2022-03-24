@@ -119,7 +119,7 @@ namespace TheEpicRoles.Patches {
                 Jester.triggerJesterWin = true;
             }
             // Executioner win condition
-            else if (exiled != null && Executioner.executioner != null && Executioner.target.PlayerId == exiled.PlayerId) {
+            else if (exiled != null && Executioner.executioner != null && Executioner.target.PlayerId == exiled.PlayerId && !Executioner.executioner.Data.IsDead) {
                 Executioner.triggerExecutionerWin = true;
             }
 
