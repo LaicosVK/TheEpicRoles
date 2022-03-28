@@ -162,6 +162,18 @@ namespace TheEpicRoles.Patches {
             }
         }
 
+        public static void executionerCheckPromotion(bool isMeeting=false)
+        {
+            // If LocalPlayer is Executioner and the target is disconnected, then trigger promotion
+            if (Executioner.executioner == null || Executioner.executioner != PlayerControl.LocalPlayer) return;
+            if (Executioner.target == null || Executioner.target?.Data?.Disconnected == true || Executioner.target.Data.IsDead)
+            {
+                MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(PlayerControl.LocalPlayer.NetId, (byte)CustomRPC.ExecutionerToPursuer, Hazel.SendOption.Reliable, -1);
+                AmongUsClient.Instance.FinishRpcImmediately(writer);
+                RPCProcedure.executionerToPursuer();
+            }
+        }
+
         static void trackerSetTarget() {
             if (Tracker.tracker == null || Tracker.tracker != PlayerControl.LocalPlayer) return;
             Tracker.currentTarget = setTarget();
