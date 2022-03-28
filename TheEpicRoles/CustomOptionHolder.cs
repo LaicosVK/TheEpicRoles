@@ -71,7 +71,6 @@ namespace TheEpicRoles {
         public static CustomOption jesterCanBeLawyerClient;
 
 	public static CustomOption executionerSpawnRate;
-        public static CustomOption executionerMode;
 
         public static CustomOption arsonistSpawnRate;
         public static CustomOption arsonistCooldown;
