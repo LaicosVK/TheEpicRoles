@@ -20,8 +20,8 @@ namespace TheEpicRoles {
     public class TheEpicRolesPlugin : BasePlugin
     {
         public const string Id = "me.laicosvk.theepicroles";
-        public const string VersionString = "1.1.0";
-        public static uint firstKill = 0;
+        public const string VersionString = "1.1.1";
+        public static uint firstKill = 0; //i think this is old and can be removed. i wont do it now since 1.1.1 is just a fix.
 
         public static System.Version Version = System.Version.Parse(VersionString);
 
@@ -62,7 +62,7 @@ namespace TheEpicRoles {
 
         public override void Load() {
             Logger = Log;
-            DebugMode = Config.Bind("Custom", "Enable Debug Mode", true);
+            DebugMode = Config.Bind("Custom", "Enable Debug Mode", false);
             StreamerMode = Config.Bind("Custom", "Enable Streamer Mode", false);
             GhostsSeeTasks = Config.Bind("Custom", "Ghosts See Remaining Tasks", true);
             GhostsSeeRoles = Config.Bind("Custom", "Ghosts See Roles", true);
@@ -132,6 +132,8 @@ namespace TheEpicRoles {
         {
             if (!TheEpicRolesPlugin.DebugMode.Value) return;
 
+            // Removed debugging capabilities to solve exploit using it. Some day it could be implemented in a better, more secure way.
+            /*
             // Spawn dummys
             if (Input.GetKeyDown(KeyCode.F)) {
                 var playerControl = UnityEngine.Object.Instantiate(AmongUsClient.Instance.PlayerPrefab);
@@ -155,6 +157,7 @@ namespace TheEpicRoles {
                 AmongUsClient.Instance.FinishRpcImmediately(writer);
                 RPCProcedure.forceEnd();
             }
+            */
         }
 
         public static string RandomString(int length)

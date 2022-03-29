@@ -176,7 +176,7 @@ namespace TheEpicRoles.Modules {
         }
 
         private static HatBehaviour CreateHatBehaviour(CustomHatLoader.CustomHatOnline chd) {
-            string filePath = Path.GetDirectoryName(Application.dataPath) + @"\TheOtherHats\";
+            string filePath = Path.GetDirectoryName(Application.dataPath) + @"\TheEpicHats\";
             chd.resource = filePath + chd.resource;
             if (chd.backresource != null)
                 chd.backresource = filePath + chd.backresource;
@@ -241,7 +241,7 @@ namespace TheEpicRoles.Modules {
             static void Postfix(HatParent __instance, string hatId, int color) {
                 if (DestroyableSingleton<TutorialManager>.InstanceExists) {
                     try {
-                        string filePath = Path.GetDirectoryName(Application.dataPath) + @"\TheOtherHats\Test";
+                        string filePath = Path.GetDirectoryName(Application.dataPath) + @"\TheEpicHats\Test";
                         DirectoryInfo d = new DirectoryInfo(filePath);
                         string[] filePaths = d.GetFiles("*.png").Select(x => x.FullName).ToArray(); // Getting Text files
                         List<CustomHat> hats = createCustomHatDetails(filePaths, true);
@@ -458,7 +458,7 @@ namespace TheEpicRoles.Modules {
 
                 List<string> markedfordownload = new List<string>();
 
-                string filePath = Path.GetDirectoryName(Application.dataPath) + @"\TheOtherHats\";
+                string filePath = Path.GetDirectoryName(Application.dataPath) + @"\TheEpicHats\";
                 MD5 md5 = MD5.Create();
                 foreach (CustomHatOnline data in hatdatas) {
     	            if (doesResourceRequireDownload(filePath + data.resource, data.reshasha, md5))
