@@ -118,9 +118,9 @@ namespace TheEpicRoles.Patches {
             else if (exiled != null && Jester.jester != null && Jester.jester.PlayerId == exiled.PlayerId) {
                 Jester.triggerJesterWin = true;
             }
-            // Executioner win condition
-            else if (exiled != null && Executioner.executioner != null && Executioner.target.PlayerId == exiled.PlayerId && !Executioner.executioner.Data.IsDead) {
-                Executioner.triggerExecutionerWin = true;
+            // Prosecutor win condition
+            else if (exiled != null && Prosecutor.prosecutor != null && Prosecutor.target.PlayerId == exiled.PlayerId && !Prosecutor.prosecutor.Data.IsDead) {
+                Prosecutor.triggerProsecutorWin = true;
             }
 
             // Reset custom button timers where necessary

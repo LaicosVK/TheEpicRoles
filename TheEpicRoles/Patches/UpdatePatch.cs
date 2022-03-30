@@ -65,11 +65,11 @@ namespace TheEpicRoles.Patches {
         static void setNameColors() {
             if (Jester.jester != null && Jester.jester == PlayerControl.LocalPlayer)
                 setPlayerNameColor(Jester.jester, Jester.color);
-            else if (Executioner.executioner != null && Executioner.executioner == PlayerControl.LocalPlayer) { // Make executioner see target
-                // Executioner can see their target
-                setPlayerNameColor(Executioner.executioner, Executioner.color);
-                if (Executioner.target != null) {
-                    setPlayerNameColor(Executioner.target, Executioner.targetColor);
+            else if (Prosecutor.prosecutor != null && Prosecutor.prosecutor == PlayerControl.LocalPlayer) { // Make Prosecutor see target
+                // Prosecutor can see their target
+                setPlayerNameColor(Prosecutor.prosecutor, Prosecutor.color);
+                if (Prosecutor.target != null) {
+                    setPlayerNameColor(Prosecutor.target, Prosecutor.targetColor);
                 }
              } else if (Mayor.mayor != null && Mayor.mayor == PlayerControl.LocalPlayer)
                 setPlayerNameColor(Mayor.mayor, Mayor.color);

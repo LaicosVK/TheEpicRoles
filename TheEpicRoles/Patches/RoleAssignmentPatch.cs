@@ -91,7 +91,7 @@ namespace TheEpicRoles.Patches {
             impSettings.Add((byte)RoleId.Phaser, CustomOptionHolder.phaserSpawnRate.getSelection());
 
             neutralSettings.Add((byte)RoleId.Jester, CustomOptionHolder.jesterSpawnRate.getSelection());
-            neutralSettings.Add((byte)RoleId.Executioner, CustomOptionHolder.executionerSpawnRate.getSelection());
+            neutralSettings.Add((byte)RoleId.Prosecutor, CustomOptionHolder.prosecutorSpawnRate.getSelection());
             neutralSettings.Add((byte)RoleId.Arsonist, CustomOptionHolder.arsonistSpawnRate.getSelection());
             neutralSettings.Add((byte)RoleId.Jackal, CustomOptionHolder.jackalSpawnRate.getSelection());
             neutralSettings.Add((byte)RoleId.Vulture, CustomOptionHolder.vultureSpawnRate.getSelection());
@@ -386,26 +386,29 @@ namespace TheEpicRoles.Patches {
                 }
             }
 
-            // Start Set Exe Target
-            if (Executioner.executioner != null) {
+            // Start Set Prosecutor Target
+            if (Prosecutor.prosecutor != null) {
                 var possibleTargets = new List<PlayerControl>();
                 foreach (PlayerControl p in PlayerControl.AllPlayerControls) {
-                    if (!p.Data.IsDead && !p.Data.Disconnected && p != Lovers.lover1 && p != Lovers.lover2 && !p.Data.Role.IsImpostor && p != Jackal.jackal && !RoleInfo.getRoleInfoForPlayer(p).FirstOrDefault().isNeutral)
+                    if (p.Data.IsDead || p.Data.Disconnected) continue; // Don't assign dead people
+                    if (p == Lovers.lover1 || p == Lovers.lover2) continue; // Don't allow a lover target
+                    if (p.Data.Role.IsImpostor ||  p == Jackal.jackal) continue; // Dont allow imp / jackal target
+                    if (RoleInfo.getRoleInfoForPlayer(p).FirstOrDefault().isNeutral) continue; // Don't allow neutral target
                         possibleTargets.Add(p);
                 }
                 if (possibleTargets.Count == 0) {
-                    MessageWriter w = AmongUsClient.Instance.StartRpcImmediately(PlayerControl.LocalPlayer.NetId, (byte)CustomRPC.ExecutionerChangesRole, Hazel.SendOption.Reliable, -1);
+                    MessageWriter w = AmongUsClient.Instance.StartRpcImmediately(PlayerControl.LocalPlayer.NetId, (byte)CustomRPC.ProsecutorChangesRole, Hazel.SendOption.Reliable, -1);
                     AmongUsClient.Instance.FinishRpcImmediately(w);
-                    RPCProcedure.executionerChangesRole();
+                    RPCProcedure.prosecutorChangesRole();
                 } else {
                     var target = possibleTargets[TheEpicRoles.rnd.Next(0, possibleTargets.Count)];
-                    MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(PlayerControl.LocalPlayer.NetId, (byte)CustomRPC.ExecutionerSetTarget, Hazel.SendOption.Reliable, -1);
+                    MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(PlayerControl.LocalPlayer.NetId, (byte)CustomRPC.ProsecutorSetTarget, Hazel.SendOption.Reliable, -1);
                     writer.Write(target.PlayerId);
                     AmongUsClient.Instance.FinishRpcImmediately(writer);
-                    RPCProcedure.executionerSetTarget(target.PlayerId);
+                    RPCProcedure.prosecutorSetTarget(target.PlayerId);
                 }
             }
-            // End Set Exe Target
+            // End Set Prosecutor Target
         }
 
         private static byte setRoleToRandomPlayer(byte roleId, List<PlayerControl> playerList, byte flag = 0, bool removePlayer = true) {

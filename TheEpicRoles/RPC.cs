@@ -14,7 +14,7 @@ using System;
 namespace TheEpicRoles {
     enum RoleId {
         Jester,
-	Executioner,
+	Prosecutor,
         Mayor,
         Engineer,
         Sheriff,
@@ -117,9 +117,9 @@ namespace TheEpicRoles {
         SetPosition,
         SetFirstKill,
         SetGuardianShield,
-	ExecutionerChangesRole,
-	ExecutionerSetTarget,
-        ExecutionerToPursuer,
+	ProsecutorChangesRole,
+	ProsecutorSetTarget,
+        ProsecutorToPursuer,
         // Ready Status
         SetReadyStatus,
         SetReadyNames,
@@ -175,8 +175,8 @@ namespace TheEpicRoles {
                     case RoleId.Jester:
                         Jester.jester = player;
                         break;
-                    case RoleId.Executioner:
-                        Executioner.executioner = player;
+                    case RoleId.Prosecutor:
+                        Prosecutor.prosecutor = player;
                         break;
                     case RoleId.Mayor:
                         Mayor.mayor = player;
@@ -604,8 +604,8 @@ namespace TheEpicRoles {
                 DestroyableSingleton<RoleManager>.Instance.SetRole(player, RoleTypes.Crewmate);
                 erasePlayerRoles(player.PlayerId, true);
                 Sidekick.sidekick = player;
-		if (Executioner.executioner != null && Executioner.target == player) {
-		  executionerChangesRole();
+		if (Prosecutor.prosecutor != null && Prosecutor.target == player) {
+                  prosecutorChangesRole();
 		}
                 if (player.PlayerId == PlayerControl.LocalPlayer.PlayerId) PlayerControl.LocalPlayer.moveable = true; 
             }
@@ -662,7 +662,7 @@ namespace TheEpicRoles {
 
             // Other roles
             if (player == Jester.jester) Jester.clearAndReload();
-            if (player == Executioner.executioner) Executioner.clearAndReload();
+            if (player == Prosecutor.prosecutor) Prosecutor.clearAndReload();
             if (player == Arsonist.arsonist) Arsonist.clearAndReload();
             if (Guesser.isGuesser(player.PlayerId)) Guesser.clear(player.PlayerId);
             if (!ignoreLovers && (player == Lovers.lover1 || player == Lovers.lover2)) { // The whole Lover couple is being erased
@@ -808,28 +808,22 @@ namespace TheEpicRoles {
             }
         }
 
-        // Executioner
-        public static void executionerSetTarget(byte playerId) {
-            Executioner.target = Helpers.playerById(playerId);
+        // Prosecutor
+        public static void prosecutorSetTarget(byte playerId) {
+            Prosecutor.target = Helpers.playerById(playerId);
         }
-		/* *
-        public static void executionerTurnsToJester() {
-            PlayerControl player = Executioner.executioner;
-            Executioner.clearAndReload();
-            Mayor.mayor = player;
-        }
-		/* */
-        public static void executionerChangesRole() {
-            PlayerControl player = Executioner.executioner;
-            PlayerControl target = Executioner.target;
-            Executioner.clearAndReload();
+
+        public static void prosecutorChangesRole() {
+            PlayerControl player = Prosecutor.prosecutor;
+            PlayerControl target = Prosecutor.target;
+            Prosecutor.clearAndReload();
             Lawyer.lawyer = player;
             Lawyer.target = target;
         }
 
-        public static void executionerToPursuer() {
-            PlayerControl player = Executioner.executioner;
-            Executioner.clearAndReload();
+        public static void prosecutorToPursuer() {
+            PlayerControl player = Prosecutor.prosecutor;
+            Prosecutor.clearAndReload();
             Pursuer.pursuer = player;
         }
 
@@ -1105,14 +1099,14 @@ namespace TheEpicRoles {
                 case (byte)CustomRPC.LawyerPromotesToPursuer:
                     RPCProcedure.lawyerPromotesToPursuer();
                     break;
-                case (byte)CustomRPC.ExecutionerSetTarget:
-                    RPCProcedure.executionerSetTarget(reader.ReadByte()); 
+                case (byte)CustomRPC.ProsecutorSetTarget:
+                    RPCProcedure.prosecutorSetTarget(reader.ReadByte());
                     break;
-                case (byte)CustomRPC.ExecutionerChangesRole:
-                    RPCProcedure.executionerChangesRole();
+                case (byte)CustomRPC.ProsecutorChangesRole:
+                    RPCProcedure.prosecutorChangesRole();
                     break;
-                case (byte)CustomRPC.ExecutionerToPursuer:
-                    RPCProcedure.executionerToPursuer();
+                case (byte)CustomRPC.ProsecutorToPursuer:
+                    RPCProcedure.prosecutorToPursuer();
                     break;
                 case (byte)CustomRPC.SetBlanked:
                     var pid = reader.ReadByte();
