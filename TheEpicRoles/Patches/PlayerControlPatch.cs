@@ -162,15 +162,15 @@ namespace TheEpicRoles.Patches {
             }
         }
 
-        public static void executionerCheckPromotion(bool isMeeting=false)
+        public static void prosecutorCheckPromotion(bool isMeeting=false)
         {
-            // If LocalPlayer is Executioner and the target is disconnected, then trigger promotion
-            if (Executioner.executioner == null || Executioner.executioner != PlayerControl.LocalPlayer) return;
-            if (Executioner.target == null || Executioner.target?.Data?.Disconnected == true || Executioner.target.Data.IsDead)
+            // If LocalPlayer is Prosecutor and the target is disconnected, then trigger promotion
+            if (Prosecutor.prosecutor == null || Prosecutor.prosecutor != PlayerControl.LocalPlayer) return;
+            if (Prosecutor.target == null || Prosecutor.target?.Data?.Disconnected == true || Prosecutor.target.Data.IsDead)
             {
-                MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(PlayerControl.LocalPlayer.NetId, (byte)CustomRPC.ExecutionerToPursuer, Hazel.SendOption.Reliable, -1);
+                MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(PlayerControl.LocalPlayer.NetId, (byte)CustomRPC.ProsecutorToPursuer, Hazel.SendOption.Reliable, -1);
                 AmongUsClient.Instance.FinishRpcImmediately(writer);
-                RPCProcedure.executionerToPursuer();
+                RPCProcedure.prosecutorToPursuer();
             }
         }
 
@@ -991,11 +991,11 @@ namespace TheEpicRoles.Patches {
             }
 
             // This section may be causing instant game end.
-            // Change executioner to Pursuerer on murder of target
-            if (target == Executioner.target && AmongUsClient.Instance.AmHost) {
-                MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(PlayerControl.LocalPlayer.NetId, (byte)CustomRPC.ExecutionerToPursuer, Hazel.SendOption.Reliable, -1);
+            // Change Prosecutor to Pursuerer on murder of target
+            if (target == Prosecutor.target && AmongUsClient.Instance.AmHost) {
+                MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(PlayerControl.LocalPlayer.NetId, (byte)CustomRPC.ProsecutorToPursuer, Hazel.SendOption.Reliable, -1);
                 AmongUsClient.Instance.FinishRpcImmediately(writer);
-                RPCProcedure.executionerToPursuer();
+                RPCProcedure.prosecutorToPursuer();
             }
 
             // Cleaner Button Sync

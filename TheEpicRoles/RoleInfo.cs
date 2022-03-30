@@ -24,7 +24,7 @@ namespace TheEpicRoles {
         }
 
         public static RoleInfo jester = new RoleInfo("Jester", Jester.color, "Get voted out", "Get voted out", RoleId.Jester, true);
-        public static RoleInfo executioner = new RoleInfo("Executioner", Executioner.color, "Vote out your target", "Vote our your target", RoleId.Executioner, true);
+        public static RoleInfo prosecutor = new RoleInfo("Prosecutor", Prosecutor.color, "Vote out your target", "Vote our your target", RoleId.Prosecutor, true);
         public static RoleInfo mayor = new RoleInfo("Mayor", Mayor.color, "Your vote counts twice", "Your vote counts twice", RoleId.Mayor);
         public static RoleInfo engineer = new RoleInfo("Engineer",  Engineer.color, "Maintain important systems on the ship", "Repair the ship", RoleId.Engineer);
         public static RoleInfo sheriff = new RoleInfo("Sheriff", Sheriff.color, "Shoot the <color=#FF1919FF>Impostors</color>", "Shoot the Impostors", RoleId.Sheriff);
@@ -93,7 +93,7 @@ namespace TheEpicRoles {
             badGuesser,
             lover,
             jester,
-            executioner,
+            prosecutor,
             arsonist,
             jackal,
             sidekick,
@@ -128,7 +128,7 @@ namespace TheEpicRoles {
 
             // Special roles
             if (p == Jester.jester) infos.Add(jester);
-            if (p == Executioner.executioner) infos.Add(executioner);
+            if (p == Prosecutor.prosecutor) infos.Add(prosecutor);
             if (p == Mayor.mayor) infos.Add(mayor);
             if (p == Engineer.engineer) infos.Add(engineer);
             if (p == Sheriff.sheriff || p == Sheriff.formerSheriff) infos.Add(sheriff);

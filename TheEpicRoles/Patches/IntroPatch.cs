@@ -307,9 +307,9 @@ namespace TheEpicRoles.Patches {
                     __instance.RoleBlurbText.text += Helpers.cs(Lovers.color, $"\n♥ You are in love with {otherLover?.Data?.PlayerName ?? ""} ♥");
                 }
 
-                if (infos.Any(info => info.roleId == RoleId.Executioner)) {
-                    PlayerControl target = Executioner.target;
-                    __instance.RoleBlurbText.text += Helpers.cs(Executioner.color, $"\nVote out {target?.Data?.PlayerName ?? ""} ");
+                if (infos.Any(info => info.roleId == RoleId.Prosecutor)) {
+                    PlayerControl target = Prosecutor.target;
+                    __instance.RoleBlurbText.text += Helpers.cs(Prosecutor.color, $"\nVote out {target?.Data?.PlayerName ?? ""} ");
                 }
 
                 if (Deputy.knowsSheriff && Deputy.deputy != null && Sheriff.sheriff != null) {
