@@ -17,6 +17,7 @@ namespace TheEpicRoles.Patches {
 
         static PlayerControl setTarget(bool onlyCrewmates = false, bool targetPlayersInVents = false, List<PlayerControl> untargetablePlayers = null, PlayerControl targetingPlayer = null) {
             PlayerControl result = null;
+
             float num = GameOptionsData.KillDistances[Mathf.Clamp(PlayerControl.GameOptions.KillDistance, 0, 2)];
             if (!ShipStatus.Instance) return result;
             if (targetingPlayer == null) targetingPlayer = PlayerControl.LocalPlayer;
@@ -710,7 +711,7 @@ namespace TheEpicRoles.Patches {
 
 
             // Camouflage reset and set Morphling look if necessary
-            if (oldCamouflageTimer > 0f && Camouflager.camouflageTimer <= 0f) {
+            if (oldCamouflageTimer > 0f && Camouflager.camouflageTimer <= 0f && !Camouflager.commsCamo) {
                 Camouflager.resetCamouflage();
                 if (Morphling.morphTimer > 0f && Morphling.morphling != null && Morphling.morphTarget != null) {
                     PlayerControl target = Morphling.morphTarget;

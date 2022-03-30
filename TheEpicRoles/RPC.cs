@@ -89,6 +89,7 @@ namespace TheEpicRoles {
         SwapperSwap,
         MorphlingMorph,
         CamouflagerCamouflage,
+        CommsCamouflage,
         TrackerUsedTracker,
         VampireSetBitten,
         PlaceGarlic,
@@ -540,6 +541,12 @@ namespace TheEpicRoles {
             if (Camouflager.camouflager == null) return;
 
             Camouflager.camouflageTimer = Camouflager.duration;
+            foreach (PlayerControl player in PlayerControl.AllPlayerControls)
+                player.setLook("", 6, "", "", "", "");
+        }
+
+        public static void commsCamouflage() {
+            if (!Camouflager.commsCamo) return;
             foreach (PlayerControl player in PlayerControl.AllPlayerControls)
                 player.setLook("", 6, "", "", "", "");
         }
@@ -1005,6 +1012,9 @@ namespace TheEpicRoles {
                     break;
                 case (byte)CustomRPC.CamouflagerCamouflage:
                     RPCProcedure.camouflagerCamouflage();
+                    break;
+                case (byte)CustomRPC.CommsCamouflage:
+                    RPCProcedure.commsCamouflage();
                     break;
                 case (byte)CustomRPC.PlaceGarlic:
                     RPCProcedure.placeGarlic(reader.ReadBytesAndSize());

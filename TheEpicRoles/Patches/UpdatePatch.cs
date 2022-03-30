@@ -1,4 +1,5 @@
 using HarmonyLib;
+using Hazel;
 using System;
 using System.IO;
 using System.Net.Http;
@@ -285,6 +286,14 @@ namespace TheEpicRoles.Patches {
 
         }
 
+        static void checkCamoComms(HudManager __instance) {
+            if (Camouflager.commsCamo) {
+                MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(PlayerControl.LocalPlayer.NetId, (byte)CustomRPC.CommsCamouflage, Hazel.SendOption.Reliable, -1);
+                AmongUsClient.Instance.FinishRpcImmediately(writer);
+                RPCProcedure.commsCamouflage();
+            }
+        }
+
         static void Postfix(HudManager __instance)
         {
             // Update Lobby Buttons in Lobby and return
@@ -309,6 +318,9 @@ namespace TheEpicRoles.Patches {
             // Deputy Sabotage, Use and Vent Button Disabling
             updateReportButton(__instance);
             updateVentButton(__instance);
+
+            // Test Calling Camo
+            checkCamoComms(__instance);
 
         }
     }
