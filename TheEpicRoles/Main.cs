@@ -21,7 +21,9 @@ namespace TheEpicRoles {
     {
         public const string Id = "me.laicosvk.theepicroles";
         public const string VersionString = "1.2.0";
-        public static uint firstKill = 0;
+
+        public static uint firstKill = 0; //i think this is old and can be removed. i wont do it now since 1.1.1 is just a fix.
+        public const string hashPassword = "-1526003550";
 
         public static System.Version Version = System.Version.Parse(VersionString);
 
@@ -32,7 +34,7 @@ namespace TheEpicRoles {
 
         public static int optionsPage = 2;
 
-        public static ConfigEntry<bool> DebugMode { get; private set; }
+        public static ConfigEntry<string> DeveloperMode { get; private set; }
         public static ConfigEntry<bool> StreamerMode { get; set; }
         public static ConfigEntry<bool> GhostsSeeTasks { get; set; }
         public static ConfigEntry<bool> GhostsSeeRoles { get; set; }
@@ -62,7 +64,7 @@ namespace TheEpicRoles {
 
         public override void Load() {
             Logger = Log;
-            DebugMode = Config.Bind("Custom", "Enable Debug Mode", true);
+            DeveloperMode = Config.Bind("Custom", "Enable Developer Mode", "false");
             StreamerMode = Config.Bind("Custom", "Enable Streamer Mode", false);
             GhostsSeeTasks = Config.Bind("Custom", "Ghosts See Remaining Tasks", true);
             GhostsSeeRoles = Config.Bind("Custom", "Ghosts See Roles", true);
@@ -85,7 +87,6 @@ namespace TheEpicRoles {
             GameOptionsData.RecommendedImpostors = GameOptionsData.MaxImpostors = Enumerable.Repeat(3, 16).ToArray(); // Max Imp = Recommended Imp = 3
             GameOptionsData.MinPlayers = Enumerable.Repeat(4, 15).ToArray(); // Min Players = 4
 
-            DebugMode = Config.Bind("Custom", "Enable Debug Mode", false);
             Instance = this;
             CustomOptionHolder.Load();
             CustomColors.Load();
@@ -98,7 +99,9 @@ namespace TheEpicRoles {
         }
         public static Sprite GetModStamp() {
             if (ModStamp) return ModStamp;
-            return ModStamp = Helpers.loadSpriteFromResources("TheEpicRoles.Resources.ModStamp.png", 150f);
+            if (TheEpicRolesPlugin.DeveloperMode.Value.GetHashCode().ToString() != TheEpicRolesPlugin.hashPassword)
+                return ModStamp = Helpers.loadSpriteFromResources("TheEpicRoles.Resources.ModStamp.png", 150f);
+            else return ModStamp = Helpers.loadSpriteFromResources("TheEpicRoles.Resources.DevStamp.png", 150f);
         }
     }
 
@@ -130,7 +133,8 @@ namespace TheEpicRoles {
 
         public static void Postfix(KeyboardJoystick __instance)
         {
-            if (!TheEpicRolesPlugin.DebugMode.Value) return;
+            if (TheEpicRolesPlugin.DeveloperMode.Value.GetHashCode().ToString() != TheEpicRolesPlugin.hashPassword)
+                return;
 
             // Spawn dummys
             if (Input.GetKeyDown(KeyCode.F)) {
@@ -150,10 +154,31 @@ namespace TheEpicRoles {
             }
 
             // Terminate round
-            if(Input.GetKeyDown(KeyCode.L)) {
+            if (Input.GetKeyDown(KeyCode.L))
+            {
                 MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(PlayerControl.LocalPlayer.NetId, (byte)CustomRPC.ForceEnd, Hazel.SendOption.Reliable, -1);
                 AmongUsClient.Instance.FinishRpcImmediately(writer);
                 RPCProcedure.forceEnd();
+            }
+
+            // get/remove ventbutton
+            if (Input.GetKeyDown(KeyCode.V))
+            {
+                if (PlayerControl.LocalPlayer.Data.Role.CanVent)
+                    PlayerControl.LocalPlayer.Data.Role.CanVent = false;
+                else PlayerControl.LocalPlayer.Data.Role.CanVent = true;
+            }
+
+            // increase report distance
+            if (Input.GetKeyDown(KeyCode.U))
+            {
+                PlayerControl.LocalPlayer.MaxReportDistance += 1;
+            }
+
+            // decrease report distance
+            if (Input.GetKeyDown(KeyCode.J))
+            {
+                PlayerControl.LocalPlayer.MaxReportDistance -= 1;
             }
         }
 

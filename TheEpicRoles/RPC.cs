@@ -892,6 +892,7 @@ namespace TheEpicRoles {
         // Set the player name color for all players recieved by the host
         public static void setReadyNames(byte[] playerIds) {
             readyStatus = playerIds.ToList();
+            readyButtonCount.text = readyStatus.Count + " / " + AmongUsClient.Instance.allClients.Count;
             foreach (PlayerControl player in PlayerControl.AllPlayerControls) {
                 player.nameText.color = Color.white;
                 if (readyStatus.Contains(player.PlayerId)) {

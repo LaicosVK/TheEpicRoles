@@ -38,10 +38,24 @@ namespace TheEpicRoles.Modules {
             var button = UnityEngine.Object.Instantiate(template, null);
             button.transform.localPosition = new Vector3(button.transform.localPosition.x, button.transform.localPosition.y + 1.8f, button.transform.localPosition.z);
 
+            // Get Button Sprite + Text
+            SpriteRenderer btnExitSprite = button.GetComponent<SpriteRenderer>();
+            var textExit = button.transform.GetChild(0).GetComponent<TMPro.TMP_Text>();
+
+            // Change Init Color        
+            btnExitSprite.color = textExit.color = Color.yellow;
+
             PassiveButton passiveButton = button.GetComponent<PassiveButton>();
             passiveButton.OnClick = new Button.ButtonClickedEvent();
             passiveButton.OnClick.AddListener((UnityEngine.Events.UnityAction)onClick);
-            
+            passiveButton.OnMouseOver.AddListener((UnityEngine.Events.UnityAction)delegate {
+                btnExitSprite.color = textExit.color = Color.red;
+            });
+            passiveButton.OnMouseOut.AddListener((UnityEngine.Events.UnityAction)delegate {
+                btnExitSprite.color = textExit.color = Color.yellow;
+            });
+
+
             var text = button.transform.GetChild(0).GetComponent<TMPro.TMP_Text>();
             __instance.StartCoroutine(Effects.Lerp(0.1f, new System.Action<float>((p) => {
                 text.SetText("Update\nThe Epic Roles");

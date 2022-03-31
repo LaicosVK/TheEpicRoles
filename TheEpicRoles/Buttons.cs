@@ -48,6 +48,7 @@ namespace TheEpicRoles {
         public static CustomButton jumperButton;
         public static CustomButton readyButton;
         public static CustomButton guardianShield;
+        public static CustomButton copyButton;
 
         public static Dictionary<byte, List<CustomButton>> deputyHandcuffedButtons = null;
 
@@ -58,6 +59,7 @@ namespace TheEpicRoles {
         public static TMPro.TMP_Text hackerAdminTableChargesText;
         public static TMPro.TMP_Text hackerVitalsChargesText;
         public static TMPro.TMP_Text jumperChargesText;
+        public static TMPro.TMP_Text readyButtonCount;
 
         public static void setCustomButtonCooldowns() {
             engineerRepairButton.MaxTimer = 0f;
@@ -96,6 +98,7 @@ namespace TheEpicRoles {
             jumperButton.MaxTimer = Jumper.jumperJumpTime;
             readyButton.MaxTimer = 3f;
             guardianShield.MaxTimer = 0f;
+            copyButton.MaxTimer = 1f;
 
             timeMasterShieldButton.EffectDuration = TimeMaster.shieldDuration;
             hackerButton.EffectDuration = Hacker.duration;
@@ -341,7 +344,8 @@ namespace TheEpicRoles {
                 },
                 () => { return (Deputy.deputy != null && Deputy.deputy == PlayerControl.LocalPlayer || Sheriff.sheriff != null && Sheriff.sheriff == PlayerControl.LocalPlayer && Sheriff.sheriff == Sheriff.formerDeputy && Deputy.keepsHandcuffsOnPromotion) && !PlayerControl.LocalPlayer.Data.IsDead; },
                 () => {
-                    showTargetNameOnButton(Deputy.currentTarget, deputyHandcuffButton, ""); //Show target name under button if setting is true
+                    PlayerControl targetId = Sheriff.sheriff == PlayerControl.LocalPlayer ? Sheriff.currentTarget : Deputy.currentTarget;  // If the deputy is now the sheriff, sheriffs target, else deputies target
+                    showTargetNameOnButton(targetId, deputyHandcuffButton, ""); //Show target name under button if setting is true
                     if (deputyButtonHandcuffsText != null) deputyButtonHandcuffsText.text = $"{Deputy.remainingHandcuffs}";
                     return ((Deputy.deputy != null && Deputy.deputy == PlayerControl.LocalPlayer && Deputy.currentTarget || Sheriff.sheriff != null && Sheriff.sheriff == PlayerControl.LocalPlayer && Sheriff.sheriff == Sheriff.formerDeputy && Sheriff.currentTarget) && Deputy.remainingHandcuffs > 0 && PlayerControl.LocalPlayer.CanMove);
                 },
@@ -1508,11 +1512,18 @@ namespace TheEpicRoles {
                 Helpers.loadSpriteFromResources("TheEpicRoles.Resources.NotReadyButton.png", 115f),
                 new Vector3(-1f, 0, 0),
                 __instance,
-                KeyCode.LeftControl,
+                null,
                 false,
                 "Not Ready",
                 true
             );
+
+            // Ready Button counter
+            readyButtonCount = GameObject.Instantiate(readyButton.actionButton.cooldownTimerText, readyButton.actionButton.cooldownTimerText.transform.parent);
+            readyButtonCount.text = "0 / 1";
+            readyButtonCount.enableWordWrapping = false;
+            readyButtonCount.transform.localScale = Vector3.one * 0.5f;
+            readyButtonCount.transform.localPosition += new Vector3(0, 0.6f, 0);
 
             // GuardianShield
             guardianShield = new CustomButton(
@@ -1525,6 +1536,25 @@ namespace TheEpicRoles {
                 __instance,
                 null
             );
+
+            copyButton = new CustomButton(
+                () => {
+                    string code = InnerNet.GameCode.IntToGameName(AmongUsClient.Instance.GameId);
+                    GUIUtility.systemCopyBuffer = code;
+                    copyButton.Timer = 1f;
+                },
+                () => { return AmongUsClient.Instance.GameState != InnerNet.InnerNetClient.GameStates.Started && AmongUsClient.Instance.GameMode != GameModes.FreePlay && AmongUsClient.Instance.GameMode != GameModes.LocalGame; },
+                () => { return true; },
+                () => { },
+                Helpers.loadSpriteFromResources("TheEpicRoles.Resources.CopyButton.png", 115f),
+                new Vector3(0f, 1f, 0),
+                __instance,
+                null,
+                false,
+                "Copy Code",
+                true
+            );
+            copyButton.actionButton.buttonLabelText.outlineColor = Color.gray;
 
             // Set the default (or settings from the previous game) timers/durations when spawning the buttons
             setCustomButtonCooldowns();
