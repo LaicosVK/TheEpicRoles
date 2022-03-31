@@ -549,6 +549,7 @@ namespace TheEpicRoles {
             if (!Camouflager.commsCamo) return;
             foreach (PlayerControl player in PlayerControl.AllPlayerControls)
                 player.setLook("", 6, "", "", "", "");
+            Camouflager.commsCamoActive = true;
         }
 
         public static void vampireSetBitten(byte targetId, byte performReset) {

@@ -23,6 +23,7 @@ namespace TheEpicRoles {
         public static CustomOption neutralRolesCountMax;
         public static CustomOption impostorRolesCountMin;
         public static CustomOption impostorRolesCountMax;
+        public static CustomOption camoComms;
 
         public static CustomOption mafiaSpawnRate;
         public static CustomOption janitorCooldown;
@@ -288,6 +289,8 @@ namespace TheEpicRoles {
             neutralRolesCountMax = CustomOption.Create(303, cs(new Color(0, 1, 217f / 255f, 1f), "Maximum Neutral Roles"), "option", 0f, 0f, 15f, 1f);
             impostorRolesCountMin = CustomOption.Create(304, cs(new Color(0, 1, 217f / 255f, 1f), "Minimum Impostor Roles"), "option", 0f, 0f, 3f, 1f);
             impostorRolesCountMax = CustomOption.Create(305, cs(new Color(0, 1, 217f / 255f, 1f), "Maximum Impostor Roles"), "option", 0f, 0f, 3f, 1f);
+            camoComms = CustomOption.Create(306, cs(new Color(0, 1, 217f / 255f, 1f), "Enable Camouflaged Comms"), "option", true, null, true);
+
 
             mafiaSpawnRate = CustomOption.Create(10, cs(Janitor.color, "Mafia"), "impostor", rates, null, true);
             janitorCooldown = CustomOption.Create(11, "Janitor Cooldown", "impostor", 30f, 10f, 60f, 2.5f, mafiaSpawnRate);

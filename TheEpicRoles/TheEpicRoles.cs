@@ -562,6 +562,7 @@ namespace TheEpicRoles
         public static float duration = 10f;
         public static float camouflageTimer = 0f;
         public static bool commsCamo = false;
+        public static bool commsCamoActive = false;
 
         private static Sprite buttonSprite;
         public static Sprite getButtonSprite() {

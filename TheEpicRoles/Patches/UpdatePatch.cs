@@ -287,7 +287,38 @@ namespace TheEpicRoles.Patches {
         }
 
         static void checkCamoComms(HudManager __instance) {
-            if (Camouflager.commsCamo) {
+            bool isCommsSaboActive = false;
+            if (CustomOptionHolder.camoComms.getBool()) {
+                if (ShipStatus.Instance != null) {
+                    switch (PlayerControl.GameOptions.MapId) {
+                        case 0:
+                        case 2:
+                        case 3:
+                        case 4:
+                            var comms1 = ShipStatus.Instance.Systems[SystemTypes.Comms].Cast<HudOverrideSystemType>();
+                            if (comms1.IsActive) {
+                                isCommsSaboActive = true;
+                            }
+
+                            break;
+                        case 1:
+                            var comms2 = ShipStatus.Instance.Systems[SystemTypes.Comms].Cast<HqHudSystemType>();
+                            if (comms2.IsActive) {
+                                isCommsSaboActive = true;
+                            }
+
+                            break;
+                    }
+                }
+                if (isCommsSaboActive) {
+                    Camouflager.commsCamo = true;
+                } else {
+                    Camouflager.commsCamo = false;
+                    Camouflager.commsCamoActive = false;
+                    if (Camouflager.camouflageTimer == 0f) Camouflager.resetCamouflage();
+                }
+            }
+            if (Camouflager.commsCamo && !Camouflager.commsCamoActive) {
                 MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(PlayerControl.LocalPlayer.NetId, (byte)CustomRPC.CommsCamouflage, Hazel.SendOption.Reliable, -1);
                 AmongUsClient.Instance.FinishRpcImmediately(writer);
                 RPCProcedure.commsCamouflage();
