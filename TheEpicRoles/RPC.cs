@@ -335,7 +335,6 @@ namespace TheEpicRoles {
             PlayerControl target = Helpers.playerById(targetId);
             if (source != null && target != null) {
                 source.ReportDeadBody(target.Data);
-                Log.add(Log.reportBody, source, target);
             }
         }
 
@@ -372,7 +371,7 @@ namespace TheEpicRoles {
             for (int i = 0; i < array.Length; i++) {
                 if (GameData.Instance.GetPlayerById(array[i].ParentId).PlayerId == playerId) {
                     UnityEngine.Object.Destroy(array[i].gameObject);
-                    Log.add(Log.clean, Cleaner.cleaner, Helpers.playerById(playerId));
+                    Log.add(Log.bodyCleaned, Helpers.playerById(playerId));
                 }
             }
         }
@@ -543,7 +542,6 @@ namespace TheEpicRoles {
             if (MeetingHud.Instance) {
                 Swapper.playerId1 = playerId1;
                 Swapper.playerId2 = playerId2;
-                Log.add(Log.swappedPlayer, Helpers.playerById(playerId1), Helpers.playerById(playerId2));
             }
         }
 
@@ -899,7 +897,7 @@ namespace TheEpicRoles {
                 camera.gameObject.SetActive(false);
             }
             MapOptions.camerasToAdd.Add(camera);
-            Log.add(Log.addCamera(position), SecurityGuard.securityGuard);
+            Log.add(Log.addCamera(position), SecurityGuard.securityGuard, showCoords: false);
         }
 
         public static void sealVent(int ventId) {
@@ -969,9 +967,9 @@ namespace TheEpicRoles {
 
             string roleName = RoleInfo.allRoleInfos.FirstOrDefault(x => (byte)x.roleId == guessedRoleId).name;
             if (dyingTargetId == guessedTargetId)
-                Log.add(Log.guessWrong(roleName), Helpers.playerById(killerId), Helpers.playerById(guessedTargetId));
-            else
                 Log.add(Log.guessRight(roleName), Helpers.playerById(killerId), Helpers.playerById(guessedTargetId));
+            else
+                Log.add(Log.guessWrong(roleName), Helpers.playerById(killerId), Helpers.playerById(guessedTargetId));
 
             dyingTarget.Exiled();
             PlayerControl dyingLoverPartner = Lovers.bothDie ? dyingTarget.getPartner() : null; // Lover check

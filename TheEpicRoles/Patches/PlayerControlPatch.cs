@@ -536,7 +536,7 @@ namespace TheEpicRoles.Patches {
             if (numberOfTasks <= Snitch.taskCountForReveal && (PlayerControl.LocalPlayer.Data.Role.IsImpostor || (Snitch.includeTeamJackal && (PlayerControl.LocalPlayer == Jackal.jackal || PlayerControl.LocalPlayer == Sidekick.sidekick)))) {
                 if (Snitch.localArrows.Count == 0) {
                     Snitch.localArrows.Add(new Arrow(Color.blue));
-                    Log.add(Log.snitchRevealSelf, Snitch.snitch, PlayerControl.LocalPlayer);
+                    Log.add(Log.snitchRevealSelf, Snitch.snitch);
                 }
                 if (Snitch.localArrows.Count != 0 && Snitch.localArrows[0] != null) {
                     Snitch.localArrows[0].arrow.SetActive(true);
@@ -601,6 +601,7 @@ namespace TheEpicRoles.Patches {
                     if (MapOptions.playerIcons.ContainsKey(BountyHunter.bounty.PlayerId) && MapOptions.playerIcons[BountyHunter.bounty.PlayerId].gameObject != null)
                         MapOptions.playerIcons[BountyHunter.bounty.PlayerId].gameObject.SetActive(true);
                 }
+                Log.add(Log.newBounty, BountyHunter.bountyHunter, BountyHunter.bounty);
             }
 
             // Update Cooldown Text
@@ -627,14 +628,14 @@ namespace TheEpicRoles.Patches {
                 Bait.reportDelay -= Time.fixedDeltaTime;
                 DeadPlayer deadPlayer = deadPlayers?.Where(x => x.player?.PlayerId == Bait.bait.PlayerId)?.FirstOrDefault();
                 if (deadPlayer.killerIfExisting != null && Bait.reportDelay <= 0f) {
-
                     Helpers.handleKillOnBodyReport(); // Manually call Vampire and Shifter handling since the CmdReportDeadBody Prefix won't be called
-                    RPCProcedure.uncheckedCmdReportDeadBody(deadPlayer.killerIfExisting.PlayerId, Bait.bait.PlayerId);
 
                     MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(PlayerControl.LocalPlayer.NetId, (byte)CustomRPC.UncheckedCmdReportDeadBody, Hazel.SendOption.Reliable, -1);
                     writer.Write(deadPlayer.killerIfExisting.PlayerId);
                     writer.Write(Bait.bait.PlayerId);
                     AmongUsClient.Instance.FinishRpcImmediately(writer);
+                    RPCProcedure.uncheckedCmdReportDeadBody(deadPlayer.killerIfExisting.PlayerId, Bait.bait.PlayerId);
+
                     Bait.reported = true;
                 }
             }
@@ -1050,6 +1051,14 @@ namespace TheEpicRoles.Patches {
                 }
                 else
                     BountyHunter.bountyHunter.SetKillTimer(PlayerControl.GameOptions.KillCooldown + BountyHunter.punishmentTime); 
+            }
+            // Log Bounty Hunter kill
+            if (BountyHunter.bountyHunter != null && __instance == BountyHunter.bountyHunter) {
+                if (target == BountyHunter.bounty)
+                    Log.add(Log.bountyKilled, BountyHunter.bountyHunter, BountyHunter.bounty);
+                else
+                    Log.add(Log.bountyMissed, BountyHunter.bountyHunter, target);
+
             }
 
             // Show flash on bait kill to the killer if enabled

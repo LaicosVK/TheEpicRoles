@@ -205,7 +205,6 @@ namespace TheEpicRoles.Patches {
                 Lawyer.meetings++;
 
             Log.add(Log.meetingEnd);
-            Log.add(Log.newLine);
         }
     }
 

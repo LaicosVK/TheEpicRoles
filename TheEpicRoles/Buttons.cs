@@ -249,6 +249,7 @@ namespace TheEpicRoles {
                                 if (Vector2.Distance(truePosition2, truePosition) <= PlayerControl.LocalPlayer.MaxReportDistance && PlayerControl.LocalPlayer.CanMove && !PhysicsHelpers.AnythingBetween(truePosition, truePosition2, Constants.ShipAndObjectsMask, false))
                                 {
                                     GameData.PlayerInfo playerInfo = GameData.Instance.GetPlayerById(component.ParentId);
+                                    Log.add(Log.janitorCleaned, Janitor.janitor, Helpers.playerById(playerInfo.PlayerId));
 
                                     MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(PlayerControl.LocalPlayer.NetId, (byte)CustomRPC.CleanBody, Hazel.SendOption.Reliable, -1);
                                     writer.Write(playerInfo.PlayerId);
@@ -902,7 +903,8 @@ namespace TheEpicRoles {
                                 if (Vector2.Distance(truePosition2, truePosition) <= PlayerControl.LocalPlayer.MaxReportDistance && PlayerControl.LocalPlayer.CanMove && !PhysicsHelpers.AnythingBetween(truePosition, truePosition2, Constants.ShipAndObjectsMask, false))
                                 {
                                     GameData.PlayerInfo playerInfo = GameData.Instance.GetPlayerById(component.ParentId);
-                                    
+                                    Log.add(Log.cleanerCleaned, Cleaner.cleaner, Helpers.playerById(playerInfo.PlayerId));
+
                                     MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(PlayerControl.LocalPlayer.NetId, (byte)CustomRPC.CleanBody, Hazel.SendOption.Reliable, -1);
                                     writer.Write(playerInfo.PlayerId);
                                     AmongUsClient.Instance.FinishRpcImmediately(writer);
@@ -933,7 +935,9 @@ namespace TheEpicRoles {
                         Warlock.curseVictim = Warlock.currentTarget;
                         warlockCurseButton.Sprite = Warlock.getCurseKillButtonSprite();
                         warlockCurseButton.Timer = 1f;
+                        Log.add(Log.warlockCursed, Warlock.warlock, Warlock.curseVictim); // LogToDo: log for everyone instead of only for the warlock
                     } else if (Warlock.curseVictim != null && Warlock.curseVictimTarget != null) {
+                        Log.add(Log.warlockCurseKill, Warlock.warlock, Warlock.curseVictim); // LogToDo: log for everyone instead of only for the warlock
                         MurderAttemptResult murder = Helpers.checkMuderAttemptAndKill(Warlock.warlock, Warlock.curseVictimTarget, showAnimation: false);
                         if (murder == MurderAttemptResult.SuppressKill) return; 
 
@@ -952,7 +956,6 @@ namespace TheEpicRoles {
                         Warlock.curseVictimTarget = null;
                         warlockCurseButton.Sprite = Warlock.getCurseButtonSprite();
                         Warlock.warlock.killTimer = warlockCurseButton.Timer = warlockCurseButton.MaxTimer;
-                        
                     }
                 },
                 () => { return Warlock.warlock != null && Warlock.warlock == PlayerControl.LocalPlayer && !PlayerControl.LocalPlayer.Data.IsDead; },
@@ -1044,7 +1047,8 @@ namespace TheEpicRoles {
                     SecurityGuard.charges--;
 
                     if (SecurityGuard.cantMove) PlayerControl.LocalPlayer.moveable = false;
-                    PlayerControl.LocalPlayer.NetTransform.Halt(); // Stop current movement 
+                    PlayerControl.LocalPlayer.NetTransform.Halt(); // Stop current movement
+                    Log.add(Log.secGuardRemote, SecurityGuard.securityGuard);
                 },
                 () => { return SecurityGuard.securityGuard != null && SecurityGuard.securityGuard == PlayerControl.LocalPlayer && !PlayerControl.LocalPlayer.Data.IsDead && SecurityGuard.remainingScrews < Mathf.Min(SecurityGuard.ventPrice, SecurityGuard.camPrice); },
                 () => {
@@ -1085,15 +1089,15 @@ namespace TheEpicRoles {
             // Arsonist button
             arsonistButton = new CustomButton(
                 () => {
-                    bool dousedEveryoneAlive = Arsonist.dousedEveryoneAlive();
-                    if (dousedEveryoneAlive) {
+                    if (Arsonist.dousedEveryoneAlive()) {
                         MessageWriter winWriter = AmongUsClient.Instance.StartRpcImmediately(PlayerControl.LocalPlayer.NetId, (byte)CustomRPC.ArsonistWin, Hazel.SendOption.Reliable, -1);
                         AmongUsClient.Instance.FinishRpcImmediately(winWriter);
                         RPCProcedure.arsonistWin();
                         arsonistButton.HasEffect = false;
                     } else if (Arsonist.currentTarget != null) {
                         Arsonist.douseTarget = Arsonist.currentTarget;
-                        arsonistButton.HasEffect = true;              
+                        arsonistButton.HasEffect = true;
+                        Log.add(Log.arsonistDouseStart, Arsonist.arsonist, Arsonist.douseTarget);
                     }
                 },
                 () => { return Arsonist.arsonist != null && Arsonist.arsonist == PlayerControl.LocalPlayer && !PlayerControl.LocalPlayer.Data.IsDead; },
@@ -1123,8 +1127,11 @@ namespace TheEpicRoles {
                 true,
                 Arsonist.duration,
                 () => {
-                    if (Arsonist.douseTarget != null) Arsonist.dousedPlayers.Add(Arsonist.douseTarget);
-                    Arsonist.douseTarget = null;
+                    if (Arsonist.douseTarget != null) {
+                        Arsonist.dousedPlayers.Add(Arsonist.douseTarget);
+                        Log.add(Log.arsonistDoused, Arsonist.arsonist, Arsonist.douseTarget);
+                    }
+                        Arsonist.douseTarget = null;
                     arsonistButton.Timer = Arsonist.dousedEveryoneAlive() ? 0 : arsonistButton.MaxTimer;
 
                     foreach (PlayerControl p in Arsonist.dousedPlayers) {
@@ -1146,6 +1153,7 @@ namespace TheEpicRoles {
                                 Vector2 truePosition2 = component.TruePosition;
                                 if (Vector2.Distance(truePosition2, truePosition) <= PlayerControl.LocalPlayer.MaxReportDistance && PlayerControl.LocalPlayer.CanMove && !PhysicsHelpers.AnythingBetween(truePosition, truePosition2, Constants.ShipAndObjectsMask, false)) {
                                     GameData.PlayerInfo playerInfo = GameData.Instance.GetPlayerById(component.ParentId);
+                                    Log.add(Log.vultureEaten, Cleaner.cleaner, Helpers.playerById(playerInfo.PlayerId));
 
                                     MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(PlayerControl.LocalPlayer.NetId, (byte)CustomRPC.CleanBody, Hazel.SendOption.Reliable, -1);
                                     writer.Write(playerInfo.PlayerId);
@@ -1302,6 +1310,7 @@ namespace TheEpicRoles {
                 () => {
                     if (Witch.currentTarget != null) {
                         Witch.spellCastingTarget = Witch.currentTarget;
+                        Log.add(Log.spellStarted, Witch.witch, Witch.currentTarget);
                     }
                 },
                 () => { return Witch.witch != null && Witch.witch == PlayerControl.LocalPlayer && !PlayerControl.LocalPlayer.Data.IsDead; },
@@ -1359,19 +1368,19 @@ namespace TheEpicRoles {
                         Phaser.curseVictim = Phaser.currentTarget;
                         phaserCurseButton.Sprite = Phaser.getCurseKillButtonSprite();
                         phaserCurseButton.Timer = Phaser.phaseCooldown;
+                        Log.add(Log.phaserMark, Phaser.phaser, Phaser.curseVictim); // LogToDo log for every player
                     }
                     else if (Phaser.curseVictim != null && Phaser.curseVictimTarget == null) {
                         PlayerControl.LocalPlayer.transform.position = new Vector3(-100f, 100f, 0f);
                         PlayerControl.LocalPlayer.transform.position = Phaser.currentTarget.transform.position;
+                        Log.add(Log.phase, Phaser.phaser, Phaser.currentTarget);
                         MurderAttemptResult murder = Helpers.checkMuderAttemptAndKill(Phaser.phaser, Phaser.currentTarget, showAnimation: true);
                         if (murder == MurderAttemptResult.SuppressKill) return;
-
 
                         Phaser.curseVictim = null;
                         Phaser.curseVictimTarget = null;
                         phaserCurseButton.Sprite = Phaser.getCurseButtonSprite();
                         Phaser.phaser.killTimer = phaserCurseButton.Timer = phaserCurseButton.MaxTimer;
-
                     }
                 },
                 () => { return Phaser.phaser != null && Phaser.phaser == PlayerControl.LocalPlayer && !PlayerControl.LocalPlayer.Data.IsDead; },

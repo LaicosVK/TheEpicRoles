@@ -7,7 +7,7 @@ using UnityEngine;
 // Log class to create txt log files for all games and important events like kills, given medic shield, shifts, ...
 public static class Log {
     public const string logPath = "log/";
-
+    
     private static DateTime gameStartTime;
     private static List<string> log = new List<string>();
 
@@ -17,7 +17,7 @@ public static class Log {
     //    [20:23:11] LVK tried to kill shielded Nova (2.873, -1.203)
     public static void add(string logEvent, PlayerControl player1 = null, PlayerControl player2 = null, bool showCoords = true) {
         string logLine = "";
-        if (logEvent != null && logEvent.Equals(""))
+        if (logEvent != null && !logEvent.Equals(""))
             logLine = DateTime.Now.ToString("[HH:mm:ss]");
         if (player1 != null)
             logLine += " " + player1.Data.PlayerName;
@@ -35,7 +35,7 @@ public static class Log {
     }
     public static void finishLogging() {
         add(gameEnd);
-        string fileNamePrefix = logPath + gameStartTime;
+        string fileNamePrefix = logPath + formatTime(gameStartTime);
         string fileFullName = fileNamePrefix + ".log";
         int gameLogId = 0;
 
@@ -52,25 +52,23 @@ public static class Log {
             File.WriteAllLinesAsync(fileFullName, log);
             gameStartTime = DateTime.Now;
         }
+        log.Clear();
     }
 
     // Basic log messages
     public static readonly string
-        gameStart = "#### GAME START ####",
+        gameStart = "#### GAME START ####" + Environment.NewLine,
         gameEnd = "#### GAME END ####",
-        meetingStart = "did start a meeting",
-        meetingEnd = "#### MEETING END ####",
-
-        reportBody = "did report the body of",
+        meetingStart = "has started a meeting",
+        meetingEnd = "#### MEETING END ####" + Environment.NewLine,
+        reportBody = "has reported the body of",
         exiled = "was exiled",
         killed = "has killed",
-
         sabotageReactor = "did sabotage the reactor",
         sabotageLight = "did sabotage the lights",
         sabotageComs = "did sabotage the communication systems",
         sabotageO2 = "did sabotage the O2 system",
         sabotageSeismic = "did sabotage the seismic stabilisers",
-
         shielded = "shielded",
         shieldKillAttempt = "tried to kill shielded",
         newShifter = "is now the new Shifter",
@@ -82,7 +80,6 @@ public static class Log {
         rewindTime = "bend the space–time continuum to rewind time itself",
         showAttemptToShielded = "saw an attempt to kill him",
         showAttemptToMedic = "saw an attempt to kill the shielded",
-        swappedPlayer = "will get his votes swapped with that of",
         morphes = "morphes into the look of",
         morphExpired = "Morph expired",
         camouflageActive = "activated the camouflage ability - gray blobs everywhere!",
@@ -100,7 +97,10 @@ public static class Log {
         markToBeShifted = "wants to shift",
         markToBeShielded = "wants to shield",
         addSpelled = "spoke a spell of doom over",
+        spellStarted = "has started a spell on",
         tricksterLightOut = "is a sneaky trickster and put the lights out",
+        arsonistDouseStart = "has opened their fuel canister and started dousing",
+        arsonistDoused = "has finished dousing",
         arsonistIgnite = "has ignited the holy flame of destruction",
         vultureLastBodyEaten = "has devoured the last course and is now fed",
         lawyerMeetingWin = "was acquitted of all charges and won the lawsuit",
@@ -117,9 +117,20 @@ public static class Log {
         hackerAdminTable = "the Hacker took a look at his mobile Admin Table",
         hackerVitals = "the Hacker took a look at his mobile Vitals",
         hackerAbility = "activated his 1337 h4x0r ability",
-        snitchRevealSelf = "was revealed as the Snitch to the forces of evil like",
-        snitchRevealEvil = "has revealed a member of the forces of evil:",
-        clean = "cleaned the body of",
+        snitchRevealSelf = "was revealed as the Snitch to the forces of evil",
+        snitchRevealEvil = "has snitched on a member of the forces of evil:", // LogToDo: no idea why, but this activates at the start of a round. pls fix
+        bodyCleaned = "got their body cleaned",
+        cleanerCleaned = "the Cleaner cleaned the body of",
+        janitorCleaned = "the Janitor cleaned the body of",
+        vultureEaten = "the Vulture ate the body of",
+        warlockCursed = "the Warlock has cursed",
+        warlockCurseKill = "the Warlock has activated the Curse on",
+        phaserMark = "the Phaser marked his target",
+        phase = "phased to his target",
+        secGuardRemote = "the Security Guard takes a look at their mobile device",
+        bountyKilled = "has killed their Bounty",
+        bountyMissed = "has missed their Bounty and instead killed",
+        newBounty = "got a new Bounty:",
 
         newLine = "";
 
@@ -143,19 +154,19 @@ public static class Log {
         return "Map is " + Helpers.getMapName(mapId);
     }
     public static string garlicAdded(Vector3 position) {
-        return "has placed his Garlic at " + position.ToString("F3");
+        return "Garlic was placed at " + positionString(position); // LogToDo: add who placed the garlic
     }
     public static string eraseRole(string role) {
         return "lost the role " + role;
     }
     public static string placeJackInTheBox(Vector3 position) {
-        return "has placed a Jack-in-the-box at " + position.ToString("F3");
+        return "has placed a Jack-in-the-box at " + positionString(position);
     }
     public static string addCamera(Vector3 position) {
-        return "has placed a Camera at " + position.ToString("F3");
+        return "has placed a Camera at " + positionString(position);
     }
     public static string sealVent(Vent vent) {
-        return "has sealed a Vent named " + vent.name + ", ID " + vent.Id;
+        return "has sealed Vent " + vent.name + ", ID " + vent.Id;
     }
     public static string shieldedGuess(string roleName) {
         return "tried to guess " + roleName + " for the shielded player";
@@ -175,10 +186,16 @@ public static class Log {
     public static string useVent(Vent vent, bool isEnter) {
         return "has " + (isEnter ? "entered" : "left") + " the Vent " + vent.name + ", ID " + vent.Id;
     }
+    public static string swapp(PlayerControl player1, PlayerControl player2) {
+        return "swapped the votes of " + player1.Data.PlayerName + " and " + player2.Data.PlayerName;
+    }
+    public static string votes(int votes, string voterNames) {
+        return "got " + votes + " vote" + (votes == 1 ? "" : "s") + (votes > 0 ? " (" + voterNames + ")" : "");
+    }
 
     // Help functions for formatting
     public static string positionString(Vector3 position) {
-        return "(" + position.x.ToString("F3") + ", " + position.y.ToString("F3") + ")";
+        return "(" + position.x.ToString("F2") + ", " + position.y.ToString("F2") + ")";
     }
     public static string formatTime(DateTime time) {
         return time.ToString("yyyy-MM-dd - HH-mm-ss");

@@ -23,6 +23,8 @@ namespace TheEpicRoles.Patches {
         class MeetingCalculateVotesPatch {
             private static Dictionary<byte, int> CalculateVotes(MeetingHud __instance) {
                 Dictionary<byte, int> dictionary = new Dictionary<byte, int>();
+                Dictionary<byte, List<byte>> voters = new Dictionary<byte, List<byte>>(); // Log who voted for who
+
                 for (int i = 0; i < __instance.playerStates.Length; i++) {
                     PlayerVoteArea playerVoteArea = __instance.playerStates[i];
                     if (playerVoteArea.VotedFor != 252 && playerVoteArea.VotedFor != 255 && playerVoteArea.VotedFor != 254) {
@@ -31,10 +33,14 @@ namespace TheEpicRoles.Patches {
 
                         int currentVotes;
                         int additionalVotes = (Mayor.mayor != null && Mayor.mayor.PlayerId == playerVoteArea.TargetPlayerId) ? 2 : 1; // Mayor vote
-                        if (dictionary.TryGetValue(playerVoteArea.VotedFor, out currentVotes))
+                        if (dictionary.TryGetValue(playerVoteArea.VotedFor, out currentVotes)) {
                             dictionary[playerVoteArea.VotedFor] = currentVotes + additionalVotes;
-                        else
+                            voters[playerVoteArea.VotedFor].Add(playerVoteArea.TargetPlayerId);
+                        }
+                        else {
                             dictionary[playerVoteArea.VotedFor] = additionalVotes;
+                            voters[playerVoteArea.VotedFor] = new List<byte> { playerVoteArea.TargetPlayerId };
+                        }
                     }
                 }
                 // Swapper swap votes
@@ -52,12 +58,24 @@ namespace TheEpicRoles.Patches {
                         int tmp = dictionary[swapped1.TargetPlayerId];
                         dictionary[swapped1.TargetPlayerId] = dictionary[swapped2.TargetPlayerId];
                         dictionary[swapped2.TargetPlayerId] = tmp;
+                        Log.add(Log.swapp(Helpers.playerById(swapped1.TargetPlayerId), Helpers.playerById(swapped2.TargetPlayerId)), Swapper.swapper);
                     }
                 }
-
+                logMeetingVotes(dictionary, voters); // LogToDo: log meeting votes for every player
                 return dictionary;
             }
-
+            public static void logMeetingVotes(Dictionary<byte, int> voteAmount, Dictionary<byte, List<byte>> voters) {
+                foreach (KeyValuePair<byte, int> entry in voteAmount) {
+                    string voterNames = "";
+                    bool first = true;
+                    foreach (byte playerId in voters[entry.Key]) {
+                        if (!first) voterNames += ", ";
+                        voterNames += Helpers.playerById(playerId).Data.PlayerName;
+                        first = false;
+                    }
+                    Log.add(Log.votes(entry.Value, voterNames), Helpers.playerById(entry.Key), showCoords: false);
+                }
+            }
 
             static bool Prefix(MeetingHud __instance) {
                 if (__instance.playerStates.All((PlayerVoteArea ps) => ps.AmDead || ps.DidVote)) {
@@ -461,8 +479,10 @@ namespace TheEpicRoles.Patches {
                 // Save the meeting target
                 target = meetingTarget;
 
-                if (meetingTarget == null) Log.add(Log.meetingStart, __instance);
-                // Log for report of dead body is done in uncheckedCmdReportDeadBody
+                if (meetingTarget == null)
+                    Log.add(Log.meetingStart, __instance);
+                else
+                    Log.add(Log.reportBody, __instance, Helpers.playerById(meetingTarget.PlayerId));
             }
         }
 
