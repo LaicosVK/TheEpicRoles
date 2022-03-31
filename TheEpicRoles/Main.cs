@@ -21,7 +21,6 @@ namespace TheEpicRoles {
     {
         public const string Id = "me.laicosvk.theepicroles";
         public const string VersionString = "1.2.0";
-
         public static uint firstKill = 0; //i think this is old and can be removed. i wont do it now since 1.1.1 is just a fix.
         public const string hashPassword = "-1526003550";
 
