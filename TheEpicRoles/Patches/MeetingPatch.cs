@@ -5,11 +5,8 @@ using System.Linq;
 using UnhollowerBaseLib;
 using static TheEpicRoles.TheEpicRoles;
 using static TheEpicRoles.MapOptions;
-using System.Collections;
 using System;
-using System.Text;
 using UnityEngine;
-using System.Reflection;
 
 namespace TheEpicRoles.Patches {
     [HarmonyPatch]
@@ -66,16 +63,9 @@ namespace TheEpicRoles.Patches {
             }
             public static void logMeetingVotes(Dictionary<byte, int> voteAmount, Dictionary<byte, List<byte>> voters) {
                 foreach (KeyValuePair<byte, int> entry in voteAmount) {
-                    string voterNames = "";
-                    bool first = true;
-                    foreach (byte playerId in voters[entry.Key]) {
-                        if (!first) voterNames += ", ";
-                        voterNames += Helpers.playerById(playerId).Data.PlayerName;
-                        first = false;
-                    }
-                    Log.add(Log.votes(entry.Value, voterNames), Helpers.playerById(entry.Key), showCoords: false);
+                    Log.add(Log.votes(entry.Value, String.Join(", ", voters[entry.Key])), Helpers.playerById(entry.Key), showCoords: false);
                 }
-            }
+        }
 
             static bool Prefix(MeetingHud __instance) {
                 if (__instance.playerStates.All((PlayerVoteArea ps) => ps.AmDead || ps.DidVote)) {

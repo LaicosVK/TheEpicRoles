@@ -426,7 +426,7 @@ namespace TheEpicRoles {
                         Morphling.sampledTarget = Morphling.currentTarget;
                         morphlingButton.Sprite = Morphling.getMorphSprite();
                         morphlingButton.EffectDuration = 1f;
-                        Log.add(Log.morphlinSample, Morphling.morphling, Morphling.currentTarget);
+                        Log.add(Log.morphlingSample, Morphling.morphling, Morphling.currentTarget);
                     }
                 },
                 () => { return Morphling.morphling != null && Morphling.morphling == PlayerControl.LocalPlayer && !PlayerControl.LocalPlayer.Data.IsDead; },

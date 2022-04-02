@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using TheEpicRoles;
 using UnityEngine;
@@ -113,20 +114,20 @@ public static class Log {
         loverPartnerKill = "was heartbroken and ended themself",
         baitFlash = "the Bait showed their killer a flash of the trap they activated",
         seerFlash = "the Seer saw the last breath of a poor soul",
-        morphlinSample = "sampled the DNA of",
+        morphlingSample = "sampled the DNA of",
         hackerAdminTable = "the Hacker took a look at his mobile Admin Table",
         hackerVitals = "the Hacker took a look at his mobile Vitals",
         hackerAbility = "activated his 1337 h4x0r ability",
         snitchRevealSelf = "was revealed as the Snitch to the forces of evil",
         snitchRevealEvil = "has snitched on a member of the forces of evil:", // LogToDo: no idea why, but this activates at the start of a round. pls fix
-        bodyCleaned = "got their body cleaned",
-        cleanerCleaned = "the Cleaner cleaned the body of",
+        bodyCleaned = "got their body cleaned up",
+        cleanerCleaned = "the Cleaner removed the body of",
         janitorCleaned = "the Janitor cleaned the body of",
         vultureEaten = "the Vulture ate the body of",
         warlockCursed = "the Warlock has cursed",
         warlockCurseKill = "the Warlock has activated the Curse on",
-        phaserMark = "the Phaser marked his target",
-        phase = "phased to his target",
+        phaserMark = "the Phaser marked their target",
+        phase = "phased to their target",
         secGuardRemote = "the Security Guard takes a look at their mobile device",
         bountyKilled = "has killed their Bounty",
         bountyMissed = "has missed their Bounty and instead killed",
@@ -135,7 +136,7 @@ public static class Log {
         newLine = "";
 
     // Comments with LogToDo are currently missing logging behaviours, mostly RPCs so everyone can log the event.
-    // LogToDo: Task started, Task finished
+    // LogToDo: Task started, Task finished, all tasks done
     // LogToDo: Sabotage started, sabotage fixed, impo win sabotage
 
     // Special string functions for more advanced log messages
@@ -195,7 +196,7 @@ public static class Log {
 
     // Help functions for formatting
     public static string positionString(Vector3 position) {
-        return "(" + position.x.ToString("F2") + ", " + position.y.ToString("F2") + ")";
+        return "(" + position.x.ToString("F2", CultureInfo.InvariantCulture) + ", " + position.y.ToString("F2", CultureInfo.InvariantCulture) + ")";
     }
     public static string formatTime(DateTime time) {
         return time.ToString("yyyy-MM-dd - HH-mm-ss");
