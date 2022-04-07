@@ -70,6 +70,8 @@ namespace TheEpicRoles {
         public static CustomOption jesterHasImpostorVision;
         public static CustomOption jesterCanBeLawyerClient;
 
+	public static CustomOption prosecutorSpawnRate;
+
         public static CustomOption arsonistSpawnRate;
         public static CustomOption arsonistCooldown;
         public static CustomOption arsonistDuration;
@@ -367,6 +369,8 @@ namespace TheEpicRoles {
             jesterHasImpostorVision = CustomOption.Create(62, "Jester Has Impostor Vision", "neutral", false, jesterSpawnRate);
             jesterCanBeLawyerClient = CustomOption.Create(8000, "Jester Can Be Client\nOf Lawyer", "neutral", false, jesterSpawnRate);
 
+            prosecutorSpawnRate = CustomOption.Create(615, cs(Prosecutor.color, "Prosecutor"), "neutral", rates, null, true);
+
             arsonistSpawnRate = CustomOption.Create(290, cs(Arsonist.color, "Arsonist"), "neutral", rates, null, true);
             arsonistCooldown = CustomOption.Create(291, "Arsonist Cooldown", "neutral", 12.5f, 2.5f, 60f, 2.5f, arsonistSpawnRate);
             arsonistDuration = CustomOption.Create(292, "Arsonist Douse Duration", "neutral", 3f, 1f, 10f, 1f, arsonistSpawnRate);
@@ -543,6 +547,9 @@ namespace TheEpicRoles {
 
             blockedRolePairings.Add((byte)RoleId.Phaser, new[] { (byte)RoleId.Camouflager });
             blockedRolePairings.Add((byte)RoleId.Camouflager, new[] { (byte)RoleId.Phaser });
+
+            blockedRolePairings.Add((byte)RoleId.Lawyer, new[] { (byte)RoleId.Prosecutor });
+            blockedRolePairings.Add((byte)RoleId.Prosecutor, new[] { (byte)RoleId.Lawyer });
 
         }
     }

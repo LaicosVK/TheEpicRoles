@@ -162,6 +162,18 @@ namespace TheEpicRoles.Patches {
             }
         }
 
+        public static void prosecutorCheckPromotion(bool isMeeting=false)
+        {
+            // If LocalPlayer is Prosecutor and the target is disconnected, then trigger promotion
+            if (Prosecutor.prosecutor == null || Prosecutor.prosecutor != PlayerControl.LocalPlayer) return;
+            if (Prosecutor.target == null || Prosecutor.target?.Data?.Disconnected == true || Prosecutor.target.Data.IsDead)
+            {
+                MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(PlayerControl.LocalPlayer.NetId, (byte)CustomRPC.ProsecutorToPursuer, Hazel.SendOption.Reliable, -1);
+                AmongUsClient.Instance.FinishRpcImmediately(writer);
+                RPCProcedure.prosecutorToPursuer();
+            }
+        }
+
         static void trackerSetTarget() {
             if (Tracker.tracker == null || Tracker.tracker != PlayerControl.LocalPlayer) return;
             Tracker.currentTarget = setTarget();
@@ -976,6 +988,14 @@ namespace TheEpicRoles.Patches {
                 MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(PlayerControl.LocalPlayer.NetId, (byte)CustomRPC.LawyerPromotesToPursuer, Hazel.SendOption.Reliable, -1);
                 AmongUsClient.Instance.FinishRpcImmediately(writer);
                 RPCProcedure.lawyerPromotesToPursuer();
+            }
+
+            // This section may be causing instant game end.
+            // Change Prosecutor to Pursuerer on murder of target
+            if (target == Prosecutor.target && AmongUsClient.Instance.AmHost) {
+                MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(PlayerControl.LocalPlayer.NetId, (byte)CustomRPC.ProsecutorToPursuer, Hazel.SendOption.Reliable, -1);
+                AmongUsClient.Instance.FinishRpcImmediately(writer);
+                RPCProcedure.prosecutorToPursuer();
             }
 
             // Cleaner Button Sync

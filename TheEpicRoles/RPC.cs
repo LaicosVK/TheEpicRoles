@@ -14,6 +14,7 @@ using System;
 namespace TheEpicRoles {
     enum RoleId {
         Jester,
+	Prosecutor,
         Mayor,
         Engineer,
         Sheriff,
@@ -116,7 +117,9 @@ namespace TheEpicRoles {
         SetPosition,
         SetFirstKill,
         SetGuardianShield,
-
+	ProsecutorChangesRole,
+	ProsecutorSetTarget,
+        ProsecutorToPursuer,
         // Ready Status
         SetReadyStatus,
         SetReadyNames,
@@ -171,6 +174,9 @@ namespace TheEpicRoles {
                     switch((RoleId)roleId) {
                     case RoleId.Jester:
                         Jester.jester = player;
+                        break;
+                    case RoleId.Prosecutor:
+                        Prosecutor.prosecutor = player;
                         break;
                     case RoleId.Mayor:
                         Mayor.mayor = player;
@@ -598,6 +604,9 @@ namespace TheEpicRoles {
                 DestroyableSingleton<RoleManager>.Instance.SetRole(player, RoleTypes.Crewmate);
                 erasePlayerRoles(player.PlayerId, true);
                 Sidekick.sidekick = player;
+		if (Prosecutor.prosecutor != null && Prosecutor.target == player) {
+                  prosecutorChangesRole();
+		}
                 if (player.PlayerId == PlayerControl.LocalPlayer.PlayerId) PlayerControl.LocalPlayer.moveable = true; 
             }
             Jackal.canCreateSidekick = false;
@@ -653,6 +662,7 @@ namespace TheEpicRoles {
 
             // Other roles
             if (player == Jester.jester) Jester.clearAndReload();
+            if (player == Prosecutor.prosecutor) Prosecutor.clearAndReload();
             if (player == Arsonist.arsonist) Arsonist.clearAndReload();
             if (Guesser.isGuesser(player.PlayerId)) Guesser.clear(player.PlayerId);
             if (!ignoreLovers && (player == Lovers.lover1 || player == Lovers.lover2)) { // The whole Lover couple is being erased
@@ -796,6 +806,25 @@ namespace TheEpicRoles {
                 TMPro.TextMeshPro playerInfo = playerInfoTransform != null ? playerInfoTransform.GetComponent<TMPro.TextMeshPro>() : null;
                 if (playerInfo != null) playerInfo.text = "";
             }
+        }
+
+        // Prosecutor
+        public static void prosecutorSetTarget(byte playerId) {
+            Prosecutor.target = Helpers.playerById(playerId);
+        }
+
+        public static void prosecutorChangesRole() {
+            PlayerControl player = Prosecutor.prosecutor;
+            PlayerControl target = Prosecutor.target;
+            Prosecutor.clearAndReload();
+            Lawyer.lawyer = player;
+            Lawyer.target = target;
+        }
+
+        public static void prosecutorToPursuer() {
+            PlayerControl player = Prosecutor.prosecutor;
+            Prosecutor.clearAndReload();
+            Pursuer.pursuer = player;
         }
 
         public static void guesserShoot(byte killerId, byte dyingTargetId, byte guessedTargetId, byte guessedRoleId) {
@@ -1070,6 +1099,15 @@ namespace TheEpicRoles {
                     break;
                 case (byte)CustomRPC.LawyerPromotesToPursuer:
                     RPCProcedure.lawyerPromotesToPursuer();
+                    break;
+                case (byte)CustomRPC.ProsecutorSetTarget:
+                    RPCProcedure.prosecutorSetTarget(reader.ReadByte());
+                    break;
+                case (byte)CustomRPC.ProsecutorChangesRole:
+                    RPCProcedure.prosecutorChangesRole();
+                    break;
+                case (byte)CustomRPC.ProsecutorToPursuer:
+                    RPCProcedure.prosecutorToPursuer();
                     break;
                 case (byte)CustomRPC.SetBlanked:
                     var pid = reader.ReadByte();

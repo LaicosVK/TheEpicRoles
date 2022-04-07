@@ -18,7 +18,8 @@ namespace TheEpicRoles.Patches {
         JesterWin = 13,
         ArsonistWin = 14,
         VultureWin = 15,
-        LawyerSoloWin = 16
+        LawyerSoloWin = 16,
+	ProsecutorWin = 17
     }
 
     enum WinCondition {
@@ -33,7 +34,8 @@ namespace TheEpicRoles.Patches {
         LawyerSoloWin,
         AdditionalLawyerBonusWin,
         AdditionalLawyerStolenWin,
-        AdditionalAlivePursuerWin
+        AdditionalAlivePursuerWin,
+	ProsecutorWin
     }
 
     static class AdditionalTempData {
@@ -74,9 +76,10 @@ namespace TheEpicRoles.Patches {
                 AdditionalTempData.playerRoles.Add(new AdditionalTempData.PlayerRoleInfo() { PlayerName = playerControl.Data.PlayerName, Roles = roles, TasksTotal = tasksTotal, TasksCompleted = tasksCompleted });
             }
 
-            // Remove Jester, Arsonist, Vulture, Jackal, former Jackals and Sidekick from winners (if they win, they'll be readded)
+            // Remove Jester, Prosecutor, Arsonist, Vulture, Jackal, former Jackals and Sidekick from winners (if they win, they'll be readded)
             List<PlayerControl> notWinners = new List<PlayerControl>();
             if (Jester.jester != null) notWinners.Add(Jester.jester);
+            if (Prosecutor.prosecutor != null) notWinners.Add(Prosecutor.prosecutor);
             if (Sidekick.sidekick != null) notWinners.Add(Sidekick.sidekick);
             if (Jackal.jackal != null) notWinners.Add(Jackal.jackal);
             if (Arsonist.arsonist != null) notWinners.Add(Arsonist.arsonist);
@@ -93,6 +96,7 @@ namespace TheEpicRoles.Patches {
             foreach (var winner in winnersToRemove) TempData.winners.Remove(winner);
 
             bool jesterWin = Jester.jester != null && gameOverReason == (GameOverReason)CustomGameOverReason.JesterWin;
+            bool prosecutorWin = Prosecutor.prosecutor != null && gameOverReason == (GameOverReason)CustomGameOverReason.ProsecutorWin;
             bool arsonistWin = Arsonist.arsonist != null && gameOverReason == (GameOverReason)CustomGameOverReason.ArsonistWin;
             bool miniLose = Mini.mini != null && gameOverReason == (GameOverReason)CustomGameOverReason.MiniLose;
             bool loversWin = Lovers.existingAndAlive() && (gameOverReason == (GameOverReason)CustomGameOverReason.LoversWin || (TempData.DidHumansWin(gameOverReason) && !Lovers.existingWithKiller())); // Either they win if they are among the last 3 players, or they win if they are both Crewmates and both alive and the Crew wins (Team Imp/Jackal Lovers can only win solo wins)
@@ -115,6 +119,14 @@ namespace TheEpicRoles.Patches {
                 WinningPlayerData wpd = new WinningPlayerData(Jester.jester.Data);
                 TempData.winners.Add(wpd);
                 AdditionalTempData.winCondition = WinCondition.JesterWin;
+            }
+
+            // Prosecutor win
+            else if (prosecutorWin) {
+                TempData.winners = new Il2CppSystem.Collections.Generic.List<WinningPlayerData>();
+                WinningPlayerData wpd = new WinningPlayerData(Prosecutor.prosecutor.Data);
+                TempData.winners.Add(wpd);
+                AdditionalTempData.winCondition = WinCondition.ProsecutorWin;
             }
 
             // Arsonist win
@@ -280,6 +292,10 @@ namespace TheEpicRoles.Patches {
                 textRenderer.text = "Jester Wins";
                 textRenderer.color = Jester.color;
             }
+            else if (AdditionalTempData.winCondition == WinCondition.ProsecutorWin) {
+                textRenderer.text = "Prosecutor Wins";
+                textRenderer.color = Prosecutor.color;
+            }
             else if (AdditionalTempData.winCondition == WinCondition.ArsonistWin) {
                 textRenderer.text = "Arsonist Wins";
                 textRenderer.color = Arsonist.color;
@@ -368,6 +384,7 @@ namespace TheEpicRoles.Patches {
             var statistics = new PlayerStatistics(__instance);
             if (CheckAndEndGameForMiniLose(__instance)) return false;
             if (CheckAndEndGameForJesterWin(__instance)) return false;
+            if (CheckAndEndGameForProsecutorWin(__instance)) return false;
             if (CheckAndEndGameForLawyerMeetingWin(__instance)) return false;
             if (CheckAndEndGameForArsonistWin(__instance)) return false;
             if (CheckAndEndGameForVultureWin(__instance)) return false;
@@ -393,6 +410,15 @@ namespace TheEpicRoles.Patches {
             if (Jester.triggerJesterWin) {
                 __instance.enabled = false;
                 ShipStatus.RpcEndGame((GameOverReason)CustomGameOverReason.JesterWin, false);
+                return true;
+            }
+            return false;
+        }
+
+	private static bool CheckAndEndGameForProsecutorWin(ShipStatus __instance) {
+            if (Prosecutor.triggerProsecutorWin) {
+                __instance.enabled = false;
+                ShipStatus.RpcEndGame((GameOverReason)CustomGameOverReason.ProsecutorWin, false);
                 return true;
             }
             return false;
