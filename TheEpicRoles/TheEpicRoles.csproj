@@ -14,8 +14,10 @@
     <ItemGroup>
         <EmbeddedResource Include="Resources\CustomHats\*.png" />
         <EmbeddedResource Include="Resources\*.png" />
-        <EmbeddedResource Include="Resources\TricksterAnimation\*.png" /> 
-    </ItemGroup>
+        <EmbeddedResource Include="Resources\TricksterAnimation\*.png" />
+		<EmbeddedResource Include="Resources\SlapAnimation\*.png" />
+
+	</ItemGroup>
 
     <ItemGroup>
         <Reference Include="$(AmongUs)/BepInEx/core/*.dll" />

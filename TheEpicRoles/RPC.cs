@@ -121,6 +121,7 @@ namespace TheEpicRoles {
         SetReadyStatus,
         SetReadyNames,
 
+        Slap
     }
 
     public static class RPCProcedure {
@@ -892,6 +893,12 @@ namespace TheEpicRoles {
                 }
             }
         }
+        public static void slap(byte[] buff) {
+            Vector3 position = Vector3.zero;
+            position.x = BitConverter.ToSingle(buff, 0 * sizeof(float));
+            position.y = BitConverter.ToSingle(buff, 1 * sizeof(float));
+            new Slap(position);
+        }
     }   
 
     [HarmonyPatch(typeof(PlayerControl), nameof(PlayerControl.HandleRpc))]
@@ -1093,6 +1100,9 @@ namespace TheEpicRoles {
                     break;
                 case (byte)CustomRPC.SetReadyNames:
                     RPCProcedure.setReadyNames(reader.ReadBytesAndSize());
+                    break;
+                case (byte)CustomRPC.Slap:
+                    RPCProcedure.slap(reader.ReadBytesAndSize());
                     break;
             }
         }

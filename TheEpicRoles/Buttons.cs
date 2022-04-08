@@ -49,6 +49,7 @@ namespace TheEpicRoles {
         public static CustomButton readyButton;
         public static CustomButton guardianShield;
         public static CustomButton copyButton;
+        public static CustomButton slapButton;
 
         public static Dictionary<byte, List<CustomButton>> deputyHandcuffedButtons = null;
 
@@ -99,6 +100,7 @@ namespace TheEpicRoles {
             readyButton.MaxTimer = 3f;
             guardianShield.MaxTimer = 0f;
             copyButton.MaxTimer = 1f;
+            slapButton.MaxTimer = 3f;
 
             timeMasterShieldButton.EffectDuration = TimeMaster.shieldDuration;
             hackerButton.EffectDuration = Hacker.duration;
@@ -1555,6 +1557,32 @@ namespace TheEpicRoles {
                 true
             );
             copyButton.actionButton.buttonLabelText.outlineColor = Color.gray;
+
+            slapButton = new CustomButton(
+                () => {
+                    slapButton.Timer = slapButton.MaxTimer;
+
+                    var pos = PlayerControl.LocalPlayer.transform.position;
+                    byte[] buff = new byte[sizeof(float) * 2];
+                    Buffer.BlockCopy(BitConverter.GetBytes(pos.x), 0, buff, 0 * sizeof(float), sizeof(float));
+                    Buffer.BlockCopy(BitConverter.GetBytes(pos.y), 0, buff, 1 * sizeof(float), sizeof(float));
+
+                    MessageWriter writer = AmongUsClient.Instance.StartRpc(PlayerControl.LocalPlayer.NetId, (byte)CustomRPC.Slap, Hazel.SendOption.Reliable);
+                    writer.WriteBytesAndSize(buff);
+                    writer.EndMessage();
+                    RPCProcedure.slap(buff);
+                },
+                () => { return AmongUsClient.Instance.GameState != InnerNet.InnerNetClient.GameStates.Started && AmongUsClient.Instance.GameMode != GameModes.FreePlay; },
+                () => { return true; },
+                () => { },
+                Helpers.loadSpriteFromResources("TheEpicRoles.Resources.NotReadyButton.png", 115f),
+                new Vector3(-1f, 1f, 0),
+                __instance,
+                null,
+                false,
+                "Slap",
+                true
+            );
 
             // Set the default (or settings from the previous game) timers/durations when spawning the buttons
             setCustomButtonCooldowns();
