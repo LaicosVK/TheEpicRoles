@@ -15,7 +15,7 @@ public static class Log {
     // Log line general format:
     //    [time] Player1 Event Player2 CoordinatesOfPlayer1
     // Log line example:
-    //    [20:23:11] LVK tried to kill shielded Nova (2.873, -1.203)
+    //    [20:23:11] LVK tried to kill shielded Nova (2.87, -1.20)
     public static void add(string logEvent, PlayerControl player1 = null, PlayerControl player2 = null, bool showCoords = true) {
         string logLine = "";
         if (logEvent != null && !logEvent.Equals(""))
