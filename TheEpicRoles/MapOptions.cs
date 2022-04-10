@@ -17,8 +17,8 @@ namespace TheEpicRoles {
         public static bool showRoleSummary = true;
         public static bool allowParallelMedBayScans = false;
         public static bool showLighterDarker = true;
+        public static bool enableHorseMode = false;
         public static bool toggleCursor = true;
-        public static bool toggleScreenShake = false;
 
         // Updating values
         public static int meetingsCount = 0;
@@ -26,7 +26,7 @@ namespace TheEpicRoles {
         public static List<Vent> ventsToSeal = new List<Vent>();
         public static Dictionary<byte, PoolablePlayer> playerIcons = new Dictionary<byte, PoolablePlayer>();
 
-public static void clearAndReloadMapOptions() {
+        public static void clearAndReloadMapOptions() {
             meetingsCount = 0;
             camerasToAdd = new List<SurvCamera>();
             ventsToSeal = new List<Vent>();
@@ -37,13 +37,18 @@ public static void clearAndReloadMapOptions() {
             noVoteIsSelfVote = CustomOptionHolder.noVoteIsSelfVote.getBool();
             hidePlayerNames = CustomOptionHolder.hidePlayerNames.getBool();
             allowParallelMedBayScans = CustomOptionHolder.allowParallelMedBayScans.getBool();
+        }
+
+        public static void reloadPluginOptions()
+        {
             ghostsSeeRoles = TheEpicRolesPlugin.GhostsSeeRoles.Value;
             ghostsSeeTasks = TheEpicRolesPlugin.GhostsSeeTasks.Value;
             ghostsSeeVotes = TheEpicRolesPlugin.GhostsSeeVotes.Value;
             showRoleSummary = TheEpicRolesPlugin.ShowRoleSummary.Value;
             showLighterDarker = TheEpicRolesPlugin.ShowLighterDarker.Value;
             toggleCursor = TheEpicRolesPlugin.ToggleCursor.Value;
-            toggleScreenShake = TheEpicRolesPlugin.ToggleScreenShake.Value;
+            enableHorseMode = TheEpicRolesPlugin.EnableHorseMode.Value;
+            Patches.ShouldAlwaysHorseAround.isHorseMode = TheEpicRolesPlugin.EnableHorseMode.Value;
         }
     }
 }

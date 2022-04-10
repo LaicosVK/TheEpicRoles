@@ -175,7 +175,7 @@ namespace TheEpicRoles
                 if (!formerSheriff) formerSheriff = sheriff;
                 sheriff = deputy;
                 currentTarget = null;
-                cooldown = CustomOptionHolder.jackalKillCooldown.getFloat();
+                cooldown = CustomOptionHolder.sheriffCooldown.getFloat();
             }
 
             public static void clearAndReload() {

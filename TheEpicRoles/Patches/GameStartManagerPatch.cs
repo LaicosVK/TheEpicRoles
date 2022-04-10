@@ -81,7 +81,8 @@ namespace TheEpicRoles.Patches {
         public class GameStartManagerUpdatePatch {
             private static bool update = false;
             private static string currentText = "";
-        
+            private static TMPro.TextMeshPro vanillaText = null;
+
             public static void Prefix(GameStartManager __instance) {
                 if (!AmongUsClient.Instance.AmHost  || !GameData.Instance ) return; // Not host or no instance
                 update = GameData.Instance.PlayerCount != __instance.LastPlayerCount;
@@ -97,7 +98,10 @@ namespace TheEpicRoles.Patches {
                 // Host update with version handshake infos
                 if (AmongUsClient.Instance.AmHost) {
                     bool blockStart = false;
+                    bool vanillaMissmatch = false;
                     string message = "";
+                    string vanillaMessage = $"<size=70%><color={CredentialsPatch.terColor}>Players with different \nversions of Among Us:</color>\n</size><size=55%>";
+                    
                     foreach (InnerNet.ClientData client in AmongUsClient.Instance.allClients.ToArray()) {
                         if (client.Character == null) continue;
                         var dummyComponent = client.Character.GetComponent<DummyBehaviour>();
@@ -119,6 +123,11 @@ namespace TheEpicRoles.Patches {
                                 message += $"<color=#FF0000FF>{client.Character.Data.PlayerName} has a modified version of TER v{playerVersions[client.Id].version.ToString()} <size=30%>({PV.guid.ToString()})</size>\n</color>";
                                 blockStart = true;
                             }
+                            // Vanilla version check, to see if all players are on the same version. Problem: epic and 
+                            if (PV.vanillaVersion != Application.version) {
+                                vanillaMessage += Helpers.cs(Palette.PlayerColors[client.ColorId], $"{client.Character.Data.PlayerName}: {PV.vanillaVersion}\n");
+                                vanillaMissmatch = true;
+                            }
                         }
                     }
                     // block start if blockstart is true AND if not all players are ready
@@ -129,6 +138,14 @@ namespace TheEpicRoles.Patches {
                     } else {
                         __instance.StartButton.color = __instance.startLabelText.color = ((__instance.LastPlayerCount >= __instance.MinPlayers) ? Palette.EnabledColor : Palette.DisabledClear);
                         __instance.GameStartText.transform.localPosition = __instance.StartButton.transform.localPosition;
+                    }
+                    if (vanillaMissmatch) {
+                        vanillaMessage += "</size>";
+                        if (vanillaText == null) vanillaText = GameObject.Instantiate(__instance.GameStartText, __instance.GameStartText.transform.parent);
+                        vanillaText.transform.localPosition = __instance.StartButton.transform.localPosition + new Vector3(4.25f,2.25f,0);
+                        vanillaText.alignment = TMPro.TextAlignmentOptions.MidlineLeft;
+                        vanillaText.text = vanillaMessage;
+                        vanillaText.SetOutlineThickness(0.1f);
                     }
                 }
 
@@ -209,8 +226,8 @@ namespace TheEpicRoles.Patches {
                             possibleMaps.Add(1);
                         if (CustomOptionHolder.dynamicMapEnablePolus.getBool())
                             possibleMaps.Add(2);
-                        if (CustomOptionHolder.dynamicMapEnableDleks.getBool())
-                            possibleMaps.Add(3);
+                        //if (CustomOptionHolder.dynamicMapEnableDleks.getBool())
+                        //    possibleMaps.Add(3);
                         if (CustomOptionHolder.dynamicMapEnableAirShip.getBool())
                             possibleMaps.Add(4);
                         byte chosenMapId  = possibleMaps[TheEpicRoles.rnd.Next(possibleMaps.Count)];
@@ -232,10 +249,12 @@ namespace TheEpicRoles.Patches {
         public class PlayerVersion {
             public readonly Version version;
             public readonly Guid guid;
+            public readonly string vanillaVersion;
 
-            public PlayerVersion(Version version, Guid guid) {
+            public PlayerVersion(Version version, Guid guid, string vanillaVersion) {
                 this.version = version;
                 this.guid = guid;
+                this.vanillaVersion = vanillaVersion;
             }
 
             public bool GuidMatches() {

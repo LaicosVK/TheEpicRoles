@@ -1479,6 +1479,7 @@ namespace TheEpicRoles {
             jumperChargesText.transform.localScale = Vector3.one * 0.5f;
             jumperChargesText.transform.localPosition += new Vector3(-0.05f, 0.7f, 0);
 
+            // ready button
             readyButton = new CustomButton(
                 () => {
                     MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(PlayerControl.LocalPlayer.NetId, (byte)CustomRPC.SetReadyStatus, Hazel.SendOption.Reliable, -1);

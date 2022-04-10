@@ -303,13 +303,13 @@ namespace TheEpicRoles {
                 }
         }
 
-        public static void versionHandshake(int major, int minor, int build, int revision, Guid guid, int clientId) {
+        public static void versionHandshake(int major, int minor, int build, int revision, Guid guid, int clientId, string vanillaVersion) {
             System.Version ver;
             if (revision < 0) 
                 ver = new System.Version(major, minor, build);
             else 
                 ver = new System.Version(major, minor, build, revision);
-            GameStartManagerPatch.playerVersions[clientId] = new GameStartManagerPatch.PlayerVersion(ver, guid);
+            GameStartManagerPatch.playerVersions[clientId] = new GameStartManagerPatch.PlayerVersion(ver, guid, vanillaVersion);
         }
 
         public static void useUncheckedVent(int ventId, byte playerId, byte isEnter) {
@@ -377,8 +377,10 @@ namespace TheEpicRoles {
             if(TimeMaster.timeMaster != null && TimeMaster.timeMaster == PlayerControl.LocalPlayer) {
                 resetTimeMasterButton();
             }
+            HudManager.Instance.FullScreen.gameObject.SetActive(true);
             HudManager.Instance.FullScreen.color = new Color(0f, 0.5f, 0.8f, 0.3f);
             HudManager.Instance.FullScreen.enabled = true;
+            HudManager.Instance.FullScreen.gameObject.SetActive(true);
             HudManager.Instance.StartCoroutine(Effects.Lerp(TimeMaster.rewindTime / 2, new Action<float>((p) => {
                 if (p == 1f) HudManager.Instance.FullScreen.enabled = false;
             })));
@@ -415,6 +417,7 @@ namespace TheEpicRoles {
 
             if ((isShieldedAndShow || isMedicAndShow) && HudManager.Instance?.FullScreen != null) {
                 HudManager.Instance.FullScreen.enabled = true;
+                HudManager.Instance.FullScreen.gameObject.SetActive(true);
                 HudManager.Instance.StartCoroutine(Effects.Lerp(0.5f, new Action<float>((p) => {
                     var renderer = HudManager.Instance.FullScreen;
                     Color c = Palette.ImpostorRed;
@@ -933,7 +936,8 @@ namespace TheEpicRoles {
                     } else {
                         guid = new Guid(new byte[16]);
                     }
-                    RPCProcedure.versionHandshake(major, minor, patch, revision == 0xFF ? -1 : revision, guid, versionOwnerId);
+                    string vanillaVersion = reader.ReadString();
+                    RPCProcedure.versionHandshake(major, minor, patch, revision == 0xFF ? -1 : revision, guid, versionOwnerId, vanillaVersion);
                     break;
                 case (byte)CustomRPC.UseUncheckedVent:
                     int ventId = reader.ReadPackedInt32();

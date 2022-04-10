@@ -261,16 +261,17 @@ namespace TheEpicRoles {
             target.RawSetHat(hatId, colorId);
             target.RawSetName(hidePlayerName(PlayerControl.LocalPlayer, target) ? "" : playerName);
 
-            SkinData nextSkin = DestroyableSingleton<HatManager>.Instance.GetSkinById(skinId);
             PlayerPhysics playerPhysics = target.MyPhysics;
+            SkinViewData nextSkin = DestroyableSingleton<HatManager>.Instance.GetSkinById(skinId).viewData.viewData;
+
             AnimationClip clip = null;
             var spriteAnim = playerPhysics.Skin.animator;
             var currentPhysicsAnim = playerPhysics.Animator.GetCurrentAnimation();
-            if (currentPhysicsAnim == playerPhysics.RunAnim) clip = nextSkin.RunAnim;
-            else if (currentPhysicsAnim == playerPhysics.SpawnAnim) clip = nextSkin.SpawnAnim;
-            else if (currentPhysicsAnim == playerPhysics.EnterVentAnim) clip = nextSkin.EnterVentAnim;
-            else if (currentPhysicsAnim == playerPhysics.ExitVentAnim) clip = nextSkin.ExitVentAnim;
-            else if (currentPhysicsAnim == playerPhysics.IdleAnim) clip = nextSkin.IdleAnim;
+            if (currentPhysicsAnim == playerPhysics.Skin.skin.RunAnim) clip = nextSkin.RunAnim;
+            else if (currentPhysicsAnim == playerPhysics.Skin.skin.SpawnAnim) clip = nextSkin.SpawnAnim;
+            else if (currentPhysicsAnim == playerPhysics.Skin.skin.EnterVentAnim) clip = nextSkin.EnterVentAnim;
+            else if (currentPhysicsAnim == playerPhysics.Skin.skin.ExitVentAnim) clip = nextSkin.ExitVentAnim;
+            else if (currentPhysicsAnim == playerPhysics.Skin.skin.IdleAnim) clip = nextSkin.IdleAnim;
             else clip = nextSkin.IdleAnim;
             float progress = playerPhysics.Animator.m_animator.GetCurrentAnimatorStateInfo(0).normalizedTime;
             playerPhysics.Skin.skin = nextSkin;
@@ -279,7 +280,7 @@ namespace TheEpicRoles {
             spriteAnim.m_animator.Update(0f);
 
             if (target.CurrentPet) UnityEngine.Object.Destroy(target.CurrentPet.gameObject);
-            target.CurrentPet = UnityEngine.Object.Instantiate<PetBehaviour>(DestroyableSingleton<HatManager>.Instance.GetPetById(petId).PetPrefab);
+            target.CurrentPet = UnityEngine.Object.Instantiate<PetBehaviour>(DestroyableSingleton<HatManager>.Instance.GetPetById(petId).viewData.viewData);
             target.CurrentPet.transform.position = target.transform.position;
             target.CurrentPet.Source = target;
             target.CurrentPet.Visible = target.Visible;
@@ -387,8 +388,9 @@ namespace TheEpicRoles {
             writer.WritePacked(AmongUsClient.Instance.ClientId);
             writer.Write((byte)(TheEpicRolesPlugin.Version.Revision < 0 ? 0xFF : TheEpicRolesPlugin.Version.Revision));
             writer.Write(Assembly.GetExecutingAssembly().ManifestModule.ModuleVersionId.ToByteArray());
+            writer.Write(Application.version);
             AmongUsClient.Instance.FinishRpcImmediately(writer);
-            RPCProcedure.versionHandshake(TheEpicRolesPlugin.Version.Major, TheEpicRolesPlugin.Version.Minor, TheEpicRolesPlugin.Version.Build, TheEpicRolesPlugin.Version.Revision, Assembly.GetExecutingAssembly().ManifestModule.ModuleVersionId, AmongUsClient.Instance.ClientId);
+            RPCProcedure.versionHandshake(TheEpicRolesPlugin.Version.Major, TheEpicRolesPlugin.Version.Minor, TheEpicRolesPlugin.Version.Build, TheEpicRolesPlugin.Version.Revision, Assembly.GetExecutingAssembly().ManifestModule.ModuleVersionId, AmongUsClient.Instance.ClientId, Application.version);
         }
 
         public static List<PlayerControl> getKillerTeamMembers(PlayerControl player) {

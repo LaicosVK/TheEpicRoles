@@ -35,19 +35,26 @@ namespace TheEpicRoles.Patches {
     {
         private static TextBoxTMP ipField;
         private static TextBoxTMP portField;
+        private static TextBoxTMP template;
 
         public static void Postfix(RegionMenu __instance) {
-            var template = DestroyableSingleton<JoinGameButton>.Instance;
-            if (template == null || template.GameIdText == null) return;
+            TextBoxTMP[] allTextBoxes = GameObject.FindObjectsOfType<TextBoxTMP>(true);
+            foreach (TextBoxTMP textBox in allTextBoxes) { 
+                if (textBox.gameObject.name == "GameIdText") {
+                    template = textBox;
+                    break;
+                }                    
+            }
+            if (template == null) return;
 
             if (ipField == null || ipField.gameObject == null) {
-                ipField = UnityEngine.Object.Instantiate(template.GameIdText, __instance.transform);
+                ipField = UnityEngine.Object.Instantiate(template, __instance.transform);
                 ipField.gameObject.name = "IpTextBox";
                 var arrow = ipField.transform.FindChild("arrowEnter");
                 if (arrow == null || arrow.gameObject == null) return;
                 UnityEngine.Object.DestroyImmediate(arrow.gameObject);
 
-                ipField.transform.localPosition = new Vector3(0, -1f, -100f);
+                ipField.transform.localPosition = new Vector3(0.2f, -1f, -100f);
                 ipField.characterLimit = 30;
                 ipField.AllowSymbols = true;
                 ipField.ForceUppercase = false;
@@ -57,7 +64,7 @@ namespace TheEpicRoles.Patches {
                     ipField.SetText(TheEpicRolesPlugin.Ip.Value);
                 })));
 
-                ipField.ClearOnFocus = false; 
+                ipField.ClearOnFocus = false;
                 ipField.OnEnter = ipField.OnChange = new Button.ButtonClickedEvent();
                 ipField.OnFocusLost = new Button.ButtonClickedEvent();
                 ipField.OnChange.AddListener((UnityAction)onEnterOrIpChange);
@@ -74,18 +81,18 @@ namespace TheEpicRoles.Patches {
             }
 
             if (portField == null || portField.gameObject == null) {
-                portField = UnityEngine.Object.Instantiate(template.GameIdText, __instance.transform);
+                portField = UnityEngine.Object.Instantiate(template, __instance.transform);
                 portField.gameObject.name = "PortTextBox";
                 var arrow = portField.transform.FindChild("arrowEnter");
                 if (arrow == null || arrow.gameObject == null) return;
                 UnityEngine.Object.DestroyImmediate(arrow.gameObject);
 
-                portField.transform.localPosition = new Vector3(0, -1.75f, -100f);
+                portField.transform.localPosition = new Vector3(0.2f, -1.75f, -100f);
                 portField.characterLimit = 5;
                 portField.SetText(TheEpicRolesPlugin.Port.Value.ToString());
                 __instance.StartCoroutine(Effects.Lerp(0.1f, new Action<float>((p) => {
                     portField.outputText.SetText(TheEpicRolesPlugin.Port.Value.ToString());
-                    portField.SetText(TheEpicRolesPlugin.Port.Value.ToString()); 
+                    portField.SetText(TheEpicRolesPlugin.Port.Value.ToString());
                 })));
 
 
@@ -100,11 +107,12 @@ namespace TheEpicRoles.Patches {
                     if (ushort.TryParse(portField.text, out port)) {
                         TheEpicRolesPlugin.Port.Value = port;
                         portField.outputText.color = Color.white;
-                    } else {
+                    }
+                    else {
                         portField.outputText.color = Color.red;
                     }
                 }
-                
+
                 void onFocusLost() {
                     TheEpicRolesPlugin.UpdateRegions();
                     __instance.ChooseOption(ServerManager.DefaultRegions[ServerManager.DefaultRegions.Length - 1]);

@@ -259,7 +259,7 @@ namespace TheEpicRoles {
         public static CustomOption dynamicMapEnableSkeld;
         public static CustomOption dynamicMapEnableMira;
         public static CustomOption dynamicMapEnablePolus;
-        public static CustomOption dynamicMapEnableDleks;
+        //public static CustomOption dynamicMapEnableDleks;
         public static CustomOption dynamicMapEnableAirShip;
 
 
@@ -530,7 +530,7 @@ namespace TheEpicRoles {
             dynamicMapEnableMira = CustomOption.Create(502, cs(new Color(0, 1, 217f / 255f, 1f), "Enable Mira Rotation"), "map", true, dynamicMap, false);
             dynamicMapEnablePolus = CustomOption.Create(503, cs(new Color(0, 1, 217f / 255f, 1f), "Enable Polus Rotation"), "map", true, dynamicMap, false);
             dynamicMapEnableAirShip = CustomOption.Create(504, cs(new Color(0, 1, 217f / 255f, 1f), "Enable Airship Rotation"), "map", true, dynamicMap, false);
-            dynamicMapEnableDleks = CustomOption.Create(505, cs(new Color(0, 1, 217f / 255f, 1f), "Enable dlekS Rotation"), "map", false, dynamicMap, false);
+            //dynamicMapEnableDleks = CustomOption.Create(505, cs(new Color(0, 1, 217f / 255f, 1f), "Enable dlekS Rotation"), "map", false, dynamicMap, false);
 
             blockedRolePairings.Add((byte)RoleId.Vampire, new [] { (byte)RoleId.Warlock});
             blockedRolePairings.Add((byte)RoleId.Warlock, new [] { (byte)RoleId.Vampire});

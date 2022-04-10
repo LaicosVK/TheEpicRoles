@@ -1,5 +1,9 @@
 using HarmonyLib;
 using UnityEngine;
+using UnityEngine.UI;
+using static UnityEngine.UI.Button;
+using Object = UnityEngine.Object;
+using TheEpicRoles.Patches;
 
 /*
  * This patch adds two buttons to the main menu:
@@ -11,6 +15,10 @@ using UnityEngine;
 namespace TheEpicRoles.Patches {
     [HarmonyPatch(typeof(MainMenuManager), nameof(MainMenuManager.Start))]
     public class MainMenuButtonsPatch {
+
+        private static bool horseButtonState = MapOptions.enableHorseMode;
+        private static Sprite horseModeOffSprite = null;
+        private static Sprite horseModeOnSprite = null;
 
         private static Color buttonColor = new Color(0, 1, 0.9f, 1);
         private static Color buttonColorHover = new Color(0, 0.5f, 1, 1);
@@ -91,6 +99,44 @@ namespace TheEpicRoles.Patches {
                 btnGithubsprite.color = textGithub.color = buttonColor;
             });
 
+
+            // Horse mode stuff
+            var horseModeSelectionBehavior = new ClientOptionsPatch.SelectionBehaviour("Enable Horse Mode", () => MapOptions.enableHorseMode = TheEpicRolesPlugin.EnableHorseMode.Value = !TheEpicRolesPlugin.EnableHorseMode.Value, TheEpicRolesPlugin.EnableHorseMode.Value);
+
+            var bottomTemplate = GameObject.Find("InventoryButton");
+            if (bottomTemplate == null) return;
+            var horseButton = Object.Instantiate(bottomTemplate, bottomTemplate.transform.parent);
+            var passiveHorseButton = horseButton.GetComponent<PassiveButton>();
+            var spriteHorseButton = horseButton.GetComponent<SpriteRenderer>();
+
+            horseModeOffSprite = Helpers.loadSpriteFromResources("TheEpicRoles.Resources.HorseModeButtonOff.png", 75f);
+            horseModeOnSprite = Helpers.loadSpriteFromResources("TheEpicRoles.Resources.HorseModeButtonOn.png", 75f);
+
+            spriteHorseButton.sprite = horseButtonState ? horseModeOnSprite : horseModeOffSprite;
+
+            passiveHorseButton.OnClick = new ButtonClickedEvent();
+
+            passiveHorseButton.OnClick.AddListener((UnityEngine.Events.UnityAction)delegate {
+                horseButtonState = horseModeSelectionBehavior.OnClick();
+                if (horseButtonState)
+                {
+                    if (horseModeOnSprite == null) horseModeOnSprite = Helpers.loadSpriteFromResources("TheEpicRoles.Resources.HorseModeButtonOn.png", 75f);
+                    spriteHorseButton.sprite = horseModeOnSprite;
+                }
+                else
+                {
+                    if (horseModeOffSprite == null) horseModeOffSprite = Helpers.loadSpriteFromResources("TheEpicRoles.Resources.HorseModeButtonOff.png", 75f);
+                    spriteHorseButton.sprite = horseModeOffSprite;
+                }
+                CredentialsPatch.LogoPatch.updateSprite();
+                // Avoid wrong Player Particles floating around in the background
+                var particles = GameObject.FindObjectOfType<PlayerParticles>();
+                if (particles != null)
+                {
+                    particles.pool.ReclaimAll();
+                    particles.Start();
+                }
+            });
         }
     }
 }

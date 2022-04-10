@@ -246,9 +246,8 @@ namespace TheEpicRoles.Patches {
             // Roles that prob have a dependent role
             bool guesserFlag = CustomOptionHolder.guesserSpawnBothRate.getSelection() > 0 
                 && CustomOptionHolder.guesserSpawnRate.getSelection() > 0;
-            bool sheriffFlag = CustomOptionHolder.deputySpawnRate.getSelection() > 0 
-                && CustomOptionHolder.sheriffSpawnRate.getSelection() > 0
-                && Sheriff.sheriff == null;
+            bool sheriffFlag = CustomOptionHolder.deputySpawnRate.getSelection() > 0
+                && CustomOptionHolder.sheriffSpawnRate.getSelection() > 0;
 
             if (!guesserFlag && !sheriffFlag) return; // assignDependentRoles is not needed
 
