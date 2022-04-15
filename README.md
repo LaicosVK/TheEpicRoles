@@ -78,8 +78,8 @@ Got sick of the dropship shaking like crazy? We too! That's why we added an opti
 # Download & Changelog
 | Among Us Version | Mod Version | Link | Changelog |
 | --- | :---: | :---: | :---: |
-| 2022.2.24 | v1.1.0 | [Download](https://github.com/LaicosVK/TheEpicRoles/releases/download/v1.1.2/TheEpicRoles.zip) | [Changelog](/Readme/Changelog.md#112) |
-| 2022.2.24 | v1.1.0 | [Download](https://github.com/LaicosVK/TheEpicRoles/releases/download/v1.1.1/TheEpicRoles.zip) | [Changelog](/Readme/Changelog.md#111) |
+| 2022.2.24 | v1.1.2 | [Download](https://github.com/LaicosVK/TheEpicRoles/releases/download/v1.1.2/TheEpicRoles.zip) | [Changelog](/Readme/Changelog.md#112) |
+| 2022.2.24 | v1.1.1 | [Download](https://github.com/LaicosVK/TheEpicRoles/releases/download/v1.1.1/TheEpicRoles.zip) | [Changelog](/Readme/Changelog.md#111) |
 | 2022.2.24 | v1.1.0 | [Download](https://github.com/LaicosVK/TheEpicRoles/releases/download/v1.1.0/TheEpicRoles.zip) | [Changelog](/Readme/Changelog.md#110) |
 | 2022.2.24 | v1.0.3 | [Download](https://github.com/LaicosVK/TheEpicRoles/releases/download/v1.0.3/TheEpicRoles.zip) | [Changelog](/Readme/Changelog.md#103) |
 | 2021.12.15 | v1.0.2 | [Download](https://github.com/LaicosVK/TheEpicRoles/releases/download/v1.0.2/TheEpicRoles.zip) | [Changelog](/Readme/Changelog.md#102) |
