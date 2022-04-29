@@ -118,6 +118,10 @@ namespace TheEpicRoles {
         SetFirstKill,
         SetGuardianShield,
 
+        // Sound Functionality
+        PlaySoundAtPosition,
+        PlaySoundGlobal,
+
         // Ready Status
         SetReadyStatus,
         SetReadyNames,
@@ -376,6 +380,7 @@ namespace TheEpicRoles {
 
         public static void timeMasterRewindTime() {
             TimeMaster.shieldActive = false; // Shield is no longer active when rewinding
+            SoundEffectsManager.stop("timemasterShield");  // Shield sound stopped when rewinding
             if(TimeMaster.timeMaster != null && TimeMaster.timeMaster == PlayerControl.LocalPlayer) {
                 resetTimeMasterButton();
             }
@@ -610,8 +615,11 @@ namespace TheEpicRoles {
                 DestroyableSingleton<RoleManager>.Instance.SetRole(player, RoleTypes.Crewmate);
                 erasePlayerRoles(player.PlayerId, true);
                 Sidekick.sidekick = player;
-                if (player.PlayerId == PlayerControl.LocalPlayer.PlayerId) PlayerControl.LocalPlayer.moveable = true;
 
+                if (player.PlayerId == PlayerControl.LocalPlayer.PlayerId) {
+                    PlayerControl.LocalPlayer.moveable = true;
+                    SoundEffectsManager.play("warlockCurse");
+                }
             }
             Jackal.canCreateSidekick = false;
 
@@ -864,6 +872,23 @@ namespace TheEpicRoles {
             if (value > 0) Pursuer.blankedList.Add(target);
         }
 
+        public static void playSoundAtPosition(string sound, float x, float y) {
+            float maxRange = 5f;
+            float volume = 1f;
+            if (!PlayerControl.LocalPlayer.Data.IsDead) {
+                var pos = PlayerControl.LocalPlayer.transform.position;
+                float dist = (float)Math.Sqrt((x - pos.x) * (x - pos.x) + (y - pos.y) * (y - pos.y));
+                if (dist > maxRange) return;
+                volume *= (maxRange - dist) / maxRange;
+            }
+            SoundEffectsManager.play(sound, volume);
+        }
+
+        public static void playSoundGlobal(string sound) {
+            SoundEffectsManager.play(sound);
+        }
+
+
         public static void setPosition(byte playerId, float x, float y) {
             PlayerControl target = Helpers.playerById(playerId);
             target.transform.localPosition = new Vector3(x, y, 0);
@@ -1096,6 +1121,15 @@ namespace TheEpicRoles {
                     break;
                 case (byte)CustomRPC.SetFutureSpelled:
                     RPCProcedure.setFutureSpelled(reader.ReadByte());
+                    break;
+                case (byte)CustomRPC.PlaySoundAtPosition:
+                    string sound = reader.ReadString();
+                    Single x = reader.ReadSingle();
+                    Single y = reader.ReadSingle();
+                    RPCProcedure.playSoundAtPosition(sound, x, y);
+                    break;
+                case (byte)CustomRPC.PlaySoundGlobal:
+                    RPCProcedure.playSoundGlobal(reader.ReadString());
                     break;
                 case (byte)CustomRPC.SetPosition:
                     RPCProcedure.setPosition(reader.ReadByte(), reader.ReadSingle(), reader.ReadSingle());

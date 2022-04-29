@@ -249,6 +249,8 @@ namespace TheEpicRoles.Patches {
             CustomButton.ResetAllCooldowns(); //reset button cooldowns
             PlayerControl.LocalPlayer.killTimer = CustomOptionHolder.setRoundStartCooldown.getFloat(); //reset kill cooldowns
 
+            // reload all sounds
+            SoundEffectsManager.Load();
         }
     }
 

@@ -14,14 +14,15 @@
     <ItemGroup>
         <EmbeddedResource Include="Resources\CustomHats\*.png" />
         <EmbeddedResource Include="Resources\*.png" />
-        <EmbeddedResource Include="Resources\TricksterAnimation\*.png" /> 
+        <EmbeddedResource Include="Resources\SoundEffects\*.raw" />
+        <EmbeddedResource Include="Resources\TricksterAnimation\*.png" />
     </ItemGroup>
 
     <ItemGroup>
         <Reference Include="$(AmongUs)/BepInEx/core/*.dll" />
         <Reference Include="$(AmongUs)/BepInEx/unhollowed/*.dll" />
     </ItemGroup>
-
+    
     <Target Name="CopyCustomContent" AfterTargets="AfterBuild">
         <Message Text="Second occurrence" />
 		<Copy SourceFiles="$(ProjectDir)\bin\$(Configuration)\netstandard2.1\TheEpicRoles.dll" DestinationFolder="$(AmongUsLatest)/BepInEx/plugins/" />

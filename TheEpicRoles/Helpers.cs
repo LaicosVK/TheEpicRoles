@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Collections;
+using System.Diagnostics;
 using UnhollowerBaseLib;
 using UnityEngine;
 using System.Linq;
@@ -13,7 +14,7 @@ using TheEpicRoles.Objects;
 using TheEpicRoles.Patches;
 using HarmonyLib;
 using Hazel;
-
+using System.Net;
 
 namespace TheEpicRoles {
 
@@ -85,6 +86,103 @@ namespace TheEpicRoles {
                 iCall_LoadImage = IL2CPP.ResolveICall<d_LoadImage>("UnityEngine.ImageConversion::LoadImage");
             var il2cppArray = (Il2CppStructArray<byte>) data;
             return iCall_LoadImage.Invoke(tex.Pointer, il2cppArray.Pointer, markNonReadable);
+        }
+
+        // download and extract ffmpeg binary
+        public static void downloadFFmpeg() {
+            bool foundFFmpegInPath = Environment.GetEnvironmentVariable("PATH").Split(';').Any(p => File.Exists(p + "\\ffmpeg.exe"));
+            if (foundFFmpegInPath) return;
+
+            string applicationPath = Path.GetDirectoryName(Application.dataPath);
+            string zipPath = applicationPath + "\\ffmpeg.zip";
+            string exePath = applicationPath + "\\ffmpeg.exe";
+            if (File.Exists(exePath)) return;  // FFmpeg is already there!
+
+            // Download zip if not already there
+            if (!File.Exists(zipPath)) {
+                string downloadUri = "https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip";
+                using (var client = new WebClient()) {
+                    client.DownloadFile(downloadUri, zipPath);
+                }
+            }
+            // Extract ffmpeg.exe (works only with current windows 10 systems)
+            Process tar = new Process();
+            tar.StartInfo.FileName = "tar";
+            tar.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+            tar.StartInfo.CreateNoWindow = true;
+            tar.StartInfo.Arguments = $"-xf \"{zipPath}\" --strip-components=2 *\\ffmpeg.exe";
+            tar.Start();
+        }
+
+        // use ffmpeg batch file to render all files in a folder to raw files in a subfolder
+            public static void renderAudioToRaw() {
+            string applicationPath = Path.GetDirectoryName(Application.dataPath);
+
+            downloadFFmpeg();  // make sure we have ffmpeg...
+
+            // create batch file to run - will execute ffmpeg as needed
+            string command = @" if not exist Sound mkdir Sound
+                                if not exist Sound\raw mkdir Sound\raw
+                                FOR /r . %%a in (Sound\*.*) DO (
+                                ffmpeg.exe -i ""%%a"" -f s32le -ar 48000 -acodec pcm_s32le -y ""%%~pa\raw\%%~na.raw"" 
+                                ) ";
+
+            string batPath = applicationPath + "\\sound.bat";
+            File.WriteAllText(batPath, command);
+
+            Process cmd = new Process();
+            cmd.StartInfo.FileName = batPath;
+            cmd.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+            cmd.StartInfo.CreateNoWindow = true;
+            cmd.Start();
+        }
+
+        public static AudioClip createAudioClip(byte[] data, string clipName, int maxLength=-1) {
+            int length = data.Length / 4;
+            if (maxLength > 0 && length > maxLength) {
+                length = maxLength;
+            }
+            
+            float[] samples = new float[length]; // 4 bytes per sample
+            int offset;
+            for (int i = 0; i < samples.Length; i++) {
+                offset = i * 4;
+                samples[i] = (float)BitConverter.ToInt32(data, offset) / Int32.MaxValue;
+            }
+            int channels = 2;
+            int sampleRate = 48000;
+            AudioClip audioClip = AudioClip.Create(clipName, samples.Length, channels, sampleRate, false);
+            audioClip.SetData(samples, 0);
+            return audioClip;
+        }
+
+        public static AudioClip loadAudioClipFromDisk(string path, int maxLength) {
+            string filePath = Path.GetDirectoryName(Application.dataPath).Replace('\\', '/') + @"/Sound/raw/" + path;
+            if (File.Exists(filePath)) {
+                byte[] data = File.ReadAllBytes(filePath);
+                return createAudioClip(data, "disk_clip", maxLength);
+            }
+            return null;
+        }
+
+        public static AudioClip loadAudioClipFromResources(string path, string clipName = "UNNAMED_TOR_AUDIO_CLIP")
+        {
+            // must be "raw (headerless) 2-channel signed 32 bit pcm (le) (can e.g. use Audacity® to export)"
+            try {
+                Assembly assembly = Assembly.GetExecutingAssembly();
+                Stream stream = assembly.GetManifestResourceStream(path);
+                var byteAudio = new byte[stream.Length];
+                _ = stream.Read(byteAudio, 0, (int)stream.Length);
+                return createAudioClip(byteAudio, clipName);
+            } catch {
+                System.Console.WriteLine("Error loading AudioClip from resources: " + path);
+            }
+            return null;
+
+            /* Usage example:
+            AudioClip exampleClip = Helpers.loadAudioClipFromResources("TheEpicRoles.Resources.exampleClip.raw");
+            if (Constants.ShouldPlaySfx()) SoundManager.Instance.PlaySound(exampleClip, false, 0.8f);
+            */
         }
 
         public static PlayerControl playerById(byte id)

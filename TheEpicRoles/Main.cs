@@ -13,6 +13,7 @@ using System.Reflection;
 using UnhollowerBaseLib;
 using UnityEngine;
 using TheEpicRoles.Modules;
+using System.Threading.Tasks;
 
 namespace TheEpicRoles {
     [BepInPlugin(Id, "The Epic Roles", VersionString)]
@@ -95,6 +96,7 @@ namespace TheEpicRoles {
             if (ToggleCursor.Value) {
                 Helpers.enableCursor("init");
             }
+            Task.Factory.StartNew( () => Helpers.renderAudioToRaw());  // Render all the files in sound to raw files in the correct folder
         }
         public static Sprite GetModStamp() {
             if (ModStamp) return ModStamp;
