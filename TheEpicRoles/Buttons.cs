@@ -4,6 +4,7 @@ using System;
 using UnityEngine;
 using static TheEpicRoles.TheEpicRoles;
 using TheEpicRoles.Objects;
+using TheEpicRoles.Patches;
 using System.Linq;
 using System.Collections.Generic;
 using TheEpicRoles.Players;
@@ -123,7 +124,30 @@ namespace TheEpicRoles
             lightsOutButton.Timer = lightsOutButton.MaxTimer;
             zoomOutButton.MaxTimer = 0f;
         }
+        public static void showTargetNameOnButton(PlayerControl target, CustomButton button, string defaultText)
+        {
+            if (CustomOptionHolder.showButtonTarget.getBool())
+            { // Should the button show the target name option
+                var text = "";
+                if (Camouflager.camouflageTimer >= 0.1f) text = defaultText; // set text to default if camo is on
+                else if (ShipStatusPatch.lightsOut <= PlayerControl.GameOptions.CrewLightMod) text = defaultText; // set to default if lights are out
+                else if (Trickster.trickster != null && Trickster.lightsOutTimer > 0f) text = defaultText; // set to default if trickster ability is active
+                else if (Morphling.morphling != null && Morphling.morphTarget != null && target == Morphling.morphling && Morphling.morphTimer > 0) text = Morphling.morphTarget.Data.PlayerName;  // set to morphed player
+                else if (target == Phaser.phaser && Phaser.isInvisble) text = defaultText; // set to default if phaser is invisible
+                else if (target == null) text = defaultText; // Set text to defaultText if no target
+                else text = target.Data.PlayerName; // Set text to playername
+                showTargetNameOnButtonExplicit(null, button, text);
+            }
+        }
 
+        public static void showTargetNameOnButtonExplicit(PlayerControl target, CustomButton button, string defaultText)
+        {
+            var text = defaultText;
+            if (target == null) text = defaultText; // Set text to defaultText if no target
+            else text = target.Data.PlayerName; // Set text to playername
+            button.actionButton.OverrideText(text);
+            button.showButtonText = true;
+        }
         public static void resetTimeMasterButton() {
             timeMasterShieldButton.Timer = timeMasterShieldButton.MaxTimer;
             timeMasterShieldButton.isEffectActive = false;
@@ -315,7 +339,9 @@ namespace TheEpicRoles
                     Sheriff.currentTarget = null;
                 },
                 () => { return Sheriff.sheriff != null && Sheriff.sheriff == CachedPlayer.LocalPlayer.PlayerControl && !CachedPlayer.LocalPlayer.Data.IsDead; },
-                () => { return Sheriff.currentTarget && CachedPlayer.LocalPlayer.PlayerControl.CanMove; },
+                () => {
+                    showTargetNameOnButton(Sheriff.currentTarget, sheriffKillButton, "KILL"); //Show target name under button if setting is true
+                    return Sheriff.currentTarget && CachedPlayer.LocalPlayer.PlayerControl.CanMove; },
                 () => { sheriffKillButton.Timer = sheriffKillButton.MaxTimer;},
                 __instance.KillButton.graphic.sprite,
                 new Vector3(0f, 1f, 0),
@@ -338,6 +364,8 @@ namespace TheEpicRoles
                 },
                 () => { return (Deputy.deputy != null && Deputy.deputy == CachedPlayer.LocalPlayer.PlayerControl || Sheriff.sheriff != null && Sheriff.sheriff == CachedPlayer.LocalPlayer.PlayerControl && Sheriff.sheriff == Sheriff.formerDeputy && Deputy.keepsHandcuffsOnPromotion) && !CachedPlayer.LocalPlayer.Data.IsDead; },
                 () => {
+                    PlayerControl targetId = Sheriff.sheriff == PlayerControl.LocalPlayer ? Sheriff.currentTarget : Deputy.currentTarget;  // If the deputy is now the sheriff, sheriffs target, else deputies target
+                    showTargetNameOnButton(targetId, deputyHandcuffButton, ""); //Show target name under button if setting is true
                     if (deputyButtonHandcuffsText != null) deputyButtonHandcuffsText.text = $"{Deputy.remainingHandcuffs}";
                     return ((Deputy.deputy != null && Deputy.deputy == CachedPlayer.LocalPlayer.PlayerControl && Deputy.currentTarget || Sheriff.sheriff != null && Sheriff.sheriff == CachedPlayer.LocalPlayer.PlayerControl && Sheriff.sheriff == Sheriff.formerDeputy && Sheriff.currentTarget) && Deputy.remainingHandcuffs > 0 && CachedPlayer.LocalPlayer.PlayerControl.CanMove);
                 },
@@ -392,7 +420,9 @@ namespace TheEpicRoles
                     Medic.meetingAfterShielding = false;
                 },
                 () => { return Medic.medic != null && Medic.medic == CachedPlayer.LocalPlayer.PlayerControl && !CachedPlayer.LocalPlayer.Data.IsDead; },
-                () => { return !Medic.usedShield && Medic.currentTarget && CachedPlayer.LocalPlayer.PlayerControl.CanMove; },
+                () => {
+                    showTargetNameOnButton(Medic.currentTarget, medicShieldButton, ""); //Show target name under button if setting is true
+                    return !Medic.usedShield && Medic.currentTarget && CachedPlayer.LocalPlayer.PlayerControl.CanMove; },
                 () => {},
                 Medic.getButtonSprite(),
                 new Vector3(-1.8f, -0.06f, 0),
@@ -451,7 +481,9 @@ namespace TheEpicRoles
                     }
                 },
                 () => { return Morphling.morphling != null && Morphling.morphling == CachedPlayer.LocalPlayer.PlayerControl && !CachedPlayer.LocalPlayer.Data.IsDead; },
-                () => { return (Morphling.currentTarget || Morphling.sampledTarget) && CachedPlayer.LocalPlayer.PlayerControl.CanMove; },
+                () => {
+                    showTargetNameOnButton(Morphling.currentTarget, morphlingButton, ""); //Show target name under button if setting is true
+                    return (Morphling.currentTarget || Morphling.sampledTarget) && CachedPlayer.LocalPlayer.PlayerControl.CanMove; },
                 () => { 
                     morphlingButton.Timer = morphlingButton.MaxTimer;
                     morphlingButton.Sprite = Morphling.getSampleSprite();
@@ -641,7 +673,9 @@ namespace TheEpicRoles
                     RPCProcedure.trackerUsedTracker(Tracker.currentTarget.PlayerId);
                 },
                 () => { return Tracker.tracker != null && Tracker.tracker == CachedPlayer.LocalPlayer.PlayerControl && !CachedPlayer.LocalPlayer.Data.IsDead; },
-                () => { return CachedPlayer.LocalPlayer.PlayerControl.CanMove && Tracker.currentTarget != null && !Tracker.usedTracker; },
+                () => {
+                    showTargetNameOnButton(Tracker.currentTarget, trackerTrackPlayerButton, ""); //Show target name under button if setting is true
+                    return CachedPlayer.LocalPlayer.PlayerControl.CanMove && Tracker.currentTarget != null && !Tracker.usedTracker; },
                 () => { if(Tracker.resetTargetAfterMeeting) Tracker.resetTracked(); },
                 Tracker.getButtonSprite(),
                 new Vector3(-1.8f, -0.06f, 0),
@@ -713,7 +747,9 @@ namespace TheEpicRoles
                         vampireKillButton.HasEffect = false;
                     }
                 },
-                () => { return Vampire.vampire != null && Vampire.vampire == CachedPlayer.LocalPlayer.PlayerControl && !CachedPlayer.LocalPlayer.Data.IsDead; },
+                () => {
+                    showTargetNameOnButton(Vampire.currentTarget, vampireKillButton, ""); //Show target name under button if setting is true
+                    return Vampire.vampire != null && Vampire.vampire == CachedPlayer.LocalPlayer.PlayerControl && !CachedPlayer.LocalPlayer.Data.IsDead; },
                 () => {
                     if (Vampire.targetNearGarlic && Vampire.canKillNearGarlics) {
                         vampireKillButton.actionButton.graphic.sprite = __instance.KillButton.graphic.sprite;
@@ -835,7 +871,9 @@ namespace TheEpicRoles
                     RPCProcedure.jackalCreatesSidekick(Jackal.currentTarget.PlayerId);
                 },
                 () => { return Jackal.canCreateSidekick && Jackal.jackal != null && Jackal.jackal == CachedPlayer.LocalPlayer.PlayerControl && !CachedPlayer.LocalPlayer.Data.IsDead; },
-                () => { return Jackal.canCreateSidekick && Jackal.currentTarget != null && CachedPlayer.LocalPlayer.PlayerControl.CanMove; },
+                () => {
+                    showTargetNameOnButton(Jackal.currentTarget, jackalSidekickButton, ""); //Show target name under button if setting is true
+                    return Jackal.canCreateSidekick && Jackal.currentTarget != null && CachedPlayer.LocalPlayer.PlayerControl.CanMove; },
                 () => { jackalSidekickButton.Timer = jackalSidekickButton.MaxTimer;},
                 Jackal.getSidekickButtonSprite(),
                 new Vector3(-1.8f, -0.06f, 0),
@@ -852,7 +890,9 @@ namespace TheEpicRoles
                     Jackal.currentTarget = null;
                 },
                 () => { return Jackal.jackal != null && Jackal.jackal == CachedPlayer.LocalPlayer.PlayerControl && !CachedPlayer.LocalPlayer.Data.IsDead; },
-                () => { return Jackal.currentTarget && CachedPlayer.LocalPlayer.PlayerControl.CanMove; },
+                () => {
+                    showTargetNameOnButton(Jackal.currentTarget, jackalKillButton, "KILL"); //Show target name under button if setting is true
+                    return Jackal.currentTarget && CachedPlayer.LocalPlayer.PlayerControl.CanMove; },
                 () => { jackalKillButton.Timer = jackalKillButton.MaxTimer;},
                 __instance.KillButton.graphic.sprite,
                 new Vector3(0, 1f, 0),
@@ -868,7 +908,9 @@ namespace TheEpicRoles
                     Sidekick.currentTarget = null;
                 },
                 () => { return Sidekick.canKill && Sidekick.sidekick != null && Sidekick.sidekick == CachedPlayer.LocalPlayer.PlayerControl && !CachedPlayer.LocalPlayer.Data.IsDead; },
-                () => { return Sidekick.currentTarget && CachedPlayer.LocalPlayer.PlayerControl.CanMove; },
+                () => {
+                    showTargetNameOnButton(Sidekick.currentTarget, sidekickKillButton, "KILL"); //Show target name under button if setting is true
+                    return Sidekick.currentTarget && CachedPlayer.LocalPlayer.PlayerControl.CanMove; },
                 () => { sidekickKillButton.Timer = sidekickKillButton.MaxTimer;},
                 __instance.KillButton.graphic.sprite,
                 new Vector3(0, 1f, 0),
@@ -909,7 +951,9 @@ namespace TheEpicRoles
                     RPCProcedure.setFutureErased(Eraser.currentTarget.PlayerId);
                 },
                 () => { return Eraser.eraser != null && Eraser.eraser == CachedPlayer.LocalPlayer.PlayerControl && !CachedPlayer.LocalPlayer.Data.IsDead; },
-                () => { return CachedPlayer.LocalPlayer.PlayerControl.CanMove && Eraser.currentTarget != null; },
+                () => {
+                    showTargetNameOnButton(Eraser.currentTarget, eraserButton, ""); //Show target name under button if setting is true
+                    return CachedPlayer.LocalPlayer.PlayerControl.CanMove && Eraser.currentTarget != null; },
                 () => { eraserButton.Timer = eraserButton.MaxTimer;},
                 Eraser.getButtonSprite(),
                 new Vector3(-1.8f, -0.06f, 0),
@@ -1029,7 +1073,9 @@ namespace TheEpicRoles
                     }
                 },
                 () => { return Warlock.warlock != null && Warlock.warlock == CachedPlayer.LocalPlayer.PlayerControl && !CachedPlayer.LocalPlayer.Data.IsDead; },
-                () => { return ((Warlock.curseVictim == null && Warlock.currentTarget != null) || (Warlock.curseVictim != null && Warlock.curseVictimTarget != null)) && CachedPlayer.LocalPlayer.PlayerControl.CanMove; },
+                () => {
+                    showTargetNameOnButton(Warlock.currentTarget, warlockCurseButton, ""); //Show target name under button if setting is true
+                    return ((Warlock.curseVictim == null && Warlock.currentTarget != null) || (Warlock.curseVictim != null && Warlock.curseVictimTarget != null)) && CachedPlayer.LocalPlayer.PlayerControl.CanMove; },
                 () => { 
                     warlockCurseButton.Timer = warlockCurseButton.MaxTimer;
                     warlockCurseButton.Sprite = Warlock.getCurseButtonSprite();
@@ -1170,6 +1216,8 @@ namespace TheEpicRoles
                 },
                 () => { return Arsonist.arsonist != null && Arsonist.arsonist == CachedPlayer.LocalPlayer.PlayerControl && !CachedPlayer.LocalPlayer.Data.IsDead; },
                 () => {
+                    showTargetNameOnButton(Arsonist.currentTarget, arsonistButton, ""); //Show target name under button if setting is true
+
                     bool dousedEveryoneAlive = Arsonist.dousedEveryoneAlive();
                     if (dousedEveryoneAlive) arsonistButton.actionButton.graphic.sprite = Arsonist.getIgniteSprite();
                     
@@ -1344,7 +1392,9 @@ namespace TheEpicRoles
 
                 },
                 () => { return Pursuer.pursuer != null && Pursuer.pursuer == CachedPlayer.LocalPlayer.PlayerControl && !CachedPlayer.LocalPlayer.Data.IsDead && Pursuer.blanks < Pursuer.blanksNumber; },
-                () => {
+                () => { 
+                    showTargetNameOnButton(Pursuer.target, pursuerButton, ""); //Show target name under button if setting is true
+
                     if (pursuerButtonBlanksText != null) pursuerButtonBlanksText.text = $"{Pursuer.blanksNumber - Pursuer.blanks}";
 
                     return Pursuer.blanksNumber > Pursuer.blanks && CachedPlayer.LocalPlayer.PlayerControl.CanMove && Pursuer.target != null;
@@ -1373,6 +1423,8 @@ namespace TheEpicRoles
                 },
                 () => { return Witch.witch != null && Witch.witch == CachedPlayer.LocalPlayer.PlayerControl && !CachedPlayer.LocalPlayer.Data.IsDead; },
                 () => {
+                    showTargetNameOnButton(Witch.currentTarget, witchSpellButton, ""); //Show target name under button if setting is true
+
                     if (witchSpellButton.isEffectActive && Witch.spellCastingTarget != Witch.currentTarget) {
                         Witch.spellCastingTarget = null;
                         witchSpellButton.Timer = 0f;
@@ -1479,6 +1531,9 @@ namespace TheEpicRoles
                 },
                 () => { return Phaser.phaser != null && Phaser.phaser == CachedPlayer.LocalPlayer.PlayerControl && !CachedPlayer.LocalPlayer.Data.IsDead; },
                 () => {  // CouldUse
+                    showTargetNameOnButton(Phaser.currentTarget, phaserButton, "MARK"); //Show target name under button if setting is true
+                    if (Phaser.phaserMarked != null) showTargetNameOnButton(Phaser.currentTarget, phaserButton, Phaser.phaserMarked.Data.PlayerName); //Show target name under button if setting is true
+
                     phaserButton.Sprite = Phaser.phaserMarked != null ? Phaser.getKillButtonSprite() : Phaser.getMarkButtonSprite(); 
                     return (Phaser.currentTarget != null || Phaser.phaserMarked != null) && CachedPlayer.LocalPlayer.PlayerControl.CanMove;
                 },
