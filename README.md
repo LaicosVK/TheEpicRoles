@@ -35,15 +35,6 @@ The Phaser is faster than light! They can mark a player to jump on and kill.
 The Jumper is the counterpart to the phaser. They can mark a location and jump to it later.
 <br clear="all"/>
 
-## First Kill Shield
-<img align="right" height="180" src="/Readme/Images/GuardianShield_Big.png"/>
-
-Is there always someone who dies first in nearly every game? Yes? We implemented a smart solution to fix this annoying problem.
-
-The player who died first in the previous game gets the First Kill Shield in the upcoming game. This shield blocks the first kill attempt on the shielded player and resets the kill cooldown of the attacker. After that the shield breaks and the player can be killed like normal.
-
-The shielded player knows if the First Kill Shield is active, but they don't get notified when it breaks. Also it is only active before the first meeting.
-
 ## Ready Status
 <img align="left" height="170" src="/Readme/Images/dropship_ready.png"/>
 
