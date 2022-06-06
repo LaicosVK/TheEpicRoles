@@ -55,22 +55,12 @@ Can't find the cursor? Especially on Polus the default cursor was always hard to
 
 <img align="right" height="100" src="/Readme/Images/option_categories.png"/>
 
-### Mod Option Categories
-  
-It was always hard work for the host to change the settings. With our change the host can now switch super fast between 4 main mod categories.
-<br clear="all"/>
-
-<img align="right" height="115" src="/Readme/Images/dropship.png"/>
-
-### Screen Shake
-Got sick of the dropship shaking like crazy? We too! That's why we added an option to remove the Screen Shake effect entirely out of the game. No unwanted puking anymore! If someone liked the shaking (strange people :D), then it can be reenabled in the settings.
-<br clear="all"/>
-
 # Download & Changelog
 | Among Us Version | Mod Version | Link | Changelog |
 | --- | :---: | :---: | :---: |
-| 2022.2.24 | v1.1.0 | [Download](https://github.com/LaicosVK/TheEpicRoles/releases/download/v1.1.2/TheEpicRoles.zip) | [Changelog](/Readme/Changelog.md#112) |
-| 2022.2.24 | v1.1.0 | [Download](https://github.com/LaicosVK/TheEpicRoles/releases/download/v1.1.1/TheEpicRoles.zip) | [Changelog](/Readme/Changelog.md#111) |
+| 2022.3.29 | v1.2.0 | [Download](https://github.com/LaicosVK/TheEpicRoles/releases/download/v1.2.0/TheEpicRoles.zip) | [Changelog](/Readme/Changelog.md#120) |
+| 2022.2.24 | v1.1.2 | [Download](https://github.com/LaicosVK/TheEpicRoles/releases/download/v1.1.2/TheEpicRoles.zip) | [Changelog](/Readme/Changelog.md#112) |
+| 2022.2.24 | v1.1.1 | [Download](https://github.com/LaicosVK/TheEpicRoles/releases/download/v1.1.1/TheEpicRoles.zip) | [Changelog](/Readme/Changelog.md#111) |
 | 2022.2.24 | v1.1.0 | [Download](https://github.com/LaicosVK/TheEpicRoles/releases/download/v1.1.0/TheEpicRoles.zip) | [Changelog](/Readme/Changelog.md#110) |
 | 2022.2.24 | v1.0.3 | [Download](https://github.com/LaicosVK/TheEpicRoles/releases/download/v1.0.3/TheEpicRoles.zip) | [Changelog](/Readme/Changelog.md#103) |
 | 2021.12.15 | v1.0.2 | [Download](https://github.com/LaicosVK/TheEpicRoles/releases/download/v1.0.2/TheEpicRoles.zip) | [Changelog](/Readme/Changelog.md#102) |
