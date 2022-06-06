@@ -53,8 +53,6 @@ Game on!
 Can't find the cursor? Especially on Polus the default cursor was always hard to see. We changed it, so you can focus on more important things like killing crewmates! :-)
 <br clear="all"/>
 
-<img align="right" height="100" src="/Readme/Images/option_categories.png"/>
-
 # Download & Changelog
 | Among Us Version | Mod Version | Link | Changelog |
 | --- | :---: | :---: | :---: |
