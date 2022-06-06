@@ -1,16 +1,11 @@
-using System.Net;
 using System.Linq;
-using BepInEx;
-using BepInEx.Configuration;
-using BepInEx.IL2CPP;
 using HarmonyLib;
-using Hazel;
 using System;
 using System.Collections.Generic;
-using System.Collections;
-using System.IO;
 using UnityEngine;
 using TheEpicRoles.Objects;
+using TheEpicRoles.Players;
+using TheEpicRoles.Utilities;
 
 namespace TheEpicRoles
 {
@@ -22,6 +17,7 @@ namespace TheEpicRoles
         public static void clearAndReloadRoles() {
             Jester.clearAndReload();
             Mayor.clearAndReload();
+            Portalmaker.clearAndReload();
             Engineer.clearAndReload();
             Sheriff.clearAndReload();
             Deputy.clearAndReload();
@@ -39,7 +35,6 @@ namespace TheEpicRoles
             Morphling.clearAndReload();
             Camouflager.clearAndReload();
             Hacker.clearAndReload();
-            Mini.clearAndReload();
             Tracker.clearAndReload();
             Vampire.clearAndReload();
             Snitch.clearAndReload();
@@ -54,7 +49,6 @@ namespace TheEpicRoles
             Arsonist.clearAndReload();
             Guesser.clearAndReload();
             BountyHunter.clearAndReload();
-            Bait.clearAndReload();
             Vulture.clearAndReload();
             Medium.clearAndReload();
             Lawyer.clearAndReload();
@@ -62,6 +56,16 @@ namespace TheEpicRoles
             Witch.clearAndReload();
             Phaser.clearAndReload();
             Jumper.clearAndReload();
+
+            // Modifier
+            Bait.clearAndReload();
+            Bloody.clearAndReload();
+            AntiTeleport.clearAndReload();
+            Tiebreaker.clearAndReload();
+            Sunglasses.clearAndReload();
+            Mini.clearAndReload();
+            Vip.clearAndReload();
+            Invert.clearAndReload();
         }
 
         public static class Jester {
@@ -71,28 +75,83 @@ namespace TheEpicRoles
             public static bool triggerJesterWin = false;
             public static bool canCallEmergency = true;
             public static bool hasImpostorVision = false;
-            public static bool canBeLawyerClient = false;
-            public static bool meetingExile = false;
 
             public static void clearAndReload() {
                 jester = null;
                 triggerJesterWin = false;
                 canCallEmergency = CustomOptionHolder.jesterCanCallEmergency.getBool();
                 hasImpostorVision = CustomOptionHolder.jesterHasImpostorVision.getBool();
-                canBeLawyerClient = CustomOptionHolder.jesterCanBeLawyerClient.getBool();
-                meetingExile = false;
             }
+        }
+        
+        public static class Portalmaker {
+            public static PlayerControl portalmaker;
+            public static Color color = new Color32(69, 69, 169, byte.MaxValue);
+
+            public static float cooldown;
+            public static float usePortalCooldown;
+            public static bool logOnlyHasColors;
+            public static bool logShowsTime;
+
+            private static Sprite placePortalButtonSprite;
+            private static Sprite usePortalButtonSprite;
+            private static Sprite logSprite;
+
+            public static Sprite getPlacePortalButtonSprite() {
+                if (placePortalButtonSprite) return placePortalButtonSprite;
+                placePortalButtonSprite = Helpers.loadSpriteFromResources("TheEpicRoles.Resources.PlacePortalButton.png", 115f);
+                return placePortalButtonSprite;
+            }
+
+            public static Sprite getUsePortalButtonSprite() {
+                if (usePortalButtonSprite) return usePortalButtonSprite;
+                usePortalButtonSprite = Helpers.loadSpriteFromResources("TheEpicRoles.Resources.UsePortalButton.png", 115f);
+                return usePortalButtonSprite;
+            }
+
+            public static Sprite getLogSprite() {
+                if (logSprite) return logSprite;
+                logSprite = FastDestroyableSingleton<HudManager>.Instance.UseButton.fastUseSettings[ImageNames.DoorLogsButton].Image;
+                return logSprite;
+            }
+
+            public static void clearAndReload() {
+                portalmaker = null;
+                cooldown = CustomOptionHolder.portalmakerCooldown.getFloat();
+                usePortalCooldown = CustomOptionHolder.portalmakerUsePortalCooldown.getFloat();
+                logOnlyHasColors = CustomOptionHolder.portalmakerLogOnlyColorType.getBool();
+                logShowsTime = CustomOptionHolder.portalmakerLogHasTime.getBool();
+            }
+
+
         }
 
         public static class Mayor {
             public static PlayerControl mayor;
             public static Color color = new Color32(32, 77, 66, byte.MaxValue);
+            public static Minigame emergency = null;
+            public static Sprite emergencySprite = null;
+            public static int remoteMeetingsLeft = 1;
 
-            public static bool mayorShowVotes = false;
+            public static bool canSeeVoteColors = false;
+            public static int tasksNeededToSeeVoteColors;
+            public static bool meetingButton = true;
+
+            public static Sprite getMeetingSprite()
+            {
+                if (emergencySprite) return emergencySprite;
+                emergencySprite = Helpers.loadSpriteFromResources("TheEpicRoles.Resources.EmergencyButton.png", 550f);
+                return emergencySprite;
+            }
 
             public static void clearAndReload() {
                 mayor = null;
-                mayorShowVotes = CustomOptionHolder.mayorShowVotes.getBool();
+                emergency = null;
+                emergencySprite = null;
+		        remoteMeetingsLeft = Mathf.RoundToInt(CustomOptionHolder.mayorMaxRemoteMeetings.getFloat()); 
+                canSeeVoteColors = CustomOptionHolder.mayorCanSeeVoteColors.getBool();
+                tasksNeededToSeeVoteColors = (int)CustomOptionHolder.mayorTasksNeededToSeeVoteColors.getFloat();
+                meetingButton = CustomOptionHolder.mayorMeetingButton.getBool();
             }
         }
 
@@ -225,7 +284,7 @@ namespace TheEpicRoles
             public static void setHandcuffedKnows(bool active = true)
             {
                 if (active) {
-                    byte localPlayerId = PlayerControl.LocalPlayer.PlayerId;
+                    byte localPlayerId = CachedPlayer.LocalPlayer.PlayerId;
                     handcuffedKnows.Add(localPlayerId, handcuffDuration);
                     handcuffedPlayers.RemoveAll(x => x == localPlayerId);
                 }
@@ -342,6 +401,8 @@ namespace TheEpicRoles
         public static bool showAttemptToShielded = false;
         public static bool showAttemptToMedic = false;
         public static bool setShieldAfterMeeting = false;
+        public static bool showShieldAfterMeeting = false;
+        public static bool meetingAfterShielding = false;
 
         public static Color shieldedColor = new Color32(0, 221, 255, byte.MaxValue);
         public static PlayerControl currentTarget;
@@ -362,7 +423,9 @@ namespace TheEpicRoles
             showShielded = CustomOptionHolder.medicShowShielded.getSelection();
             showAttemptToShielded = CustomOptionHolder.medicShowAttemptToShielded.getBool();
             showAttemptToMedic = CustomOptionHolder.medicShowAttemptToMedic.getBool();
-            setShieldAfterMeeting = CustomOptionHolder.medicSetShieldAfterMeeting.getBool();
+            setShieldAfterMeeting = CustomOptionHolder.medicSetOrShowShieldAfterMeeting.getSelection() == 2;
+            showShieldAfterMeeting = CustomOptionHolder.medicSetOrShowShieldAfterMeeting.getSelection() == 1;
+            meetingAfterShielding = false;
         }
     }
 
@@ -373,9 +436,6 @@ namespace TheEpicRoles
         public static PlayerControl futureShift;
         public static PlayerControl currentTarget;
         public static bool shiftModifiers = false;
-        public static bool shiftSelf = false;
-        public static bool diesBeforeMeeting = false;
-        public static bool shiftedBadRole = false;
 
         private static Sprite buttonSprite;
         public static Sprite getButtonSprite() {
@@ -384,28 +444,12 @@ namespace TheEpicRoles
             return buttonSprite;
         }
 
-        private static Sprite badShiftOverlaySprite;
-        public static Sprite getBadShiftOverlaySprite()
-        {
-            if (badShiftOverlaySprite) return badShiftOverlaySprite;
-            badShiftOverlaySprite = Helpers.loadSpriteFromResources("TheEpicRoles.Resources.BadShiftMeeting.png", 225f);
-            return badShiftOverlaySprite;
-        }
-
         public static void clearAndReload() {
             shifter = null;
             currentTarget = null;
             futureShift = null;
             shiftModifiers = CustomOptionHolder.shifterShiftsModifiers.getBool();
-            shiftSelf = CustomOptionHolder.shifterShiftsSelf.getBool();
-            diesBeforeMeeting = CustomOptionHolder.shifterDiesBeforeMeeting.getBool();
-            shiftedBadRole = false;
         }
-        public static bool checkTargetIsBad(PlayerControl target)
-        {
-            return target.Data.Role.IsImpostor || target == Jackal.jackal || target == Sidekick.sidekick || Jackal.formerJackals.Contains(target) || target == TheEpicRoles.Jester.jester || target == Arsonist.arsonist || target == Vulture.vulture || target == Lawyer.lawyer;
-        }
-
     }
 
     public static class Swapper {
@@ -414,7 +458,10 @@ namespace TheEpicRoles
         private static Sprite spriteCheck;
         public static bool canCallEmergency = false;
         public static bool canOnlySwapOthers = false;
-
+        public static int charges;
+        public static float rechargeTasksNumber;
+        public static float rechargedTasks;
+ 
         public static byte playerId1 = Byte.MaxValue;
         public static byte playerId2 = Byte.MaxValue;
 
@@ -430,11 +477,13 @@ namespace TheEpicRoles
             playerId2 = Byte.MaxValue;
             canCallEmergency = CustomOptionHolder.swapperCanCallEmergency.getBool();
             canOnlySwapOthers = CustomOptionHolder.swapperCanOnlySwapOthers.getBool();
+            charges = Mathf.RoundToInt(CustomOptionHolder.swapperSwapsNumber.getFloat());
+            rechargeTasksNumber = Mathf.RoundToInt(CustomOptionHolder.swapperRechargeTasksNumber.getFloat());
+            rechargedTasks = Mathf.RoundToInt(CustomOptionHolder.swapperRechargeTasksNumber.getFloat());
         }
     }
 
     public static class Lovers {
-        public static float count = 3f;
         public static PlayerControl lover1;
         public static PlayerControl lover2;
         public static Color color = new Color32(232, 57, 185, byte.MaxValue);
@@ -465,12 +514,11 @@ namespace TheEpicRoles
         }
 
         public static void clearAndReload() {
-            count = CustomOptionHolder.loversAliveCount.getFloat();
             lover1 = null;
             lover2 = null;
             notAckedExiledIsLover = false;
-            bothDie = CustomOptionHolder.loversBothDie.getBool();
-            enableChat = CustomOptionHolder.loversEnableChat.getBool();
+            bothDie = CustomOptionHolder.modifierLoverBothDie.getBool();
+            enableChat = CustomOptionHolder.modifierLoverEnableChat.getBool();
         }
 
         public static PlayerControl getPartner(this PlayerControl player) {
@@ -571,7 +619,7 @@ namespace TheEpicRoles
 
         public static void resetCamouflage() {
             camouflageTimer = 0f;
-            foreach (PlayerControl p in PlayerControl.AllPlayerControls)
+            foreach (PlayerControl p in CachedPlayer.AllPlayers)
                 p.setDefaultLook();
         }
 
@@ -614,22 +662,22 @@ namespace TheEpicRoles
 
         public static Sprite getVitalsSprite() {
             if (vitalsSprite) return vitalsSprite;
-            vitalsSprite = HudManager.Instance.UseButton.fastUseSettings[ImageNames.VitalsButton].Image;
+            vitalsSprite = FastDestroyableSingleton<HudManager>.Instance.UseButton.fastUseSettings[ImageNames.VitalsButton].Image;
             return vitalsSprite;
         }
 
         public static Sprite getLogSprite() {
             if (logSprite) return logSprite;
-            logSprite = HudManager.Instance.UseButton.fastUseSettings[ImageNames.DoorLogsButton].Image;
+            logSprite = FastDestroyableSingleton<HudManager>.Instance.UseButton.fastUseSettings[ImageNames.DoorLogsButton].Image;
             return logSprite;
         }
 
         public static Sprite getAdminSprite() {
             byte mapId = PlayerControl.GameOptions.MapId;
-            UseButtonSettings button = HudManager.Instance.UseButton.fastUseSettings[ImageNames.PolusAdminButton]; // Polus
-            if (mapId == 0 || mapId == 3) button = HudManager.Instance.UseButton.fastUseSettings[ImageNames.AdminMapButton]; // Skeld || Dleks
-            else if (mapId == 1) button = HudManager.Instance.UseButton.fastUseSettings[ImageNames.MIRAAdminButton]; // Mira HQ
-            else if (mapId == 4) button = HudManager.Instance.UseButton.fastUseSettings[ImageNames.AirshipAdminButton]; // Airship
+            UseButtonSettings button = FastDestroyableSingleton<HudManager>.Instance.UseButton.fastUseSettings[ImageNames.PolusAdminButton]; // Polus
+            if (mapId == 0 || mapId == 3) button = FastDestroyableSingleton<HudManager>.Instance.UseButton.fastUseSettings[ImageNames.AdminMapButton]; // Skeld || Dleks
+            else if (mapId == 1) button = FastDestroyableSingleton<HudManager>.Instance.UseButton.fastUseSettings[ImageNames.MIRAAdminButton]; // Mira HQ
+            else if (mapId == 4) button = FastDestroyableSingleton<HudManager>.Instance.UseButton.fastUseSettings[ImageNames.AirshipAdminButton]; // Airship
             adminSprite = button.Image;
             return adminSprite;
         }
@@ -649,37 +697,6 @@ namespace TheEpicRoles
             chargesVitals = Mathf.RoundToInt(CustomOptionHolder.hackerToolsNumber.getFloat()) / 2;
             chargesAdminTable = Mathf.RoundToInt(CustomOptionHolder.hackerToolsNumber.getFloat()) / 2;
             cantMove = CustomOptionHolder.hackerNoMove.getBool();
-        }
-    }
-
-    public static class Mini {
-        public static PlayerControl mini;
-        public static Color color = Color.white;
-        public const float defaultColliderRadius = 0.2233912f;
-            public const float defaultColliderOffset = 0.3636057f;
-
-        public static float growingUpDuration = 400f;
-        public static bool miniEvilGuessable = true;
-        public static DateTime timeOfGrowthStart = DateTime.UtcNow;
-        public static bool triggerMiniLose = false;
-
-        public static void clearAndReload() {
-            mini = null;
-            triggerMiniLose = false;
-            growingUpDuration = CustomOptionHolder.miniGrowingUpDuration.getFloat();
-            miniEvilGuessable = CustomOptionHolder.miniEvilGuessable.getBool();
-            timeOfGrowthStart = DateTime.UtcNow;
-        }
-
-        public static float growingProgress() {
-            if (timeOfGrowthStart == null) return 0f;
-
-            float timeSinceStart = (float)(DateTime.UtcNow - timeOfGrowthStart).TotalMilliseconds;
-            return Mathf.Clamp(timeSinceStart/(growingUpDuration*1000), 0f, 1f);
-        }
-
-        public static bool isGrownUp() {
-            return growingProgress() == 1f;
         }
     }
 
@@ -730,7 +747,6 @@ namespace TheEpicRoles
             resetTracked();
             timeUntilUpdate = 0f;
             updateIntervall = CustomOptionHolder.trackerUpdateIntervall.getFloat();
-            if (updateIntervall == 0f) updateIntervall = 0.01f;
             resetTargetAfterMeeting = CustomOptionHolder.trackerResetTargetAfterMeeting.getBool();
             if (localArrows != null) {
                 foreach (Arrow arrow in localArrows)
@@ -825,6 +841,9 @@ namespace TheEpicRoles
         public static bool jackalPromotedFromSidekickCanCreateSidekick = true;
         public static bool canCreateSidekickFromImpostor = true;
         public static bool hasImpostorVision = false;
+        public static bool wasTeamRed;
+        public static bool wasImpostor;
+        public static bool wasSpy;
 
         public static Sprite getSidekickButtonSprite() {
             if (buttonSprite) return buttonSprite;
@@ -853,6 +872,7 @@ namespace TheEpicRoles
             canCreateSidekickFromImpostor = CustomOptionHolder.jackalCanCreateSidekickFromImpostor.getBool();
             formerJackals.Clear();
             hasImpostorVision = CustomOptionHolder.jackalAndSidekickHaveImpostorVision.getBool();
+            wasTeamRed = wasImpostor = wasSpy = false;
         }
         
     }
@@ -862,6 +882,10 @@ namespace TheEpicRoles
         public static Color color = new Color32(0, 180, 235, byte.MaxValue);
 
         public static PlayerControl currentTarget;
+
+        public static bool wasTeamRed;
+        public static bool wasImpostor;
+        public static bool wasSpy;
 
         public static float cooldown = 30f;
         public static bool canUseVents = true;
@@ -877,6 +901,7 @@ namespace TheEpicRoles
             canKill = CustomOptionHolder.sidekickCanKill.getBool();
             promotesToJackal = CustomOptionHolder.sidekickPromotesToJackal.getBool();
             hasImpostorVision = CustomOptionHolder.jackalAndSidekickHaveImpostorVision.getBool();
+            wasTeamRed = wasImpostor = wasSpy = false;
         }
     }
 
@@ -1061,9 +1086,16 @@ namespace TheEpicRoles
         }
 
         private static Sprite animatedVentSealedSprite;
+        private static float lastPPU;
         public static Sprite getAnimatedVentSealedSprite() {
+            float ppu = 185f;
+            if (SubmergedCompatibility.IsSubmerged) ppu = 120f;
+            if (lastPPU != ppu) {
+                animatedVentSealedSprite = null;
+                lastPPU = ppu;
+            }
             if (animatedVentSealedSprite) return animatedVentSealedSprite;
-            animatedVentSealedSprite = Helpers.loadSpriteFromResources("TheEpicRoles.Resources.AnimatedVentSealed.png", 160f);
+            animatedVentSealedSprite = Helpers.loadSpriteFromResources("TheEpicRoles.Resources.AnimatedVentSealed.png", ppu);
             return animatedVentSealedSprite;
         }
 
@@ -1074,17 +1106,31 @@ namespace TheEpicRoles
             return staticVentSealedSprite;
         }
 
+        private static Sprite submergedCentralUpperVentSealedSprite;
+        public static Sprite getSubmergedCentralUpperSealedSprite() {
+            if (submergedCentralUpperVentSealedSprite) return submergedCentralUpperVentSealedSprite;
+            submergedCentralUpperVentSealedSprite = Helpers.loadSpriteFromResources("TheEpicRoles.Resources.CentralUpperBlocked.png", 145f);
+            return submergedCentralUpperVentSealedSprite;
+        }
+
+        private static Sprite submergedCentralLowerVentSealedSprite;
+        public static Sprite getSubmergedCentralLowerSealedSprite() {
+            if (submergedCentralLowerVentSealedSprite) return submergedCentralLowerVentSealedSprite;
+            submergedCentralLowerVentSealedSprite = Helpers.loadSpriteFromResources("TheEpicRoles.Resources.CentralLowerBlocked.png", 145f);
+            return submergedCentralLowerVentSealedSprite;
+        }
+
         private static Sprite camSprite;
         public static Sprite getCamSprite() {
             if (camSprite) return camSprite;
-            camSprite = HudManager.Instance.UseButton.fastUseSettings[ImageNames.CamsButton].Image;
+            camSprite = FastDestroyableSingleton<HudManager>.Instance.UseButton.fastUseSettings[ImageNames.CamsButton].Image;
             return camSprite;
         }
 
         private static Sprite logSprite;
         public static Sprite getLogSprite() {
             if (logSprite) return logSprite;
-            logSprite = HudManager.Instance.UseButton.fastUseSettings[ImageNames.DoorLogsButton].Image;
+            logSprite = FastDestroyableSingleton<HudManager>.Instance.UseButton.fastUseSettings[ImageNames.DoorLogsButton].Image;
             return logSprite;
         }
 
@@ -1133,7 +1179,7 @@ namespace TheEpicRoles
         }
 
         public static bool dousedEveryoneAlive() {
-            return PlayerControl.AllPlayerControls.ToArray().All(x => { return x == Arsonist.arsonist || x.Data.IsDead || x.Data.Disconnected || Arsonist.dousedPlayers.Any(y => y.PlayerId == x.PlayerId); });
+            return CachedPlayer.AllPlayers.All(x => { return x.PlayerControl == Arsonist.arsonist || x.Data.IsDead || x.Data.Disconnected || Arsonist.dousedPlayers.Any(y => y.PlayerId == x.PlayerId); });
         }
 
         public static void clearAndReload() {
@@ -1212,7 +1258,7 @@ namespace TheEpicRoles
         public static bool showArrow = true;
         public static float bountyKillCooldown = 0f;
         public static float punishmentTime = 15f;
-        public static float arrowUpdateIntervall = 5f;
+        public static float arrowUpdateIntervall = 10f;
 
         public static float arrowUpdateTimer = 0f;
         public static float bountyUpdateTimer = 0f;
@@ -1239,26 +1285,6 @@ namespace TheEpicRoles
             punishmentTime = CustomOptionHolder.bountyHunterPunishmentTime.getFloat();
             showArrow = CustomOptionHolder.bountyHunterShowArrow.getBool();
             arrowUpdateIntervall = CustomOptionHolder.bountyHunterArrowUpdateIntervall.getFloat();
-            if (arrowUpdateIntervall == 0f) arrowUpdateIntervall = 0.01f;
-        }
-    }
-
-    public static class Bait {
-        public static PlayerControl bait;
-        public static Color color = new Color32(0, 247, 255, byte.MaxValue);
-
-        public static bool highlightAllVents = false;
-        public static float reportDelay = 0f;
-        public static bool showKillFlash = true;
-
-        public static bool reported = false;
-
-        public static void clearAndReload() {
-            bait = null;
-            reported = false;
-            highlightAllVents = CustomOptionHolder.baitHighlightAllVents.getBool();
-            reportDelay = CustomOptionHolder.baitReportDelay.getFloat();
-            showKillFlash = CustomOptionHolder.baitShowKillFlash.getBool();
         }
     }
 
@@ -1345,13 +1371,11 @@ namespace TheEpicRoles
         public static Color color = new Color32(134, 153, 25, byte.MaxValue);
         public static Sprite targetSprite;
         public static bool triggerLawyerWin = false;
-        public static int meetings = 0;
 
-        public static bool targetKnows = false;
         public static float vision = 1f;
-        public static bool winsAfterMeetings = false;
-        public static int neededMeetings = 4;
         public static bool lawyerKnowsRole = false;
+        public static bool targetCanBeJester = false;
+        public static bool targetWasGuessed = false;
 
         public static Sprite getTargetSprite() {
             if (targetSprite) return targetSprite;
@@ -1359,17 +1383,17 @@ namespace TheEpicRoles
             return targetSprite;
         }
 
-        public static void clearAndReload() {
+        public static void clearAndReload(bool clearTarget = true) {
             lawyer = null;
-            target = null;
+            if (clearTarget) {
+                target = null;
+                targetWasGuessed = false;
+            }
             triggerLawyerWin = false;
-            meetings = 0;
 
-            targetKnows = CustomOptionHolder.lawyerTargetKnows.getBool();
-            winsAfterMeetings = CustomOptionHolder.lawyerWinsAfterMeetings.getBool();
-            neededMeetings = Mathf.RoundToInt(CustomOptionHolder.lawyerNeededMeetings.getFloat());
             vision = CustomOptionHolder.lawyerVision.getFloat();
             lawyerKnowsRole = CustomOptionHolder.lawyerKnowsRole.getBool();
+            targetCanBeJester = CustomOptionHolder.lawyerTargetCanBeJester.getBool();
         }
     }
 
@@ -1439,7 +1463,7 @@ namespace TheEpicRoles
             currentTarget = spellCastingTarget = null;
             cooldown = CustomOptionHolder.witchCooldown.getFloat();
             cooldownAddition = CustomOptionHolder.witchAdditionalCooldown.getFloat();
-            currentCooldownAddition = CustomOptionHolder.witchCooldown.getFloat();
+            currentCooldownAddition = 0f;
             canSpellAnyone = CustomOptionHolder.witchCanSpellAnyone.getBool();
             spellCastingDuration = CustomOptionHolder.witchSpellCastingDuration.getFloat();
             triggerBothCooldowns = CustomOptionHolder.witchTriggerBothCooldowns.getBool();
@@ -1447,68 +1471,51 @@ namespace TheEpicRoles
         }
     }
 
-    public static class Phaser
-    {
+    public static class Phaser {
         public static PlayerControl phaser;
         public static Color color = Palette.ImpostorRed;
 
+        public static PlayerControl phaserMarked;
         public static PlayerControl currentTarget;
-        public static PlayerControl curseVictim;
-        public static PlayerControl curseVictimTarget;
-
+        public static float cooldown = 30f;
         public static float traceTime = 1f;
         public static bool knowsTargetLocation = false;
-        public static bool needsTargetAlone;
+        public static float invisibleDuration = 5f;
 
-        public static float markCooldown = 20f;
-        public static float phaseCooldown = 10f;
-
-        private static Sprite curseButtonSprite;
-        private static Sprite curseKillButtonSprite;
-
-        public static Arrow arrow;
-
-        public static Sprite getCurseButtonSprite() {
-            if (curseButtonSprite) return curseButtonSprite;
-            curseButtonSprite = Helpers.loadSpriteFromResources("TheEpicRoles.Resources.PhaseButton.png", 115f);
-            return curseButtonSprite;
+        public static float invisibleTimer = 0f;
+        public static bool isInvisble = false;
+        private static Sprite markButtonSprite;
+        private static Sprite killButtonSprite;
+        public static Arrow arrow = new Arrow(Color.black);
+        public static Sprite getMarkButtonSprite() {
+            if (markButtonSprite) return markButtonSprite;
+            markButtonSprite = Helpers.loadSpriteFromResources("TheEpicRoles.Resources.PhaserMarkButton.png", 115f);
+            return markButtonSprite;
         }
 
-        public static Sprite getCurseKillButtonSprite() {
-            if (curseKillButtonSprite) return curseKillButtonSprite;
-            curseKillButtonSprite = Helpers.loadSpriteFromResources("TheEpicRoles.Resources.PhaseKillButton.png", 115f);
-            return curseKillButtonSprite;
+        public static Sprite getKillButtonSprite() {
+            if (killButtonSprite) return killButtonSprite;
+            killButtonSprite = Helpers.loadSpriteFromResources("TheEpicRoles.Resources.PhaserAssassinateButton.png", 115f);
+            return killButtonSprite;
         }
 
-        public static void clearAndReload()
-        {
+        public static void clearAndReload() {
             phaser = null;
-            currentTarget = null;
-            curseVictim = null;
-            curseVictimTarget = null;
-            markCooldown = CustomOptionHolder.phaserMarkCooldown.getFloat();
-            phaseCooldown = CustomOptionHolder.phaserPhaseCooldown.getFloat();
+            currentTarget = phaserMarked = null;
+            cooldown = CustomOptionHolder.phaserCooldown.getFloat();
             knowsTargetLocation = CustomOptionHolder.phaserKnowsTargetLocation.getBool();
-            needsTargetAlone = CustomOptionHolder.phaserNeedsTargetAlone.getBool();
-            traceTime = CustomOptionHolder.phaserFragmentTime.getFloat();
-            
+            traceTime = CustomOptionHolder.phaserTraceTime.getFloat();
+            invisibleDuration = CustomOptionHolder.phaserInvisibleDuration.getFloat();
+            invisibleTimer = 0f;
+            isInvisble = false;
             if (arrow?.arrow != null) UnityEngine.Object.Destroy(arrow.arrow);
-            arrow = new Arrow(Color.green);
+            arrow = new Arrow(Color.black);
             if (arrow.arrow != null) arrow.arrow.SetActive(false);
-        }
-
-        public static void resetCurse()
-        {
-            HudManagerStartPatch.phaserCurseButton.Timer = HudManagerStartPatch.phaserCurseButton.MaxTimer;
-            HudManagerStartPatch.phaserCurseButton.Sprite = Phaser.getCurseButtonSprite();
-            HudManagerStartPatch.phaserCurseButton.actionButton.cooldownTimerText.color = Palette.EnabledColor;
-            currentTarget = null;
-            curseVictim = null;
-            curseVictimTarget = null;
         }
     }
 
-    public static class Jumper {
+    public static class Jumper
+    {
         public static PlayerControl jumper;
         public static Color color = new Color32(204, 155, 20, byte.MaxValue); // mint
 
@@ -1523,18 +1530,21 @@ namespace TheEpicRoles
         private static Sprite jumpMarkButtonSprite;
         private static Sprite jumpButtonSprite;
 
-        public static Sprite getJumpMarkButtonSprite() {
+        public static Sprite getJumpMarkButtonSprite()
+        {
             if (jumpMarkButtonSprite) return jumpMarkButtonSprite;
             jumpMarkButtonSprite = Helpers.loadSpriteFromResources("TheEpicRoles.Resources.JumperButton.png", 115f);
             return jumpMarkButtonSprite;
         }
 
-        public static Sprite getJumpButtonSprite() {
+        public static Sprite getJumpButtonSprite()
+        {
             if (jumpButtonSprite) return jumpButtonSprite;
             jumpButtonSprite = Helpers.loadSpriteFromResources("TheEpicRoles.Resources.JumperJumpButton.png", 115f);
             return jumpButtonSprite;
         }
-        public static void clearAndReload() {
+        public static void clearAndReload()
+        {
             jumpLocation = Vector3.zero;
             jumper = null;
             jumperCharges = 0f;
@@ -1542,6 +1552,130 @@ namespace TheEpicRoles
             jumperChargesOnPlace = CustomOptionHolder.jumperChargesOnPlace.getFloat();
             jumperChargesGainOnMeeting = CustomOptionHolder.jumperChargesGainOnMeeting.getFloat();
             jumperMaxCharges = CustomOptionHolder.jumperMaxCharges.getFloat();
+        }
+    }
+
+    // Modifier
+    public static class Bait {
+        public static List<PlayerControl> bait = new List<PlayerControl>();
+        public static Dictionary<DeadPlayer, float> active = new Dictionary<DeadPlayer, float>();
+        public static Color color = new Color32(0, 247, 255, byte.MaxValue);
+
+        public static float reportDelayMin = 0f;
+        public static float reportDelayMax = 0f;
+        public static bool showKillFlash = true;
+
+        public static void clearAndReload() {
+            bait = new List<PlayerControl>();
+            active = new Dictionary<DeadPlayer, float>();
+            reportDelayMin = CustomOptionHolder.modifierBaitReportDelayMin.getFloat();
+            reportDelayMax = CustomOptionHolder.modifierBaitReportDelayMax.getFloat();
+            if (reportDelayMin > reportDelayMax) reportDelayMin = reportDelayMax;
+            showKillFlash = CustomOptionHolder.modifierBaitShowKillFlash.getBool();
+        }
+    }
+
+    public static class Bloody {
+        public static List<PlayerControl> bloody = new List<PlayerControl>();
+        public static Dictionary<byte, float> active = new Dictionary<byte, float>();
+        public static Dictionary<byte, byte> bloodyKillerMap = new Dictionary<byte, byte>();
+
+        public static float duration = 5f;
+
+        public static void clearAndReload() {
+            bloody = new List<PlayerControl>();
+            active = new Dictionary<byte, float>();
+            bloodyKillerMap = new Dictionary<byte, byte>();
+            duration = CustomOptionHolder.modifierBloodyDuration.getFloat();
+        }
+    }
+
+    public static class AntiTeleport {
+        public static List<PlayerControl> antiTeleport = new List<PlayerControl>();
+        public static Vector3 position;
+
+        public static void clearAndReload() {
+            antiTeleport = new List<PlayerControl>();
+            position = Vector3.zero;
+        }
+
+        public static void setPosition() {
+            if (position == Vector3.zero) return;  // Check if this has been set, otherwise first spawn on submerged will fail
+            if (antiTeleport.FindAll(x => x.PlayerId == CachedPlayer.LocalPlayer.PlayerId).Count > 0) {
+                CachedPlayer.LocalPlayer.NetTransform.RpcSnapTo(position);
+                if (SubmergedCompatibility.IsSubmerged) {
+                    SubmergedCompatibility.ChangeFloor(position.y > -7);
+                }
+            }
+        }
+    }
+
+    public static class Tiebreaker {
+        public static PlayerControl tiebreaker;
+
+        public static bool isTiebreak = false;
+
+        public static void clearAndReload() {
+            tiebreaker = null;
+            isTiebreak = false;
+        }
+    }
+
+    public static class Sunglasses {
+        public static List<PlayerControl> sunglasses = new List<PlayerControl>();
+        public static int vision = 1;
+
+        public static void clearAndReload() {
+            sunglasses = new List<PlayerControl>();
+            vision = CustomOptionHolder.modifierSunglassesVision.getSelection() + 1;
+        }
+    }
+    public static class Mini {
+        public static PlayerControl mini;
+        public static Color color = Color.yellow;
+        public const float defaultColliderRadius = 0.2233912f;
+        public const float defaultColliderOffset = 0.3636057f;
+
+        public static float growingUpDuration = 400f;
+        public static DateTime timeOfGrowthStart = DateTime.UtcNow;
+        public static bool triggerMiniLose = false;
+
+        public static void clearAndReload() {
+            mini = null;
+            triggerMiniLose = false;
+            growingUpDuration = CustomOptionHolder.modifierMiniGrowingUpDuration.getFloat();
+            timeOfGrowthStart = DateTime.UtcNow;
+        }
+
+        public static float growingProgress() {
+            if (timeOfGrowthStart == null) return 0f;
+
+            float timeSinceStart = (float)(DateTime.UtcNow - timeOfGrowthStart).TotalMilliseconds;
+            return Mathf.Clamp(timeSinceStart / (growingUpDuration * 1000), 0f, 1f);
+        }
+
+        public static bool isGrownUp() {
+            return growingProgress() == 1f;
+        }
+
+    }
+    public static class Vip {
+        public static List<PlayerControl> vip = new List<PlayerControl>();
+        public static bool showColor = true;
+
+        public static void clearAndReload() {
+            vip = new List<PlayerControl>();
+            showColor = CustomOptionHolder.modifierVipShowColor.getBool();
+        }
+    }
+
+    public static class Invert {
+        public static List<PlayerControl> invert = new List<PlayerControl>();
+        public static int meetings = 3;
+
+        public static void clearAndReload() {
+            invert = new List<PlayerControl>();
+            meetings = (int) CustomOptionHolder.modifierInvertDuration.getFloat();
         }
     }
 }

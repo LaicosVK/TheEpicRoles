@@ -1,25 +1,16 @@
-using System;
-using BepInEx;
-using BepInEx.Configuration;
-using BepInEx.IL2CPP;
-using Il2CppSystem;
 using HarmonyLib;
 using UnityEngine;
-using UnhollowerBaseLib;
 using System.IO;
-using System.Reflection;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Security.Cryptography;
 using Newtonsoft.Json.Linq;
-using Newtonsoft.Json;
+using TheEpicRoles.Players;
+using TheEpicRoles.Utilities;
 
 namespace TheEpicRoles.Modules {
     [HarmonyPatch]
@@ -128,14 +119,12 @@ namespace TheEpicRoles.Modules {
 
         private static HatData CreateHatBehaviour(CustomHat ch, bool fromDisk = false, bool testOnly = false) {
             if (hatShader == null) {
-                Material tmpShader = new Material("PlayerMaterial");
-                tmpShader.shader = Shader.Find("Unlit/PlayerShader");
+                Material tmpShader = FastDestroyableSingleton<HatManager>.Instance.PlayerMaterial;
                 hatShader = tmpShader;
             }
 
             HatData hat = ScriptableObject.CreateInstance<HatData>();
-
-            hat.hatViewData.viewData = new HatViewData();
+            hat.hatViewData.viewData = ScriptableObject.CreateInstance<HatViewData>();
             hat.hatViewData.viewData.MainImage = CreateHatSprite(ch.resource, fromDisk);
             if (ch.backresource != null) {
                 hat.hatViewData.viewData.BackImage = CreateHatSprite(ch.backresource, fromDisk);
@@ -151,9 +140,8 @@ namespace TheEpicRoles.Modules {
             hat.ChipOffset = new Vector2(0f, 0.2f);
             hat.Free = true;
 
-            if (ch.adaptive && hatShader != null) {
+            if (ch.adaptive && hatShader != null)
                 hat.hatViewData.viewData.AltShader = hatShader;
-            }
 
             HatExtension extend = new HatExtension();
             extend.author = ch.author != null ? ch.author : "Unknown";
@@ -201,8 +189,7 @@ namespace TheEpicRoles.Modules {
                     }
                 } catch (System.Exception e) {
                     if (!LOADED)
-                    TheEpicRolesPlugin.Logger.LogMessage("failed to add hats" + e);
-                    System.Console.WriteLine("Unable to add Custom Hats\n" + e);
+                        System.Console.WriteLine("Unable to add Custom Hats\n" + e);
                 }
                 LOADED = true;
             }
@@ -224,37 +211,85 @@ namespace TheEpicRoles.Modules {
                     if (__instance.rend.flipX) {
                         hp.FrontLayer.sprite = extend.FlipImage;
                     } else {
-                        hp.FrontLayer.sprite = hp.Hat.hatViewData.viewData.MainImage;
+                        hp.FrontLayer.sprite = hp.hatView.MainImage;
                     }
                 }
                 if (extend.BackFlipImage != null) {
                     if (__instance.rend.flipX) {
                         hp.BackLayer.sprite = extend.BackFlipImage;
                     } else {
-                        hp.BackLayer.sprite = hp.Hat.hatViewData.viewData.BackImage;
+                        hp.BackLayer.sprite = hp.hatView.BackImage;
                     }
                 }
             }
         }
 
-        [HarmonyPatch(typeof(HatParent), nameof(HatParent.SetHat), new System.Type[] { typeof(string), typeof(int) })]
-        private static class HatParentSetHatPatch {
-            static void Postfix(HatParent __instance, string hatId, int color) {
-                if (DestroyableSingleton<TutorialManager>.InstanceExists) {
-                    try {
+        // public void SetHat(HatData hat, HatViewData hatViewData, int color)
+        // {
+        //     this.Hat = hat;
+        //     this.hatView = hatViewData;
+        //     this.PopulateFromHatViewData();
+        //     this.SetColor(color);
+        // }
+
+        [HarmonyPatch]
+        private static class FreeplayHatTestingPatches
+        {
+            [HarmonyPatch(typeof(HatParent), nameof(HatParent.SetHat), typeof(int))]
+            private static class HatParentSetHatPatchColor {
+                static void Prefix(HatParent __instance) {
+                    if (DestroyableSingleton<TutorialManager>.InstanceExists) {
+                        try {
+                            string filePath = Path.GetDirectoryName(Application.dataPath) + @"\TheEpicHats\Test";
+                            if (!Directory.Exists(filePath)) Directory.CreateDirectory(filePath);
+                            DirectoryInfo d = new DirectoryInfo(filePath);
+                            string[] filePaths = d.GetFiles("*.png").Select(x => x.FullName).ToArray(); // Getting Text files
+                            List<CustomHat> hats = createCustomHatDetails(filePaths, true);
+                            if (hats.Count > 0) {
+                                __instance.Hat = CreateHatBehaviour(hats[0], true, true);
+                            }
+                        } catch (System.Exception e) {
+                            System.Console.WriteLine("Unable to create test hat\n" + e);
+                        }
+                    }
+                }     
+            }
+            
+            [HarmonyPatch(typeof(HatParent), nameof(HatParent.SetHat), typeof(HatData), typeof(HatViewData), typeof(int))]
+            private static class HatParentSetHatPatchExtra {
+                static bool Prefix(HatParent __instance, HatData hat, HatViewData hatViewData, int color)
+                {
+                    if (!DestroyableSingleton<TutorialManager>.InstanceExists) return true;
+                    
+                    try 
+                    {
+                        __instance.Hat = hat;
+                        __instance.hatView = hatViewData;
+                        
                         string filePath = Path.GetDirectoryName(Application.dataPath) + @"\TheEpicHats\Test";
+                        if (!Directory.Exists(filePath)) return true;
                         DirectoryInfo d = new DirectoryInfo(filePath);
                         string[] filePaths = d.GetFiles("*.png").Select(x => x.FullName).ToArray(); // Getting Text files
                         List<CustomHat> hats = createCustomHatDetails(filePaths, true);
-                        if (hats.Count > 0) {
+                        if (hats.Count > 0) 
+                        {
                             __instance.Hat = CreateHatBehaviour(hats[0], true, true);
-                            __instance.SetHat(color);
+                            __instance.hatView = __instance.Hat.hatViewData.viewData;
+
                         }
-                    } catch (System.Exception e) {
+                    } 
+                    catch (System.Exception e) 
+                    {
                         System.Console.WriteLine("Unable to create test hat\n" + e);
+                        return true;
                     }
-                }
-            }     
+                    
+                    
+                    __instance.PopulateFromHatViewData();
+                    __instance.SetColor(color);
+                    return false;
+                }     
+            }
         }
 
         [HarmonyPatch(typeof(HatsTab), nameof(HatsTab.OnEnable))]
@@ -285,11 +320,11 @@ namespace TheEpicRoles.Modules {
                     float ypos = offset - (i / __instance.NumPerRow) * (isDefaultPackage ? 1f : 1.5f) * __instance.YOffset;
                     ColorChip colorChip = UnityEngine.Object.Instantiate<ColorChip>(__instance.ColorTabPrefab, __instance.scroller.Inner);
                     if (ActiveInputManager.currentControlType == ActiveInputManager.InputType.Keyboard) {
-                        colorChip.Button.OnMouseOver.AddListener((UnityEngine.Events.UnityAction)(() => __instance.SelectHat(hat)));
-                        colorChip.Button.OnMouseOut.AddListener((UnityEngine.Events.UnityAction)(() => __instance.SelectHat(DestroyableSingleton<HatManager>.Instance.GetHatById(SaveManager.LastHat))));
-                        colorChip.Button.OnClick.AddListener((UnityEngine.Events.UnityAction)(() => __instance.ClickEquip()));
+                        colorChip.Button.OnMouseOver.AddListener((System.Action)(() => __instance.SelectHat(hat)));
+                        colorChip.Button.OnMouseOut.AddListener((System.Action)(() => __instance.SelectHat(FastDestroyableSingleton<HatManager>.Instance.GetHatById(SaveManager.LastHat))));
+                        colorChip.Button.OnClick.AddListener((System.Action)(() => __instance.ClickEquip()));
                     } else {
-                        colorChip.Button.OnClick.AddListener((UnityEngine.Events.UnityAction)(() => __instance.SelectHat(hat)));
+                        colorChip.Button.OnClick.AddListener((System.Action)(() => __instance.SelectHat(hat)));
                     }
                     colorChip.Button.ClickMask = __instance.scroller.Hitbox;
                     Transform background = colorChip.transform.FindChild("Background");
@@ -314,7 +349,7 @@ namespace TheEpicRoles.Modules {
                     }
                     
                     colorChip.transform.localPosition = new Vector3(xpos, ypos, -1f);
-                    colorChip.Inner.SetHat(hat, __instance.HasLocalPlayer() ? PlayerControl.LocalPlayer.Data.DefaultOutfit.ColorId : ((int)SaveManager.BodyColor));
+                    colorChip.Inner.SetHat(hat, __instance.HasLocalPlayer() ? CachedPlayer.LocalPlayer.Data.DefaultOutfit.ColorId : ((int)SaveManager.BodyColor));
                     colorChip.Inner.transform.localPosition = hat.ChipOffset;
                     colorChip.Tag = hat;
                     colorChip.SelectionHighlight.gameObject.SetActive(false);
@@ -328,8 +363,7 @@ namespace TheEpicRoles.Modules {
                     UnityEngine.Object.Destroy(__instance.scroller.Inner.GetChild(i).gameObject);
                 __instance.ColorChips = new Il2CppSystem.Collections.Generic.List<ColorChip>();
 
-                HatData[] unlockedHats = DestroyableSingleton<HatManager>.Instance.GetUnlockedHats();
-                TheEpicRolesPlugin.Logger.LogMessage($"unlockedHats {unlockedHats.Length}");
+                HatData[] unlockedHats = FastDestroyableSingleton<HatManager>.Instance.GetUnlockedHats();
                 Dictionary<string, List<System.Tuple<HatData, HatExtension>>> packages = new Dictionary<string, List<System.Tuple<HatData, HatExtension>>>();
 
                 foreach (HatData hatBehaviour in unlockedHats) {
@@ -350,19 +384,14 @@ namespace TheEpicRoles.Modules {
                 textTemplate = GameObject.Find("HatsGroup").transform.FindChild("Text").GetComponent<TMPro.TMP_Text>();
 
                 var orderedKeys = packages.Keys.OrderBy((string x) => {
-                    if (x == "TER Developer Hats") return 1;
-                    if (x == "TER Community Hats") return 2;
-
-                    if (x == "TOR Developer Hats") return 3;
-                    if (x == "TOR Community Hats") return 4;
-
-                    if (x == innerslothPackageName) return 6;
-                    return 5;
+                    if (x == innerslothPackageName) return 3;
+                    if (x == "TER Developer Hats") return 0;
+                    if (x == "TER Community Hats") return 1;
+                    return 2;
                 });
                 foreach (string key in orderedKeys) {
                     List<System.Tuple<HatData, HatExtension>> value = packages[key];
                     YOffset = createHatPackage(value, key, YOffset, __instance);
-                    TheEpicRolesPlugin.Logger.LogMessage($"adding hats {key}{YOffset}");
                 }
 
                 __instance.scroller.ContentYBounds.max = -(YOffset + 4.1f);
@@ -378,7 +407,6 @@ namespace TheEpicRoles.Modules {
             "https://raw.githubusercontent.com/LaicosVK/TheEpicAssets/main/TheEpicHats"
         };
 
-
         public static List<CustomHatOnline> hatdetails = new List<CustomHatOnline>();
         private static Task hatFetchTask = null;
         public static void LaunchHatFetcher() {
@@ -388,16 +416,12 @@ namespace TheEpicRoles.Modules {
             hatFetchTask = LaunchHatFetcherAsync();
         }
 
-        private static async Task LaunchHatFetcherAsync()
-        {
-            try
-            {
+        private static async Task LaunchHatFetcherAsync() {
+            try {
                 HttpStatusCode status = await FetchHats();
                 if (status != HttpStatusCode.OK)
                     System.Console.WriteLine("Custom Hats could not be loaded\n");
-            }
-            catch (System.Exception e)
-            {
+            } catch (System.Exception e) {
                 System.Console.WriteLine("Unable to fetch hats\n" + e.Message);
             }
             running = false;
@@ -414,13 +438,12 @@ namespace TheEpicRoles.Modules {
             return res;
         }
 
-        public static async Task<HttpStatusCode> FetchHats()
-        {
-            foreach (string repo in REPOS)
+        public static async Task<HttpStatusCode> FetchHats() {
+            foreach (string REPO in REPOS)
             {
                 HttpClient http = new HttpClient();
                 http.DefaultRequestHeaders.CacheControl = new CacheControlHeaderValue { NoCache = true };
-                var response = await http.GetAsync(new System.Uri($"{repo}/CustomHats.json"), HttpCompletionOption.ResponseContentRead);
+                var response = await http.GetAsync(new System.Uri($"{REPO}/CustomHats.json"), HttpCompletionOption.ResponseContentRead);
                 try
                 {
                     if (response.StatusCode != HttpStatusCode.OK) return response.StatusCode;
@@ -456,8 +479,7 @@ namespace TheEpicRoles.Modules {
                             info.reshashbf = current["reshashbf"]?.ToString();
 
                             info.author = current["author"]?.ToString();
-                            info.package = $"{current["package"]?.ToString()}";
-                            if (repo.Contains("TheOtherHats")) info.package = "TOR " + info.package;
+                            info.package = current["package"]?.ToString();
                             info.condition = current["condition"]?.ToString();
                             info.bounce = current["bounce"] != null;
                             info.adaptive = current["adaptive"] != null;
@@ -469,6 +491,7 @@ namespace TheEpicRoles.Modules {
                     List<string> markedfordownload = new List<string>();
 
                     string filePath = Path.GetDirectoryName(Application.dataPath) + @"\TheEpicHats\";
+                    if (!Directory.Exists(filePath)) Directory.CreateDirectory(filePath);
                     MD5 md5 = MD5.Create();
                     foreach (CustomHatOnline data in hatdatas)
                     {
@@ -487,7 +510,7 @@ namespace TheEpicRoles.Modules {
                     foreach (var file in markedfordownload)
                     {
 
-                        var hatFileResponse = await http.GetAsync($"{repo}/hats/{file}", HttpCompletionOption.ResponseContentRead);
+                        var hatFileResponse = await http.GetAsync($"{REPO}/hats/{file}", HttpCompletionOption.ResponseContentRead);
                         if (hatFileResponse.StatusCode != HttpStatusCode.OK) continue;
                         using (var responseStream = await hatFileResponse.Content.ReadAsStreamAsync())
                         {
@@ -498,7 +521,6 @@ namespace TheEpicRoles.Modules {
                         }
                     }
 
-                    //hatdetails = hatdatas;
                     hatdetails.AddRange(hatdatas);
                 }
                 catch (System.Exception ex)
@@ -509,9 +531,6 @@ namespace TheEpicRoles.Modules {
             }
             return HttpStatusCode.OK;
         }
-
-
-  
 
         private static bool doesResourceRequireDownload(string respath, string reshash, MD5 md5) {
             if (reshash == null || !File.Exists(respath)) 

@@ -1,14 +1,13 @@
+  
 using HarmonyLib;
 using static TheEpicRoles.TheEpicRoles;
-using static TheEpicRoles.GameHistory;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
-using Hazel;
-using UnhollowerBaseLib;
 using System;
 using System.Text;
+using TheEpicRoles.Players;
+using TheEpicRoles.Utilities;
 
 namespace TheEpicRoles.Patches {
     enum CustomGameOverReason {
@@ -32,7 +31,6 @@ namespace TheEpicRoles.Patches {
         VultureWin,
         LawyerSoloWin,
         AdditionalLawyerBonusWin,
-        AdditionalLawyerStolenWin,
         AdditionalAlivePursuerWin
     }
 
@@ -63,12 +61,15 @@ namespace TheEpicRoles.Patches {
         public static void Prefix(AmongUsClient __instance, [HarmonyArgument(0)]ref EndGameResult endGameResult) {
             gameOverReason = endGameResult.GameOverReason;
             if ((int)endGameResult.GameOverReason >= 10) endGameResult.GameOverReason = GameOverReason.ImpostorByKill;
+
+            // Reset zoomed out ghosts
+            Helpers.toggleZoom(reset: true);
         }
 
         public static void Postfix(AmongUsClient __instance, [HarmonyArgument(0)]ref EndGameResult endGameResult) {
             AdditionalTempData.clear();
 
-            foreach(var playerControl in PlayerControl.AllPlayerControls) {
+            foreach(var playerControl in CachedPlayer.AllPlayers) {
                 var roles = RoleInfo.getRoleInfoForPlayer(playerControl);
                 var (tasksCompleted, tasksTotal) = TasksHandler.taskInfo(playerControl.Data);
                 AdditionalTempData.playerRoles.Add(new AdditionalTempData.PlayerRoleInfo() { PlayerName = playerControl.Data.PlayerName, Roles = roles, TasksTotal = tasksTotal, TasksCompleted = tasksCompleted });
@@ -87,7 +88,7 @@ namespace TheEpicRoles.Patches {
             notWinners.AddRange(Jackal.formerJackals);
 
             List<WinningPlayerData> winnersToRemove = new List<WinningPlayerData>();
-            foreach (WinningPlayerData winner in TempData.winners) {
+            foreach (WinningPlayerData winner in TempData.winners.GetFastEnumerator()) {
                 if (notWinners.Any(x => x.Data.PlayerName == winner.PlayerName)) winnersToRemove.Add(winner);
             }
             foreach (var winner in winnersToRemove) TempData.winners.Remove(winner);
@@ -99,6 +100,8 @@ namespace TheEpicRoles.Patches {
             bool teamJackalWin = gameOverReason == (GameOverReason)CustomGameOverReason.TeamJackalWin && ((Jackal.jackal != null && !Jackal.jackal.Data.IsDead) || (Sidekick.sidekick != null && !Sidekick.sidekick.Data.IsDead));
             bool vultureWin = Vulture.vulture != null && gameOverReason == (GameOverReason)CustomGameOverReason.VultureWin;
             bool lawyerSoloWin = Lawyer.lawyer != null && gameOverReason == (GameOverReason)CustomGameOverReason.LawyerSoloWin;
+
+            bool isPursurerLose = jesterWin || arsonistWin || miniLose || vultureWin || teamJackalWin;
 
             // Mini lose
             if (miniLose) {
@@ -139,7 +142,7 @@ namespace TheEpicRoles.Patches {
                 if (!Lovers.existingWithKiller()) {
                     AdditionalTempData.winCondition = WinCondition.LoversTeamWin;
                     TempData.winners = new Il2CppSystem.Collections.Generic.List<WinningPlayerData>();
-                    foreach (PlayerControl p in PlayerControl.AllPlayerControls) {
+                    foreach (PlayerControl p in CachedPlayer.AllPlayers) {
                         if (p == null) continue;
                         if (p == Lovers.lover1 || p == Lovers.lover2)
                             TempData.winners.Add(new WinningPlayerData(p.Data));
@@ -180,7 +183,7 @@ namespace TheEpicRoles.Patches {
             }
 
             // Lawyer solo win 
-            else if (lawyerSoloWin) {
+            else if (lawyerSoloWin && !Pursuer.notAckedExiled) {
                 TempData.winners = new Il2CppSystem.Collections.Generic.List<WinningPlayerData>();
                 WinningPlayerData wpd = new WinningPlayerData(Lawyer.lawyer.Data);
                 TempData.winners.Add(wpd);
@@ -188,29 +191,21 @@ namespace TheEpicRoles.Patches {
             }
 
             // Possible Additional winner: Lawyer
-            if (!lawyerSoloWin && Lawyer.lawyer != null && Lawyer.target != null) {
-                if (!Lawyer.target.Data.IsDead || (Jester.jester != null && Lawyer.target == Jester.jester)) {
-                    WinningPlayerData winningClient = null;
-                    foreach (WinningPlayerData winner in TempData.winners) {
-                        if (winner.PlayerName == Lawyer.target.Data.PlayerName)
-                            winningClient = winner;
-                    }
-                    if (winningClient != null) { // The Lawyer wins if the client is winning (and alive, but if he wasn't the Lawyer shouldn't exist anymore)
-                        if (!TempData.winners.ToArray().Any(x => x.PlayerName == Lawyer.lawyer.Data.PlayerName))
-                            TempData.winners.Add(new WinningPlayerData(Lawyer.lawyer.Data));
-                        if (!Lawyer.lawyer.Data.IsDead) { // The Lawyer steals the clients win
-                            TempData.winners.Remove(winningClient);
-                            AdditionalTempData.additionalWinConditions.Add(WinCondition.AdditionalLawyerStolenWin);
-                        }
-                        else { // The Lawyer wins together with the client
-                            AdditionalTempData.additionalWinConditions.Add(WinCondition.AdditionalLawyerBonusWin);
-                        }
-                    }
+            if (!lawyerSoloWin && Lawyer.lawyer != null && Lawyer.target != null && (!Lawyer.target.Data.IsDead || Lawyer.target == Jester.jester) && !Pursuer.notAckedExiled) {
+                WinningPlayerData winningClient = null;
+                foreach (WinningPlayerData winner in TempData.winners.GetFastEnumerator()) {
+                    if (winner.PlayerName == Lawyer.target.Data.PlayerName)
+                        winningClient = winner;
                 }
+                if (winningClient != null) { // The Lawyer wins if the client is winning (and alive, but if he wasn't the Lawyer shouldn't exist anymore)
+                    if (!TempData.winners.ToArray().Any(x => x.PlayerName == Lawyer.lawyer.Data.PlayerName))
+                        TempData.winners.Add(new WinningPlayerData(Lawyer.lawyer.Data));
+                    AdditionalTempData.additionalWinConditions.Add(WinCondition.AdditionalLawyerBonusWin); // The Lawyer wins together with the client
+                } 
             }
 
             // Possible Additional winner: Pursuer
-            if (Pursuer.pursuer != null && !Pursuer.pursuer.Data.IsDead && !Pursuer.notAckedExiled) {
+            if (Pursuer.pursuer != null && !Pursuer.pursuer.Data.IsDead && !Pursuer.notAckedExiled && !isPursurerLose && !TempData.winners.ToArray().Any(x => x.IsImpostor)) {
                 if (!TempData.winners.ToArray().Any(x => x.PlayerName == Pursuer.pursuer.Data.PlayerName))
                     TempData.winners.Add(new WinningPlayerData(Pursuer.pursuer.Data));
                 AdditionalTempData.additionalWinConditions.Add(WinCondition.AdditionalAlivePursuerWin);
@@ -312,9 +307,7 @@ namespace TheEpicRoles.Patches {
             }
 
             foreach (WinCondition cond in AdditionalTempData.additionalWinConditions) {
-                if (cond == WinCondition.AdditionalLawyerStolenWin) {
-                    textRenderer.text += $"\n{Helpers.cs(Lawyer.color, "The Lawyer stole the win from the client")}";
-                } else if (cond == WinCondition.AdditionalLawyerBonusWin) {
+                if (cond == WinCondition.AdditionalLawyerBonusWin) {
                     textRenderer.text += $"\n{Helpers.cs(Lawyer.color, "The Lawyer wins with the client")}";
                 } else if (cond == WinCondition.AdditionalAlivePursuerWin) {
                     textRenderer.text += $"\n{Helpers.cs(Pursuer.color, "The Pursuer survived")}";
@@ -328,26 +321,12 @@ namespace TheEpicRoles.Patches {
                 roleSummary.transform.localScale = new Vector3(1f, 1f, 1f);
 
                 var roleSummaryText = new StringBuilder();
-                var crewSummaryText = new StringBuilder();
-                var otherSummaryText = new StringBuilder();
                 roleSummaryText.AppendLine("Players and roles at the end of the game:");
                 foreach(var data in AdditionalTempData.playerRoles) {
-                    var playerName = data.PlayerName;
-                    while (playerName.Length < 12) playerName = $"{playerName} ";
-
                     var roles = string.Join(" ", data.Roles.Select(x => Helpers.cs(x.color, x.name)));
-                    var rolesSingle = string.Join(" ", data.Roles.Select(x => x.name));
-
-                    if (data.TasksTotal > 1)
-                    {
-                        var taskInfo = $"<color=#FAD934FF>({data.TasksCompleted}/{data.TasksTotal})</color>";
-                        crewSummaryText.AppendLine($"{playerName} {taskInfo} {roles}");
-                    }
-                    else otherSummaryText.AppendLine($"{playerName} {roles}");
+                    var taskInfo = data.TasksTotal > 0 ? $" - <color=#FAD934FF>({data.TasksCompleted}/{data.TasksTotal})</color>" : "";
+                    roleSummaryText.AppendLine($"{data.PlayerName} - {roles}{taskInfo}");
                 }
-                roleSummaryText.AppendLine(crewSummaryText.ToString());
-                roleSummaryText.AppendLine(otherSummaryText.ToString());
-
                 TMPro.TMP_Text roleSummaryTextMesh = roleSummary.GetComponent<TMPro.TMP_Text>();
                 roleSummaryTextMesh.alignment = TMPro.TextAlignmentOptions.TopLeft;
                 roleSummaryTextMesh.color = Color.white;
@@ -430,8 +409,8 @@ namespace TheEpicRoles.Patches {
         }
 
         private static bool CheckAndEndGameForSabotageWin(ShipStatus __instance) {
-            if (__instance.Systems == null) return false;
-            ISystemType systemType = __instance.Systems.ContainsKey(SystemTypes.LifeSupp) ? __instance.Systems[SystemTypes.LifeSupp] : null;
+            if (MapUtilities.Systems == null) return false;
+            var systemType = MapUtilities.Systems.ContainsKey(SystemTypes.LifeSupp) ? MapUtilities.Systems[SystemTypes.LifeSupp] : null;
             if (systemType != null) {
                 LifeSuppSystemType lifeSuppSystemType = systemType.TryCast<LifeSuppSystemType>();
                 if (lifeSuppSystemType != null && lifeSuppSystemType.Countdown < 0f) {
@@ -440,9 +419,9 @@ namespace TheEpicRoles.Patches {
                     return true;
                 }
             }
-            ISystemType systemType2 = __instance.Systems.ContainsKey(SystemTypes.Reactor) ? __instance.Systems[SystemTypes.Reactor] : null;
+            var systemType2 = MapUtilities.Systems.ContainsKey(SystemTypes.Reactor) ? MapUtilities.Systems[SystemTypes.Reactor] : null;
             if (systemType2 == null) {
-                systemType2 = __instance.Systems.ContainsKey(SystemTypes.Laboratory) ? __instance.Systems[SystemTypes.Laboratory] : null;
+                systemType2 = MapUtilities.Systems.ContainsKey(SystemTypes.Laboratory) ? MapUtilities.Systems[SystemTypes.Laboratory] : null;
             }
             if (systemType2 != null) {
                 ICriticalSabotage criticalSystem = systemType2.TryCast<ICriticalSabotage>();
@@ -456,7 +435,7 @@ namespace TheEpicRoles.Patches {
         }
 
         private static bool CheckAndEndGameForTaskWin(ShipStatus __instance) {
-            if (GameData.Instance.TotalTasks <= GameData.Instance.CompletedTasks) {
+            if (GameData.Instance.TotalTasks > 0 && GameData.Instance.TotalTasks <= GameData.Instance.CompletedTasks) {
                 __instance.enabled = false;
                 ShipStatus.RpcEndGame(GameOverReason.HumansByTask, false);
                 return true;
@@ -465,7 +444,7 @@ namespace TheEpicRoles.Patches {
         }
 
         private static bool CheckAndEndGameForLoverWin(ShipStatus __instance, PlayerStatistics statistics) {
-            if (statistics.TeamLoversAlive == 2 && statistics.TotalAlive <= Lovers.count) {
+            if (statistics.TeamLoversAlive == 2 && statistics.TotalAlive <= 3) {
                 __instance.enabled = false;
                 ShipStatus.RpcEndGame((GameOverReason)CustomGameOverReason.LoversWin, false);
                 return true;
@@ -474,7 +453,7 @@ namespace TheEpicRoles.Patches {
         }
 
         private static bool CheckAndEndGameForJackalWin(ShipStatus __instance, PlayerStatistics statistics) {
-            if (statistics.TeamJackalAlive >= statistics.TotalAlive - statistics.TeamJackalAlive && statistics.TeamImpostorsAlive == 0 && !(statistics.TeamJackalHasAliveLover && statistics.TeamLoversAlive == 2) && statistics.SheriffAlive == 0) {
+            if (statistics.TeamJackalAlive >= statistics.TotalAlive - statistics.TeamJackalAlive && statistics.TeamImpostorsAlive == 0 && !(statistics.TeamJackalHasAliveLover && statistics.TeamLoversAlive == 2)) {
                 __instance.enabled = false;
                 ShipStatus.RpcEndGame((GameOverReason)CustomGameOverReason.TeamJackalWin, false);
                 return true;
@@ -483,7 +462,7 @@ namespace TheEpicRoles.Patches {
         }
 
         private static bool CheckAndEndGameForImpostorWin(ShipStatus __instance, PlayerStatistics statistics) {
-            if (statistics.TeamImpostorsAlive >= statistics.TotalAlive - statistics.TeamImpostorsAlive && statistics.TeamJackalAlive == 0 && !(statistics.TeamImpostorHasAliveLover && statistics.TeamLoversAlive == 2) && statistics.SheriffAlive == 0) {
+            if (statistics.TeamImpostorsAlive >= statistics.TotalAlive - statistics.TeamImpostorsAlive && statistics.TeamJackalAlive == 0 && !(statistics.TeamImpostorHasAliveLover && statistics.TeamLoversAlive == 2)) {
                 __instance.enabled = false;
                 GameOverReason endReason;
                 switch (TempData.LastDeathReason) {
@@ -523,7 +502,6 @@ namespace TheEpicRoles.Patches {
     internal class PlayerStatistics {
         public int TeamImpostorsAlive {get;set;}
         public int TeamJackalAlive {get;set;}
-        public int SheriffAlive {get;set;}
         public int TeamLoversAlive {get;set;}
         public int TotalAlive {get;set;}
         public bool TeamImpostorHasAliveLover {get;set;}
@@ -540,15 +518,13 @@ namespace TheEpicRoles.Patches {
         private void GetPlayerCounts() {
             int numJackalAlive = 0;
             int numImpostorsAlive = 0;
-            int numSheriffAlive = 0;
             int numLoversAlive = 0;
             int numTotalAlive = 0;
             bool impLover = false;
             bool jackalLover = false;
 
-            for (int i = 0; i < GameData.Instance.PlayerCount; i++)
+            foreach (var playerInfo in GameData.Instance.AllPlayers.GetFastEnumerator())
             {
-                GameData.PlayerInfo playerInfo = GameData.Instance.AllPlayers[i];
                 if (!playerInfo.Disconnected)
                 {
                     if (!playerInfo.IsDead)
@@ -570,16 +546,12 @@ namespace TheEpicRoles.Patches {
                             numJackalAlive++;
                             if (lover) jackalLover = true;
                         }
-                        if ((Sheriff.sheriff != null && Sheriff.sheriff.PlayerId == playerInfo.PlayerId) || (Deputy.deputy != null && Deputy.deputy.PlayerId == playerInfo.PlayerId && CustomOptionHolder.deputyGetsPromoted.getSelection() != 0)) {
-                            numSheriffAlive++;
-                        }
                     }
                 }
             }
 
             TeamJackalAlive = numJackalAlive;
             TeamImpostorsAlive = numImpostorsAlive;
-            SheriffAlive = numSheriffAlive;
             TeamLoversAlive = numLoversAlive;
             TotalAlive = numTotalAlive;
             TeamImpostorHasAliveLover = impLover;

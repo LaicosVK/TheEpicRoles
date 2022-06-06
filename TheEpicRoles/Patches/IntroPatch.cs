@@ -1,39 +1,42 @@
 using HarmonyLib;
-using Hazel;
 using System;
 using static TheEpicRoles.TheEpicRoles;
 using TheEpicRoles.Objects;
-using TheEpicRoles.Patches;
 using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
+using Hazel;
+using TheEpicRoles.Players;
+using TheEpicRoles.Utilities;
 
 namespace TheEpicRoles.Patches {
     [HarmonyPatch(typeof(IntroCutscene), nameof(IntroCutscene.OnDestroy))]
     class IntroCutsceneOnDestroyPatch
     {
+        public static PoolablePlayer playerPrefab;
         public static void Prefix(IntroCutscene __instance) {
             // Generate and initialize player icons
             int playerCounter = 0;
-            if (PlayerControl.LocalPlayer != null && HudManager.Instance != null) {
-                Vector3 bottomLeft = new Vector3(-HudManager.Instance.UseButton.transform.localPosition.x, HudManager.Instance.UseButton.transform.localPosition.y, HudManager.Instance.UseButton.transform.localPosition.z);
-                foreach (PlayerControl p in PlayerControl.AllPlayerControls) {
+            if (CachedPlayer.LocalPlayer != null && FastDestroyableSingleton<HudManager>.Instance != null) {
+                Vector3 bottomLeft = new Vector3(-FastDestroyableSingleton<HudManager>.Instance.UseButton.transform.localPosition.x, FastDestroyableSingleton<HudManager>.Instance.UseButton.transform.localPosition.y, FastDestroyableSingleton<HudManager>.Instance.UseButton.transform.localPosition.z);
+                foreach (PlayerControl p in CachedPlayer.AllPlayers) {
                     GameData.PlayerInfo data = p.Data;
-                    PoolablePlayer player = UnityEngine.Object.Instantiate<PoolablePlayer>(__instance.PlayerPrefab, HudManager.Instance.transform);
+                    PoolablePlayer player = UnityEngine.Object.Instantiate<PoolablePlayer>(__instance.PlayerPrefab, FastDestroyableSingleton<HudManager>.Instance.transform);
+                    playerPrefab = __instance.PlayerPrefab;
                     PlayerControl.SetPlayerMaterialColors(data.DefaultOutfit.ColorId, player.CurrentBodySprite.BodySprite);
-                    player.SetSkin(data.DefaultOutfit.SkinId, data.DefaultOutfit.ColorId); // TODO! test
-                    player.HatSlot.SetHat(data.DefaultOutfit.HatId, data.DefaultOutfit.ColorId);  
+                    player.SetSkin(data.DefaultOutfit.SkinId, data.DefaultOutfit.ColorId);
+                    player.HatSlot.SetHat(data.DefaultOutfit.HatId, data.DefaultOutfit.ColorId);
                     PlayerControl.SetPetImage(data.DefaultOutfit.PetId, data.DefaultOutfit.ColorId, player.PetSlot);
                     player.NameText.text = data.PlayerName;
                     player.SetFlipX(true);
                     MapOptions.playerIcons[p.PlayerId] = player;
 
-                    if (PlayerControl.LocalPlayer == Arsonist.arsonist && p != Arsonist.arsonist) {
+                    if (CachedPlayer.LocalPlayer.PlayerControl == Arsonist.arsonist && p != Arsonist.arsonist) {
                         player.transform.localPosition = bottomLeft + new Vector3(-0.25f, -0.25f, 0) + Vector3.right * playerCounter++ * 0.35f;
                         player.transform.localScale = Vector3.one * 0.2f;
                         player.setSemiTransparent(true);
                         player.gameObject.SetActive(true);
-                    } else if (PlayerControl.LocalPlayer == BountyHunter.bountyHunter) {
+                    } else if (CachedPlayer.LocalPlayer.PlayerControl == BountyHunter.bountyHunter) {
                         player.transform.localPosition = bottomLeft + new Vector3(-0.25f, 0f, 0);
                         player.transform.localScale = Vector3.one * 0.4f;
                         player.gameObject.SetActive(false);
@@ -44,41 +47,42 @@ namespace TheEpicRoles.Patches {
             }
 
             // Force Bounty Hunter to load a new Bounty when the Intro is over
-            if (BountyHunter.bounty != null && PlayerControl.LocalPlayer == BountyHunter.bountyHunter) {
+            if (BountyHunter.bounty != null && CachedPlayer.LocalPlayer.PlayerControl == BountyHunter.bountyHunter) {
                 BountyHunter.bountyUpdateTimer = 0f;
-                if (HudManager.Instance != null) {
-                    Vector3 bottomLeft = new Vector3(-HudManager.Instance.UseButton.transform.localPosition.x, HudManager.Instance.UseButton.transform.localPosition.y, HudManager.Instance.UseButton.transform.localPosition.z) + new Vector3(-0.25f, 1f, 0);
-                    BountyHunter.cooldownText = UnityEngine.Object.Instantiate<TMPro.TextMeshPro>(HudManager.Instance.KillButton.cooldownTimerText, HudManager.Instance.transform);
+                if (FastDestroyableSingleton<HudManager>.Instance != null) {
+                    Vector3 bottomLeft = new Vector3(-FastDestroyableSingleton<HudManager>.Instance.UseButton.transform.localPosition.x, FastDestroyableSingleton<HudManager>.Instance.UseButton.transform.localPosition.y, FastDestroyableSingleton<HudManager>.Instance.UseButton.transform.localPosition.z) + new Vector3(-0.25f, 1f, 0);
+                    BountyHunter.cooldownText = UnityEngine.Object.Instantiate<TMPro.TextMeshPro>(FastDestroyableSingleton<HudManager>.Instance.KillButton.cooldownTimerText, FastDestroyableSingleton<HudManager>.Instance.transform);
                     BountyHunter.cooldownText.alignment = TMPro.TextAlignmentOptions.Center;
                     BountyHunter.cooldownText.transform.localPosition = bottomLeft + new Vector3(0f, -1f, -1f);
                     BountyHunter.cooldownText.gameObject.SetActive(true);
                 }
-            }
+            } 
 
-            //guardian angel shield
-            if (AmongUsClient.Instance.AmHost == true && CustomOptionHolder.firstKillShield.getBool() == true) {
-                foreach (PlayerControl player in PlayerControl.AllPlayerControls) {
-                    if (GameStartManagerPatch.guardianShield == player.Data.PlayerName) {
-                        MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(PlayerControl.LocalPlayer.NetId, (byte)CustomRPC.SetGuardianShield, Hazel.SendOption.Reliable, -1);
-                        writer.Write(player.PlayerId);
-                        AmongUsClient.Instance.FinishRpcImmediately(writer);
-                        RPCProcedure.setGuardianShield(player.PlayerId);
-                    }
+            // First kill
+            if (AmongUsClient.Instance.AmHost && MapOptions.shieldFirstKill && MapOptions.firstKillName != "") {
+                PlayerControl target = PlayerControl.AllPlayerControls.ToArray().ToList().FirstOrDefault(x => x.Data.PlayerName.Equals(MapOptions.firstKillName));
+                if (target != null) {
+                    MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.SetFirstKill, Hazel.SendOption.Reliable, -1);
+                    writer.Write(target.PlayerId);
+                    AmongUsClient.Instance.FinishRpcImmediately(writer);
+                    RPCProcedure.setFirstKill(target.PlayerId);
                 }
             }
-            GameStartManagerPatch.guardianShield = "";
-
+            MapOptions.firstKillName = "";
 
             //get data to generate random spawn seed
             string seedString = $"{AmongUsClient.Instance.NetIdCnt} {AmongUsClient.Instance.GameId}\n";
-            foreach (PlayerControl player in PlayerControl.AllPlayerControls) {
+            foreach (PlayerControl player in PlayerControl.AllPlayerControls)
+            {
                 seedString = $"{seedString} {player.Data.PlayerName} {player.NetId} {player.Data.PlayerLevel} {player.CurrentOutfit.ColorId} {player.Data.Role.StringName} {player.CurrentOutfit.HatId} {player.CurrentOutfit.SkinId}\n";
             }
 
             //Random spawn on game start
-            if (CustomOptionHolder.randomGameStartPosition.getBool()) { 
+            if (CustomOptionHolder.randomGameStartPosition.getBool())
+            {
                 List<Vector3> spawns = new List<Vector3>() { };
-                if (PlayerControl.GameOptions.MapId == 0) { //skeld
+                if (PlayerControl.GameOptions.MapId == 0)
+                { //skeld
                     spawns = new List<Vector3>() {
                     new Vector3(-2.2f, 2.2f, 0.0f), //cafeteria. botton. top left.
                     new Vector3(0.7f, 2.2f, 0.0f), //caffeteria. button. top right.
@@ -119,7 +123,9 @@ namespace TheEpicRoles.Patches {
                     new Vector3(-10.5f, -2.0f, 0.0f), //medbay top
                     new Vector3(-6.5f, -4.5f, 0.0f) //medbay bottom
                     };
-                } else if (PlayerControl.GameOptions.MapId == 1) { //mira
+                }
+                else if (PlayerControl.GameOptions.MapId == 1)
+                { //mira
                     spawns = new List<Vector3>() {
                     new Vector3(-4.5f, 3.5f, 0.0f), //launchpad top
                     new Vector3(-4.5f, -1.4f, 0.0f), //launchpad bottom
@@ -143,7 +149,9 @@ namespace TheEpicRoles.Patches {
                     new Vector3(19f, 4f, 0.0f), //storage
                     new Vector3(22f, -2f, 0.0f), //balcony
                     };
-                } else if (PlayerControl.GameOptions.MapId == 2) { //polus
+                }
+                else if (PlayerControl.GameOptions.MapId == 2)
+                { //polus
                     spawns = new List<Vector3>() {
                     new Vector3(16.6f, -1f, 0.0f), //dropship top
                     new Vector3(16.6f, -5f, 0.0f), //dropship bottom
@@ -192,7 +200,9 @@ namespace TheEpicRoles.Patches {
                     new Vector3(15f, -17f, 0.0f), //between coms-office
                     new Vector3(17.5f, -25.7f, 0.0f), //snowman under office
                     };
-                } else if (PlayerControl.GameOptions.MapId == 3) { //dleks
+                }
+                else if (PlayerControl.GameOptions.MapId == 3)
+                { //dleks
                     spawns = new List<Vector3>() {
                     new Vector3(2.2f, 2.2f, 0.0f), //cafeteria. botton. top left.
                     new Vector3(-0.7f, 2.2f, 0.0f), //caffeteria. button. top right.
@@ -233,12 +243,15 @@ namespace TheEpicRoles.Patches {
                     new Vector3(10.5f, -2.0f, 0.0f), //medbay top
                     new Vector3(6.5f, -4.5f, 0.0f) //medbay bottom
                     };
-                } else if (PlayerControl.GameOptions.MapId == 4) { //airship
+                }
+                else if (PlayerControl.GameOptions.MapId == 4)
+                { //airship
                     spawns = new List<Vector3>() { }; //no spawns since it already has random spawns
                 }
 
                 System.Random randomSpawn = new System.Random((int)seedString.GetHashCode());
-                foreach (PlayerControl player in PlayerControl.AllPlayerControls) {
+                foreach (PlayerControl player in PlayerControl.AllPlayerControls)
+                {
                     int spawnNumber = randomSpawn.Next(spawns.Count);
                     player.transform.localPosition = spawns[spawnNumber];
                     spawns.RemoveAt(spawnNumber);
@@ -248,9 +261,6 @@ namespace TheEpicRoles.Patches {
             //reset cooldown on round start
             CustomButton.ResetAllCooldowns(); //reset button cooldowns
             PlayerControl.LocalPlayer.killTimer = CustomOptionHolder.setRoundStartCooldown.getFloat(); //reset kill cooldowns
-
-            // reload all sounds
-            SoundEffectsManager.Load();
         }
     }
 
@@ -258,19 +268,19 @@ namespace TheEpicRoles.Patches {
     class IntroPatch {
         public static void setupIntroTeamIcons(IntroCutscene __instance, ref  Il2CppSystem.Collections.Generic.List<PlayerControl> yourTeam) {
             // Intro solo teams
-            if (PlayerControl.LocalPlayer == Jester.jester || PlayerControl.LocalPlayer == Jackal.jackal || PlayerControl.LocalPlayer == Arsonist.arsonist || PlayerControl.LocalPlayer == Vulture.vulture || PlayerControl.LocalPlayer == Lawyer.lawyer) {
+            if (CachedPlayer.LocalPlayer.PlayerControl == Jester.jester || CachedPlayer.LocalPlayer.PlayerControl == Jackal.jackal || CachedPlayer.LocalPlayer.PlayerControl == Arsonist.arsonist || CachedPlayer.LocalPlayer.PlayerControl == Vulture.vulture || CachedPlayer.LocalPlayer.PlayerControl == Lawyer.lawyer) {
                 var soloTeam = new Il2CppSystem.Collections.Generic.List<PlayerControl>();
-                soloTeam.Add(PlayerControl.LocalPlayer);
+                soloTeam.Add(CachedPlayer.LocalPlayer.PlayerControl);
                 yourTeam = soloTeam;
             }
 
             // Add the Spy to the Impostor team (for the Impostors)
-            if (Spy.spy != null && PlayerControl.LocalPlayer.Data.Role.IsImpostor) {
+            if (Spy.spy != null && CachedPlayer.LocalPlayer.Data.Role.IsImpostor) {
                 List<PlayerControl> players = PlayerControl.AllPlayerControls.ToArray().ToList().OrderBy(x => Guid.NewGuid()).ToList();
                 var fakeImpostorTeam = new Il2CppSystem.Collections.Generic.List<PlayerControl>(); // The local player always has to be the first one in the list (to be displayed in the center)
-                fakeImpostorTeam.Add(PlayerControl.LocalPlayer);
+                fakeImpostorTeam.Add(CachedPlayer.LocalPlayer.PlayerControl);
                 foreach (PlayerControl p in players) {
-                    if (PlayerControl.LocalPlayer != p && (p == Spy.spy || p.Data.Role.IsImpostor))
+                    if (CachedPlayer.LocalPlayer.PlayerControl != p && (p == Spy.spy || p.Data.Role.IsImpostor))
                         fakeImpostorTeam.Add(p);
                 }
                 yourTeam = fakeImpostorTeam;
@@ -278,44 +288,47 @@ namespace TheEpicRoles.Patches {
         }
 
         public static void setupIntroTeam(IntroCutscene __instance, ref  Il2CppSystem.Collections.Generic.List<PlayerControl> yourTeam) {
-            List<RoleInfo> infos = RoleInfo.getRoleInfoForPlayer(PlayerControl.LocalPlayer);
-            RoleInfo roleInfo = infos.Where(info => info.roleId != RoleId.Lover).FirstOrDefault();
+            List<RoleInfo> infos = RoleInfo.getRoleInfoForPlayer(CachedPlayer.LocalPlayer.PlayerControl);
+            RoleInfo roleInfo = infos.Where(info => !info.isModifier).FirstOrDefault();
             if (roleInfo == null) return;
             if (roleInfo.isNeutral) {
                 var neutralColor = new Color32(76, 84, 78, 255);
-                __instance.BackgroundBar.material.color = roleInfo.color;
+                __instance.BackgroundBar.material.color = neutralColor;
                 __instance.TeamTitle.text = "Neutral";
                 __instance.TeamTitle.color = neutralColor;
-            } else {
-                bool isCrew = true;
-                if (roleInfo.color == Palette.ImpostorRed) isCrew = false;
-                if (isCrew) {
-                    __instance.BackgroundBar.material.color = roleInfo.color;
-                    __instance.TeamTitle.text = "Crewmate";
-                    __instance.TeamTitle.color = Color.white;
-                } else {
-                    __instance.BackgroundBar.material.color = roleInfo.color;
-                    __instance.TeamTitle.text = "Impostor";
-                    __instance.TeamTitle.color = Palette.ImpostorRed;
-                }
-            }  
+            }
+        }
+
+        public static IEnumerator<WaitForSeconds> EndShowRole(IntroCutscene __instance) {
+            yield return new WaitForSeconds(5f);
+            __instance.YouAreText.gameObject.SetActive(false);
+            __instance.RoleText.gameObject.SetActive(false);
+            __instance.RoleBlurbText.gameObject.SetActive(false);
+            __instance.ourCrewmate.gameObject.SetActive(false);
+           
         }
 
         [HarmonyPatch(typeof(IntroCutscene), nameof(IntroCutscene.ShowRole))]
         class SetUpRoleTextPatch {
             static public void SetRoleTexts(IntroCutscene __instance) {
                 // Don't override the intro of the vanilla roles
-                List<RoleInfo> infos = RoleInfo.getRoleInfoForPlayer(PlayerControl.LocalPlayer);
-                RoleInfo roleInfo = infos.Where(info => info.roleId != RoleId.Lover).FirstOrDefault();
+                List<RoleInfo> infos = RoleInfo.getRoleInfoForPlayer(CachedPlayer.LocalPlayer.PlayerControl);
+                RoleInfo roleInfo = infos.Where(info => !info.isModifier).FirstOrDefault();
+                RoleInfo modifierInfo = infos.Where(info => info.isModifier).FirstOrDefault();
+                __instance.RoleBlurbText.text = "";
                 if (roleInfo != null) {
                     __instance.RoleText.text = roleInfo.name;
                     __instance.RoleText.color = roleInfo.color;
                     __instance.RoleBlurbText.text = roleInfo.introDescription;
                     __instance.RoleBlurbText.color = roleInfo.color;
                 }
-                if (infos.Any(info => info.roleId == RoleId.Lover)) {
-                    PlayerControl otherLover = PlayerControl.LocalPlayer == Lovers.lover1 ? Lovers.lover2 : Lovers.lover1;
-                    __instance.RoleBlurbText.text += Helpers.cs(Lovers.color, $"\n♥ You are in love with {otherLover?.Data?.PlayerName ?? ""} ♥");
+                if (modifierInfo != null) {
+                    if (modifierInfo.roleId != RoleId.Lover)
+                        __instance.RoleBlurbText.text += Helpers.cs(modifierInfo.color, $"\n{modifierInfo.introDescription}");
+                    else {
+                        PlayerControl otherLover = CachedPlayer.LocalPlayer.PlayerControl == Lovers.lover1 ? Lovers.lover2 : Lovers.lover1;
+                        __instance.RoleBlurbText.text += Helpers.cs(Lovers.color, $"\n♥ You are in love with {otherLover?.Data?.PlayerName ?? ""} ♥");
+                    }
                 }
                 if (Deputy.knowsSheriff && Deputy.deputy != null && Sheriff.sheriff != null) {
                     if (infos.Any(info => info.roleId == RoleId.Sheriff))
@@ -326,7 +339,7 @@ namespace TheEpicRoles.Patches {
             }
             public static bool Prefix(IntroCutscene __instance) {
                 if (!CustomOptionHolder.activateRoles.getBool()) return true;
-                HudManager.Instance.StartCoroutine(Effects.Lerp(10f, new Action<float>((p) => {
+                FastDestroyableSingleton<HudManager>.Instance.StartCoroutine(Effects.Lerp(1f, new Action<float>((p) => {
                     SetRoleTexts(__instance);
                 })));
                 return true;
@@ -357,14 +370,11 @@ namespace TheEpicRoles.Patches {
     }
 
     [HarmonyPatch(typeof(Constants), nameof(Constants.ShouldHorseAround))]
-    public static class ShouldAlwaysHorseAround
-    {
+    public static class ShouldAlwaysHorseAround {
         public static bool isHorseMode;
-        public static bool Prefix(ref bool __result)
-        {
+        public static bool Prefix(ref bool __result) {
             if (isHorseMode != MapOptions.enableHorseMode && LobbyBehaviour.Instance != null) __result = isHorseMode;
-            else
-            {
+            else {
                 __result = MapOptions.enableHorseMode;
                 isHorseMode = MapOptions.enableHorseMode;
             }

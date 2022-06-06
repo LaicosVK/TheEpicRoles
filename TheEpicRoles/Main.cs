@@ -1,32 +1,31 @@
-﻿using BepInEx;
+﻿global using UnhollowerBaseLib;
+global using UnhollowerBaseLib.Attributes;
+global using UnhollowerRuntimeLib;
+
+using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.IL2CPP;
 using HarmonyLib;
 using Hazel;
 using System.Collections.Generic;
-using System.Security.Cryptography;
 using System.Linq;
-using System.Net;
-using System.IO;
 using System;
-using System.Reflection;
-using UnhollowerBaseLib;
 using UnityEngine;
 using TheEpicRoles.Modules;
-using System.Threading.Tasks;
+using TheEpicRoles.Players;
+using TheEpicRoles.Utilities;
 
-namespace TheEpicRoles {
+namespace TheEpicRoles
+{
     [BepInPlugin(Id, "The Epic Roles", VersionString)]
+    [BepInDependency(SubmergedCompatibility.SUBMERGED_GUID, BepInDependency.DependencyFlags.SoftDependency)]
     [BepInProcess("Among Us.exe")]
     public class TheEpicRolesPlugin : BasePlugin
     {
         public const string Id = "me.laicosvk.theepicroles";
         public const string VersionString = "1.2.0";
-        public static uint firstKill = 0; //i think this is old and can be removed. i wont do it now since 1.1.1 is just a fix.
-        public const string hashPassword = "-1526003550";
 
-        public static System.Version Version = System.Version.Parse(VersionString);
-
+        public static Version Version = Version.Parse(VersionString);
         internal static BepInEx.Logging.ManualLogSource Logger;
 
         public Harmony Harmony { get; } = new Harmony(Id);
@@ -34,15 +33,15 @@ namespace TheEpicRoles {
 
         public static int optionsPage = 2;
 
-        public static ConfigEntry<string> DeveloperMode { get; private set; }
+        public static ConfigEntry<bool> DebugMode { get; private set; }
         public static ConfigEntry<bool> StreamerMode { get; set; }
         public static ConfigEntry<bool> GhostsSeeTasks { get; set; }
         public static ConfigEntry<bool> GhostsSeeRoles { get; set; }
+        public static ConfigEntry<bool> GhostsSeeModifier { get; set; }
         public static ConfigEntry<bool> GhostsSeeVotes{ get; set; }
         public static ConfigEntry<bool> ShowRoleSummary { get; set; }
         public static ConfigEntry<bool> ShowLighterDarker { get; set; }
         public static ConfigEntry<bool> EnableHorseMode { get; set; }
-        public static ConfigEntry<bool> ToggleCursor { get; set; }
         public static ConfigEntry<string> StreamerModeReplacementText { get; set; }
         public static ConfigEntry<string> StreamerModeReplacementColor { get; set; }
         public static ConfigEntry<string> Ip { get; set; }
@@ -53,29 +52,31 @@ namespace TheEpicRoles {
 
         public static IRegionInfo[] defaultRegions;
         public static void UpdateRegions() {
-            ServerManager serverManager = DestroyableSingleton<ServerManager>.Instance;
+            ServerManager serverManager = FastDestroyableSingleton<ServerManager>.Instance;
             IRegionInfo[] regions = defaultRegions;
 
             var CustomRegion = new DnsRegionInfo(Ip.Value, "Custom", StringNames.NoTranslation, Ip.Value, Port.Value, false);
-            regions = regions.Concat(new IRegionInfo[] { CustomRegion.Cast<IRegionInfo>() }).ToArray();
+            regions = regions.Concat(new IRegionInfo[] { CustomRegion.CastFast<IRegionInfo>() }).ToArray();
             ServerManager.DefaultRegions = regions;
             serverManager.AvailableRegions = regions;
         }
 
         public override void Load() {
             Logger = Log;
-            DeveloperMode = Config.Bind("Custom", "Enable Developer Mode", "false");
+            Instance = this;
+
+            DebugMode = Config.Bind("Custom", "Enable Debug Mode", false);
             StreamerMode = Config.Bind("Custom", "Enable Streamer Mode", false);
             GhostsSeeTasks = Config.Bind("Custom", "Ghosts See Remaining Tasks", true);
             GhostsSeeRoles = Config.Bind("Custom", "Ghosts See Roles", true);
+            GhostsSeeModifier = Config.Bind("Custom", "Ghosts See Modifier", true);
             GhostsSeeVotes = Config.Bind("Custom", "Ghosts See Votes", true);
             ShowRoleSummary = Config.Bind("Custom", "Show Role Summary", true);
             ShowLighterDarker = Config.Bind("Custom", "Show Lighter / Darker", true);
             EnableHorseMode = Config.Bind("Custom", "Enable Horse Mode", false);
-            ToggleCursor = Config.Bind("Custom", "Better Cursor", true);
             ShowPopUpVersion = Config.Bind("Custom", "Show PopUp", "0");
-            StreamerModeReplacementText = Config.Bind("Custom", "Streamer Mode Replacement Text", "\n\nThe Epic Roles");
-            StreamerModeReplacementColor = Config.Bind("Custom", "Streamer Mode Replacement Text Hex Color", "#00FFDDFF");
+            StreamerModeReplacementText = Config.Bind("Custom", "Streamer Mode Replacement Text", "\nThe Epic Roles");
+            StreamerModeReplacementColor = Config.Bind("Custom", "Streamer Mode Replacement Text Hex Color", "#00FFDD");
             
 
             Ip = Config.Bind("Custom", "Custom Server IP", "127.0.0.1");
@@ -87,22 +88,25 @@ namespace TheEpicRoles {
             GameOptionsData.RecommendedImpostors = GameOptionsData.MaxImpostors = Enumerable.Repeat(3, 16).ToArray(); // Max Imp = Recommended Imp = 3
             GameOptionsData.MinPlayers = Enumerable.Repeat(4, 15).ToArray(); // Min Players = 4
 
-            Instance = this;
-            CustomOptionHolder.Load();
-            CustomColors.Load();
-
+            DebugMode = Config.Bind("Custom", "Enable Debug Mode", false);
             Harmony.PatchAll();
 
-            if (ToggleCursor.Value) {
-                Helpers.enableCursor("init");
+            CustomOptionHolder.Load();
+            CustomColors.Load();
+            Patches.FreeNamePatch.Initialize();
+
+            if (BepInExUpdater.UpdateRequired)
+            {
+                AddComponent<BepInExUpdater>();
+                return;
             }
-            Task.Factory.StartNew( () => Helpers.renderAudioToRaw());  // Render all the files in sound to raw files in the correct folder
+            
+            SubmergedCompatibility.Initialize();
+            AddComponent<ModUpdateBehaviour>();
         }
         public static Sprite GetModStamp() {
             if (ModStamp) return ModStamp;
-            if (TheEpicRolesPlugin.DeveloperMode.Value.GetHashCode().ToString() != TheEpicRolesPlugin.hashPassword)
-                return ModStamp = Helpers.loadSpriteFromResources("TheEpicRoles.Resources.ModStamp.png", 150f);
-            else return ModStamp = Helpers.loadSpriteFromResources("TheEpicRoles.Resources.DevStamp.png", 150f);
+            return ModStamp = Helpers.loadSpriteFromResources("TheEpicRoles.Resources.ModStamp.png", 150f);
         }
     }
 
@@ -134,8 +138,7 @@ namespace TheEpicRoles {
 
         public static void Postfix(KeyboardJoystick __instance)
         {
-            if (TheEpicRolesPlugin.DeveloperMode.Value.GetHashCode().ToString() != TheEpicRolesPlugin.hashPassword)
-                return;
+            if (!TheEpicRolesPlugin.DebugMode.Value) return;
 
             // Spawn dummys
             if (Input.GetKeyDown(KeyCode.F)) {
@@ -146,7 +149,7 @@ namespace TheEpicRoles {
                 GameData.Instance.AddPlayer(playerControl);
                 AmongUsClient.Instance.Spawn(playerControl, -2, InnerNet.SpawnFlags.None);
                 
-                playerControl.transform.position = PlayerControl.LocalPlayer.transform.position;
+                playerControl.transform.position = CachedPlayer.LocalPlayer.transform.position;
                 playerControl.GetComponent<DummyBehaviour>().enabled = true;
                 playerControl.NetTransform.enabled = false;
                 playerControl.SetName(RandomString(10));
@@ -155,31 +158,10 @@ namespace TheEpicRoles {
             }
 
             // Terminate round
-            if (Input.GetKeyDown(KeyCode.L))
-            {
-                MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(PlayerControl.LocalPlayer.NetId, (byte)CustomRPC.ForceEnd, Hazel.SendOption.Reliable, -1);
+            if(Input.GetKeyDown(KeyCode.L)) {
+                MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.ForceEnd, Hazel.SendOption.Reliable, -1);
                 AmongUsClient.Instance.FinishRpcImmediately(writer);
                 RPCProcedure.forceEnd();
-            }
-
-            // get/remove ventbutton
-            if (Input.GetKeyDown(KeyCode.V))
-            {
-                if (PlayerControl.LocalPlayer.Data.Role.CanVent)
-                    PlayerControl.LocalPlayer.Data.Role.CanVent = false;
-                else PlayerControl.LocalPlayer.Data.Role.CanVent = true;
-            }
-
-            // increase report distance
-            if (Input.GetKeyDown(KeyCode.U))
-            {
-                PlayerControl.LocalPlayer.MaxReportDistance += 1;
-            }
-
-            // decrease report distance
-            if (Input.GetKeyDown(KeyCode.J))
-            {
-                PlayerControl.LocalPlayer.MaxReportDistance -= 1;
             }
         }
 

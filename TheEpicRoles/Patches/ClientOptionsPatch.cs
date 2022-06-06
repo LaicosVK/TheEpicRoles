@@ -2,9 +2,9 @@ using HarmonyLib;
 using UnityEngine;
 using System;
 using System.Collections.Generic;
+using TheEpicRoles.Utilities;
 using TMPro;
 using UnityEngine.Events;
-using UnityEngine.SceneManagement;
 using static UnityEngine.UI.Button;
 using Object = UnityEngine.Object;
 
@@ -18,9 +18,9 @@ namespace TheEpicRoles.Patches
             new SelectionBehaviour("Ghosts See Remaining Tasks", () => MapOptions.ghostsSeeTasks = TheEpicRolesPlugin.GhostsSeeTasks.Value = !TheEpicRolesPlugin.GhostsSeeTasks.Value, TheEpicRolesPlugin.GhostsSeeTasks.Value),
             new SelectionBehaviour("Ghosts Can See Votes", () => MapOptions.ghostsSeeVotes = TheEpicRolesPlugin.GhostsSeeVotes.Value = !TheEpicRolesPlugin.GhostsSeeVotes.Value, TheEpicRolesPlugin.GhostsSeeVotes.Value),
             new SelectionBehaviour("Ghosts Can See Roles", () => MapOptions.ghostsSeeRoles = TheEpicRolesPlugin.GhostsSeeRoles.Value = !TheEpicRolesPlugin.GhostsSeeRoles.Value, TheEpicRolesPlugin.GhostsSeeRoles.Value),
+            new SelectionBehaviour("Ghosts Can Additionally See Modifier", () => MapOptions.ghostsSeeModifier = TheEpicRolesPlugin.GhostsSeeModifier.Value = !TheEpicRolesPlugin.GhostsSeeModifier.Value, TheEpicRolesPlugin.GhostsSeeModifier.Value),
             new SelectionBehaviour("Show Role Summary", () => MapOptions.showRoleSummary = TheEpicRolesPlugin.ShowRoleSummary.Value = !TheEpicRolesPlugin.ShowRoleSummary.Value, TheEpicRolesPlugin.ShowRoleSummary.Value),
             new SelectionBehaviour("Show Lighter / Darker", () => MapOptions.showLighterDarker = TheEpicRolesPlugin.ShowLighterDarker.Value = !TheEpicRolesPlugin.ShowLighterDarker.Value, TheEpicRolesPlugin.ShowLighterDarker.Value),
-            new SelectionBehaviour("Better Cursor", () => MapOptions.toggleCursor = TheEpicRolesPlugin.ToggleCursor.Value = !TheEpicRolesPlugin.ToggleCursor.Value, TheEpicRolesPlugin.ToggleCursor.Value),
         };
         
         private static GameObject popUp;
@@ -91,14 +91,14 @@ namespace TheEpicRoles.Patches
             var transform = __instance.CensorChatButton.transform;
             __instance.CensorChatButton.Text.transform.localScale = new Vector3(1 / 0.66f, 1, 1);
             _origin ??= transform.localPosition;
-            
+
             transform.localPosition = _origin.Value + Vector3.left * 0.45f;
             transform.localScale = new Vector3(0.66f, 1, 1);
             __instance.EnableFriendInvitesButton.transform.localScale = new Vector3(0.66f, 1, 1);
             __instance.EnableFriendInvitesButton.transform.localPosition += Vector3.right * 0.5f;
             __instance.EnableFriendInvitesButton.Text.transform.localScale = new Vector3(1.2f, 1, 1);
 
-            moreOptions.transform.localPosition = _origin.Value + Vector3.right * 4f /3f;
+            moreOptions.transform.localPosition = _origin.Value + Vector3.right * 4f / 3f;
             moreOptions.transform.localScale = new Vector3(0.66f, 1, 1);
 
             moreOptions.gameObject.SetActive(true);
@@ -110,9 +110,9 @@ namespace TheEpicRoles.Patches
             {
                 if (!popUp) return;
 
-                if (__instance.transform.parent && __instance.transform.parent == HudManager.Instance.transform)
+                if (__instance.transform.parent && __instance.transform.parent == FastDestroyableSingleton<HudManager>.Instance.transform)
                 {
-                    popUp.transform.SetParent(HudManager.Instance.transform);
+                    popUp.transform.SetParent(FastDestroyableSingleton<HudManager>.Instance.transform);
                     popUp.transform.localPosition = new Vector3(0, 0, -800f);
                 }
                 else
@@ -157,7 +157,7 @@ namespace TheEpicRoles.Patches
 
                 var transform = button.transform;
                 transform.localPosition = pos;
-                
+
                 button.onState = info.DefaultValue;
                 button.Background.color = button.onState ? Color.green : Palette.ImpostorRed;
                 
@@ -180,9 +180,6 @@ namespace TheEpicRoles.Patches
 
                 passiveButton.OnClick.AddListener((Action) (() =>
                 {
-                    if(info.Title == "Better Cursor") {
-                        Helpers.enableCursor("toggle");                  
-                    }
                     button.onState = info.OnClick();
                     button.Background.color = button.onState ? Color.green : Palette.ImpostorRed;
                 }));
