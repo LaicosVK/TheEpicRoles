@@ -145,7 +145,7 @@ namespace TheEpicRoles {
     class GameOptionsMenuStartPatch {
         public static void Postfix(GameOptionsMenu __instance) {
             if (GameObject.Find("TORSettings") != null) { // Settings setup has already been performed, fixing the title of the tab and returning
-                GameObject.Find("TORSettings").transform.FindChild("GameGroup").FindChild("Text").GetComponent<TMPro.TextMeshPro>().SetText("The Other Roles Settings");
+                GameObject.Find("TORSettings").transform.FindChild("GameGroup").FindChild("Text").GetComponent<TMPro.TextMeshPro>().SetText("The Epic Roles Settings");
                 return;
             }
             if (GameObject.Find("ImpostorSettings") != null) {
@@ -538,14 +538,14 @@ namespace TheEpicRoles {
         private static void Postfix(ref string __result)
         {
             int counter = TheEpicRolesPlugin.optionsPage;
-            string hudString = counter != 0 ? Helpers.cs(DateTime.Now.Second % 2 == 0 ? Color.white : Color.red, "(Use scroll wheel if necessary)\n\n") : "";
+            string hudString = counter != 0 ? Helpers.cs(DateTime.Now.Second % 2 == 0 ? Color.white : Color.white, "(Use scroll wheel if necessary)\n\n") : "";
 
             switch (counter) {
                 case 0:
                     hudString += "Page 1: Vanilla Settings \n\n" + __result;
                     break;
                 case 1:
-                    hudString += "Page 2: The Other Roles Settings \n" + buildOptionsOfType(CustomOption.CustomOptionType.General, false);
+                    hudString += "Page 2: The Epic Roles Settings \n" + buildOptionsOfType(CustomOption.CustomOptionType.General, false);
                     break;
                 case 2:
                     hudString += "Page 3: Role and Modifier Rates \n" + buildRoleOptions();

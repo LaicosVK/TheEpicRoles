@@ -32,7 +32,7 @@ public class BepInExUpdater : MonoBehaviour
     [HideFromIl2Cpp]
     public IEnumerator CoUpdate()
     {
-        Task.Run(() => MessageBox(IntPtr.Zero, "Required BepInEx update is downloading, please wait...","The Other Roles", 0));
+        Task.Run(() => MessageBox(IntPtr.Zero, "Required BepInEx update is downloading, please wait...","The Epic Roles", 0));
         UnityWebRequest www = UnityWebRequest.Get(BepInExDownloadURL);
         yield return www.Send();        
         if (www.isNetworkError || www.isHttpError)

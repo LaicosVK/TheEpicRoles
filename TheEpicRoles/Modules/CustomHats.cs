@@ -403,8 +403,8 @@ namespace TheEpicRoles.Modules {
     public class CustomHatLoader {
         public static bool running = false;
         static public List<string> REPOS = new List<string>() { // All hat repos that should be loaded
-            "https://raw.githubusercontent.com/Eisbison/TheOtherHats/master",
-            "https://raw.githubusercontent.com/LaicosVK/TheEpicAssets/main/TheEpicHats"
+            "https://raw.githubusercontent.com/LaicosVK/TheEpicAssets/main/TheEpicHats",
+            "https://raw.githubusercontent.com/Eisbison/TheOtherHats/master"
         };
 
         public static List<CustomHatOnline> hatdetails = new List<CustomHatOnline>();
