@@ -23,7 +23,7 @@ Our goal is to make this mod more epic and to add a bunch of new features, roles
 
 ## Additional Roles
 
-<img align="left" width="100" height="100" src="/TheEpicRoles/Resources/PhaseKillButton.png"/>
+<img align="left" width="100" height="100" src="/TheEpicRoles/Resources/PhaserAssassinateButton.png"/>
 
 ### Phaser (Impostor)
 The Phaser is faster than light! They can mark a player to jump on and kill.
