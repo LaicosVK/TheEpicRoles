@@ -22,6 +22,35 @@ namespace TheEpicRoles.Patches {
                 if (CachedPlayer.LocalPlayer != null) {
                     Helpers.shareGameVersion();
                 }
+
+                // Send current players status list to new player
+                if (AmongUsClient.Instance.AmHost) {
+                    MessageWriter writer = AmongUsClient.Instance.StartRpc(PlayerControl.LocalPlayer.NetId, (byte)CustomRPC.SetReadyNames, Hazel.SendOption.Reliable);
+                    writer.WriteBytesAndSize(RPCProcedure.readyStatus.ToArray());
+                    writer.EndMessage();
+                }
+            }
+        }
+
+        [HarmonyPatch(typeof(AmongUsClient), nameof(AmongUsClient.OnPlayerLeft))]
+        public class AmongUsClientOnPlayerLeftPatch {
+            public static void Postfix(AmongUsClient __instance, [HarmonyArgument(0)] ref InnerNet.ClientData data) {
+                // Remove player from ready list and send updated ready status list to all player
+                if (AmongUsClient.Instance.AmHost) {
+                    RPCProcedure.readyStatus.Remove(data.Character.PlayerId);
+                    MessageWriter writer = AmongUsClient.Instance.StartRpc(PlayerControl.LocalPlayer.NetId, (byte)CustomRPC.SetReadyNames, Hazel.SendOption.Reliable);
+                    writer.WriteBytesAndSize(RPCProcedure.readyStatus.ToArray());
+                    writer.EndMessage();
+                    RPCProcedure.setReadyNames(RPCProcedure.readyStatus.ToArray());
+                }
+            }
+        }
+
+        [HarmonyPatch(typeof(AmongUsClient), nameof(AmongUsClient.OnGameJoined))]
+        public class AmongUsClientOnGameJoinedPatch {
+            public static void Prefix() {
+                // Clear ready status list on game join
+                RPCProcedure.readyStatus.Clear();
             }
         }
 
@@ -36,7 +65,7 @@ namespace TheEpicRoles.Patches {
                 kickingTimer = 0f;
                 // Copy lobby code
                 string code = InnerNet.GameCode.IntToGameName(AmongUsClient.Instance.GameId);
-                GUIUtility.systemCopyBuffer = code;
+                // GUIUtility.systemCopyBuffer = code;
                 lobbyCodeText = FastDestroyableSingleton<TranslationController>.Instance.GetString(StringNames.RoomCode, new Il2CppReferenceArray<Il2CppSystem.Object>(0)) + "\r\n" + code;
             }
         }

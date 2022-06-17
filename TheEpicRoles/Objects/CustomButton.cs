@@ -33,11 +33,12 @@ namespace TheEpicRoles.Objects {
         public HudManager hudManager;
         public bool mirror;
         public KeyCode? hotkey;
-        private string buttonText;
+        public string buttonText;
         public bool isHandcuffed = false;
         private static readonly int Desat = Shader.PropertyToID("_Desat");
+        public static List<CustomButton> Lobbybuttons = new List<CustomButton>();
 
-        public CustomButton(Action OnClick, Func<bool> HasButton, Func<bool> CouldUse, Action OnMeetingEnds, Sprite Sprite, Vector3 PositionOffset, HudManager hudManager, KeyCode? hotkey, bool HasEffect, float EffectDuration, Action OnEffectEnds, bool mirror = false, string buttonText = "")
+        public CustomButton(Action OnClick, Func<bool> HasButton, Func<bool> CouldUse, Action OnMeetingEnds, Sprite Sprite, Vector3 PositionOffset, HudManager hudManager, KeyCode? hotkey, bool HasEffect, float EffectDuration, Action OnEffectEnds, bool mirror = false, string buttonText = "", bool inLobby = false)
         {
             this.hudManager = hudManager;
             this.OnClick = OnClick;
@@ -53,8 +54,10 @@ namespace TheEpicRoles.Objects {
             this.mirror = mirror;
             this.hotkey = hotkey;
             this.buttonText = buttonText;
-            Timer = 16.2f;
-            buttons.Add(this);
+            if (inLobby)
+                Lobbybuttons.Add(this);
+            else
+                buttons.Add(this);
             actionButton = UnityEngine.Object.Instantiate(hudManager.KillButton, hudManager.KillButton.transform.parent);
             actionButtonGameObject = actionButton.gameObject;
             actionButtonRenderer = actionButton.graphic;
@@ -68,8 +71,8 @@ namespace TheEpicRoles.Objects {
             setActive(false);
         }
 
-        public CustomButton(Action OnClick, Func<bool> HasButton, Func<bool> CouldUse, Action OnMeetingEnds, Sprite Sprite, Vector3 PositionOffset, HudManager hudManager, KeyCode? hotkey, bool mirror = false, string buttonText = "")
-        : this(OnClick, HasButton, CouldUse, OnMeetingEnds, Sprite, PositionOffset, hudManager, hotkey, false, 0f, () => {}, mirror, buttonText) { }
+        public CustomButton(Action OnClick, Func<bool> HasButton, Func<bool> CouldUse, Action OnMeetingEnds, Sprite Sprite, Vector3 PositionOffset, HudManager hudManager, KeyCode? hotkey, bool mirror = false, string buttonText = "", bool inLobby = false)
+        : this(OnClick, HasButton, CouldUse, OnMeetingEnds, Sprite, PositionOffset, hudManager, hotkey, false, 0f, () => {}, mirror, buttonText, inLobby) { }
 
         public void onClickEvent()
         {
@@ -86,6 +89,19 @@ namespace TheEpicRoles.Objects {
                     this.Timer = this.EffectDuration;
                     actionButton.cooldownTimerText.color = new Color(0F, 0.8F, 0F);
                     this.isEffectActive = true;
+                }
+            }
+        }
+
+        public static void LobbyHudUpdate() {
+            Lobbybuttons.RemoveAll(item => item.actionButton == null);
+
+            for (int i = 0; i < Lobbybuttons.Count; i++) {
+                try {
+                    Lobbybuttons[i].Update();
+                }
+                catch (NullReferenceException) {
+                    System.Console.WriteLine("[WARNING] NullReferenceException from LobbyHudUpdate().HasButton(), if theres only one warning its fine");
                 }
             }
         }

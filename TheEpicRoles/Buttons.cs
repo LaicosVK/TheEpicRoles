@@ -53,6 +53,8 @@ namespace TheEpicRoles
         public static CustomButton mayorMeetingButton;
         public static CustomButton zoomOutButton;
         public static CustomButton jumperButton;
+        public static CustomButton readyButton;
+        public static CustomButton copyButton;
 
         public static Dictionary<byte, List<CustomButton>> deputyHandcuffedButtons = null;
 
@@ -66,6 +68,7 @@ namespace TheEpicRoles
         public static TMPro.TMP_Text hackerAdminTableChargesText;
         public static TMPro.TMP_Text hackerVitalsChargesText;
         public static TMPro.TMP_Text jumperChargesText;
+        public static TMPro.TMP_Text readyButtonCount;
 
         public static void setCustomButtonCooldowns() {
             engineerRepairButton.MaxTimer = 0f;
@@ -105,6 +108,8 @@ namespace TheEpicRoles
             phaserButton.MaxTimer = Phaser.cooldown;
             mayorMeetingButton.MaxTimer = PlayerControl.GameOptions.EmergencyCooldown;
             jumperButton.MaxTimer = Jumper.jumperJumpTime;
+            readyButton.MaxTimer = 3f;
+            copyButton.MaxTimer = 1f;
 
             timeMasterShieldButton.EffectDuration = TimeMaster.shieldDuration;
             hackerButton.EffectDuration = Hacker.duration;
@@ -1638,7 +1643,7 @@ namespace TheEpicRoles
                 __instance,
                 KeyCode.F,
                 false,
-                "MARK"
+                "MARK"              
             );
             // Jumper Charges counter
             jumperChargesText = GameObject.Instantiate(jumperButton.actionButton.cooldownTimerText, jumperButton.actionButton.cooldownTimerText.transform.parent);
@@ -1646,6 +1651,68 @@ namespace TheEpicRoles
             jumperChargesText.enableWordWrapping = false;
             jumperChargesText.transform.localScale = Vector3.one * 0.5f;
             jumperChargesText.transform.localPosition += new Vector3(-0.05f, 0.7f, 0);
+
+            // ready button
+            readyButton = new CustomButton(
+                () => {
+                    MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(PlayerControl.LocalPlayer.NetId, (byte)CustomRPC.SetReadyStatus, Hazel.SendOption.Reliable, -1);
+                    writer.Write(PlayerControl.LocalPlayer.PlayerId);
+                    if (readyButton.buttonText == "Not Ready") {
+                        readyButton.Sprite = Helpers.loadSpriteFromResources("TheEpicRoles.Resources.ReadyButton.png", 115f);
+                        readyButton.buttonText = "Ready";
+                        readyButton.actionButton.buttonLabelText.outlineColor = Color.green;
+                        writer.Write(byte.MaxValue);
+                        if (AmongUsClient.Instance.AmHost)
+                            RPCProcedure.setReadyStatus(PlayerControl.LocalPlayer.PlayerId, byte.MaxValue);
+                    }
+                    else {
+                        readyButton.Sprite = Helpers.loadSpriteFromResources("TheEpicRoles.Resources.NotReadyButton.png", 115f);
+                        readyButton.buttonText = "Not Ready";
+                        readyButton.actionButton.buttonLabelText.outlineColor = Color.red;
+                        writer.Write(byte.MinValue);
+                        if (AmongUsClient.Instance.AmHost)
+                            RPCProcedure.setReadyStatus(PlayerControl.LocalPlayer.PlayerId, byte.MinValue);
+                    }
+                    readyButton.Timer = 3f;
+                    AmongUsClient.Instance.FinishRpcImmediately(writer);
+                },
+                () => { return AmongUsClient.Instance.GameState != InnerNet.InnerNetClient.GameStates.Started && AmongUsClient.Instance.GameMode != GameModes.FreePlay; },
+                () => { return true; },
+                () => { },
+                Helpers.loadSpriteFromResources("TheEpicRoles.Resources.NotReadyButton.png", 115f),
+                new Vector3(-1f, 0, 0),
+                __instance,
+                KeyCode.LeftControl,
+                false,
+                "Not Ready",
+                true
+            );
+
+            // Ready Button counter
+            readyButtonCount = GameObject.Instantiate(readyButton.actionButton.cooldownTimerText, readyButton.actionButton.cooldownTimerText.transform.parent);
+            readyButtonCount.text = "0 / 1";
+            readyButtonCount.enableWordWrapping = false;
+            readyButtonCount.transform.localScale = Vector3.one * 0.5f;
+            readyButtonCount.transform.localPosition += new Vector3(0, 0.6f, 0);
+
+            copyButton = new CustomButton(
+                () => {
+                    string code = InnerNet.GameCode.IntToGameName(AmongUsClient.Instance.GameId);
+                    GUIUtility.systemCopyBuffer = code;
+                    copyButton.Timer = 1f;
+                },
+                () => { return AmongUsClient.Instance.GameState != InnerNet.InnerNetClient.GameStates.Started && AmongUsClient.Instance.GameMode != GameModes.FreePlay && AmongUsClient.Instance.GameMode != GameModes.LocalGame; },
+                () => { return true; },
+                () => { },
+                Helpers.loadSpriteFromResources("TheEpicRoles.Resources.CopyButton.png", 115f),
+                new Vector3(0f, 1f, 0),
+                __instance,
+                null,
+                false,
+                "Copy Code",
+                true
+            );
+            copyButton.actionButton.buttonLabelText.outlineColor = Color.gray;
 
             // Set the default (or settings from the previous game) timers / durations when spawning the buttons
             setCustomButtonCooldowns();
