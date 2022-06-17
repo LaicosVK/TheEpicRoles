@@ -221,9 +221,6 @@ namespace TheEpicRoles.Patches {
                 }
             }
 
-            // AntiTeleport set position
-            AntiTeleport.setPosition();
-
             // Invert add meeting
             if (Invert.meetings > 0) Invert.meetings--;
 
@@ -412,6 +409,9 @@ namespace TheEpicRoles.Patches {
                     player.transform.localPosition = spawns[spawnNumber];
                     spawns.RemoveAt(spawnNumber);
                 }
+
+                // AntiTeleport set position
+                AntiTeleport.setPosition();
             }
         }
     }
