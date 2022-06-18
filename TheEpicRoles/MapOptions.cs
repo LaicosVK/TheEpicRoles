@@ -17,6 +17,7 @@ namespace TheEpicRoles{
         public static bool showLighterDarker = true;
         public static bool enableHorseMode = false;
         public static bool shieldFirstKill = false;
+        public static bool camoComms = false;
 
         // Updating values
         public static int meetingsCount = 0;
@@ -39,6 +40,7 @@ namespace TheEpicRoles{
             allowParallelMedBayScans = CustomOptionHolder.allowParallelMedBayScans.getBool();
             shieldFirstKill = CustomOptionHolder.shieldFirstKill.getBool();
             firstKillPlayer = null;
+            camoComms = CustomOptionHolder.enableCamoComms.getBool();
         }
 
         public static void reloadPluginOptions() {

@@ -609,6 +609,7 @@ namespace TheEpicRoles
         public static float cooldown = 30f;
         public static float duration = 10f;
         public static float camouflageTimer = 0f;
+        public static bool camoComms = false;
 
         private static Sprite buttonSprite;
         public static Sprite getButtonSprite() {
@@ -618,6 +619,8 @@ namespace TheEpicRoles
         }
 
         public static void resetCamouflage() {
+            if (Helpers.isCamoComms()) return;
+            camoComms = false;
             camouflageTimer = 0f;
             foreach (PlayerControl p in CachedPlayer.AllPlayers)
                 p.setDefaultLook();
