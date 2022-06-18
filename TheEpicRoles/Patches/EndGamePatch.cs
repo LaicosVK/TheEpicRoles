@@ -75,11 +75,12 @@ namespace TheEpicRoles.Patches {
                 AdditionalTempData.playerRoles.Add(new AdditionalTempData.PlayerRoleInfo() { PlayerName = playerControl.Data.PlayerName, Roles = roles, TasksTotal = tasksTotal, TasksCompleted = tasksCompleted });
             }
 
-            // Remove Jester, Arsonist, Vulture, Jackal, former Jackals and Sidekick from winners (if they win, they'll be readded)
+            // Remove, Amnesiac, Jester, Arsonist, Vulture, Jackal, former Jackals and Sidekick from winners (if they win, they'll be readded)
             List<PlayerControl> notWinners = new List<PlayerControl>();
             if (Jester.jester != null) notWinners.Add(Jester.jester);
             if (Sidekick.sidekick != null) notWinners.Add(Sidekick.sidekick);
             if (Jackal.jackal != null) notWinners.Add(Jackal.jackal);
+            if (Amnesiac.amnesiac != null) notWinners.Add(Amnesiac.amnesiac);
             if (Arsonist.arsonist != null) notWinners.Add(Arsonist.arsonist);
             if (Vulture.vulture != null) notWinners.Add(Vulture.vulture);
             if (Lawyer.lawyer != null) notWinners.Add(Lawyer.lawyer);

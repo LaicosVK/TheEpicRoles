@@ -58,6 +58,7 @@ namespace TheEpicRoles
         public static RoleInfo spy = new RoleInfo("Spy", Spy.color, "Confuse the <color=#FF1919FF>Impostors</color>", "Confuse the Impostors", RoleId.Spy);
         public static RoleInfo securityGuard = new RoleInfo("Security Guard", SecurityGuard.color, "Seal vents and place cameras", "Seal vents and place cameras", RoleId.SecurityGuard);
         public static RoleInfo arsonist = new RoleInfo("Arsonist", Arsonist.color, "Let them burn", "Let them burn", RoleId.Arsonist, true);
+        public static RoleInfo amnesiac = new RoleInfo("Amnesiac", Amnesiac.color, "Steal roles from the dead", "You forgot", RoleId.Amnesiac, true);
         public static RoleInfo goodGuesser = new RoleInfo("Nice Guesser", Guesser.color, "Guess and shoot", "Guess and shoot", RoleId.NiceGuesser);
         public static RoleInfo badGuesser = new RoleInfo("Evil Guesser", Palette.ImpostorRed, "Guess and shoot", "Guess and shoot", RoleId.EvilGuesser);
         public static RoleInfo vulture = new RoleInfo("Vulture", Vulture.color, "Eat corpses to win", "Eat dead bodies", RoleId.Vulture, true);
@@ -101,6 +102,7 @@ namespace TheEpicRoles
             lover,
             jester,
             arsonist,
+            amnesiac,
             jackal,
             sidekick,
             vulture,
@@ -187,6 +189,7 @@ namespace TheEpicRoles
             if (p == Spy.spy) infos.Add(spy);
             if (p == SecurityGuard.securityGuard) infos.Add(securityGuard);
             if (p == Arsonist.arsonist) infos.Add(arsonist);
+            if (p == Amnesiac.amnesiac) infos.Add(amnesiac);
             if (p == Guesser.niceGuesser) infos.Add(goodGuesser);
             if (p == Guesser.evilGuesser) infos.Add(badGuesser);
             if (p == BountyHunter.bountyHunter) infos.Add(bountyHunter);

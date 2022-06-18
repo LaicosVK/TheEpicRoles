@@ -20,6 +20,7 @@ namespace TheEpicRoles
         public static CustomButton sheriffKillButton;
         private static CustomButton deputyHandcuffButton;
         private static CustomButton timeMasterShieldButton;
+        private static CustomButton amnesiacRememberButton;
         private static CustomButton medicShieldButton;
         private static CustomButton shifterShiftButton;
         private static CustomButton morphlingButton;
@@ -102,6 +103,7 @@ namespace TheEpicRoles
             arsonistButton.MaxTimer = Arsonist.cooldown;
             vultureEatButton.MaxTimer = Vulture.cooldown;
             mediumButton.MaxTimer = Medium.cooldown;
+            amnesiacRememberButton.MaxTimer = 0f;
             pursuerButton.MaxTimer = Pursuer.cooldown;
             trackerTrackCorpsesButton.MaxTimer = Tracker.corpsesTrackingCooldown;
             witchSpellButton.MaxTimer = Witch.cooldown;
@@ -1294,6 +1296,40 @@ namespace TheEpicRoles
                 () => { return __instance.ReportButton.graphic.color == Palette.EnabledColor && CachedPlayer.LocalPlayer.PlayerControl.CanMove; },
                 () => { vultureEatButton.Timer = vultureEatButton.MaxTimer; },
                 Vulture.getButtonSprite(),
+                new Vector3(-1.8f, -0.06f, 0),
+                __instance,
+                KeyCode.F
+            );
+
+            amnesiacRememberButton = new CustomButton(
+                () => {
+                    foreach (Collider2D collider2D in Physics2D.OverlapCircleAll(PlayerControl.LocalPlayer.GetTruePosition(), PlayerControl.LocalPlayer.MaxReportDistance, Constants.PlayersOnlyMask))
+                    {
+                        if (collider2D.tag == "DeadBody")
+                        {
+                            DeadBody component = collider2D.GetComponent<DeadBody>();
+                            if (component && !component.Reported)
+                            {
+                                Vector2 truePosition = PlayerControl.LocalPlayer.GetTruePosition();
+                                Vector2 truePosition2 = component.TruePosition;
+                                if (Vector2.Distance(truePosition2, truePosition) <= PlayerControl.LocalPlayer.MaxReportDistance && PlayerControl.LocalPlayer.CanMove && !PhysicsHelpers.AnythingBetween(truePosition, truePosition2, Constants.ShipAndObjectsMask, false))
+                                {
+                                    GameData.PlayerInfo playerInfo = GameData.Instance.GetPlayerById(component.ParentId);
+
+                                    MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(PlayerControl.LocalPlayer.NetId, (byte)CustomRPC.AmnesiacTakeRole, Hazel.SendOption.Reliable, -1);
+                                    writer.Write(playerInfo.PlayerId);
+                                    AmongUsClient.Instance.FinishRpcImmediately(writer);
+                                    RPCProcedure.amnesiacTakeRole(playerInfo.PlayerId);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                },
+                () => { return Amnesiac.amnesiac != null && Amnesiac.amnesiac == PlayerControl.LocalPlayer && !PlayerControl.LocalPlayer.Data.IsDead; },
+                () => { return __instance.ReportButton.graphic.color == Palette.EnabledColor && PlayerControl.LocalPlayer.CanMove; },
+                () => { amnesiacRememberButton.Timer = 0f; },
+                Amnesiac.getButtonSprite(),
                 new Vector3(-1.8f, -0.06f, 0),
                 __instance,
                 KeyCode.F

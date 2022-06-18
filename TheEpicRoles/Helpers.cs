@@ -32,6 +32,23 @@ namespace TheEpicRoles {
 
         public static Dictionary<string, Sprite> CachedSprites = new();
 
+        public static void turnToImpostor(PlayerControl player)
+        {
+            player.Data.Role.TeamType = RoleTeamTypes.Impostor;
+            RoleManager.Instance.SetRole(player, RoleTypes.Impostor);
+            player.SetKillTimer(PlayerControl.GameOptions.KillCooldown);
+
+            System.Console.WriteLine("PROOF I AM IMP VANILLA ROLE: " + player.Data.Role.IsImpostor);
+
+            foreach (var player2 in PlayerControl.AllPlayerControls)
+            {
+                if (player2.Data.Role.IsImpostor && PlayerControl.LocalPlayer.Data.Role.IsImpostor)
+                {
+                    player2.nameText.color = Palette.ImpostorRed;
+                }
+            }
+        }
+
         public static SabatageTypes getActiveSabo()
         {
             foreach (PlayerTask task in PlayerControl.LocalPlayer.myTasks.GetFastEnumerator())

@@ -47,6 +47,7 @@ namespace TheEpicRoles
         Warlock,
         SecurityGuard,
         Arsonist,
+        Amnesiac,
         EvilGuesser,
         NiceGuesser,
         BountyHunter,
@@ -121,6 +122,7 @@ namespace TheEpicRoles
         PlaceCamera,
         SealVent,
         ArsonistWin,
+        AmnesiacTakeRole,
         GuesserShoot,
         VultureWin,
         LawyerWin,
@@ -449,6 +451,274 @@ namespace TheEpicRoles
             FastDestroyableSingleton<HudManager>.Instance.StartCoroutine(Effects.Lerp(TimeMaster.shieldDuration, new Action<float>((p) => {
                 if (p == 1f) TimeMaster.shieldActive = false;
             })));
+        }
+
+        public static void amnesiacTakeRole(byte targetId)
+        {
+            PlayerControl target = Helpers.playerById(targetId);
+            PlayerControl amnesiac = Amnesiac.amnesiac;
+            if (target == null || amnesiac == null) return;
+            List<RoleInfo> targetInfo = RoleInfo.getRoleInfoForPlayer(target);
+            RoleInfo roleInfo = targetInfo.Where(info => !info.isModifier).FirstOrDefault();
+            switch ((RoleId)roleInfo.roleId) {
+                case RoleId.Crewmate:
+                Amnesiac.clearAndReload();
+                break;
+            case RoleId.Impostor:
+                Helpers.turnToImpostor(Amnesiac.amnesiac);
+                Amnesiac.clearAndReload();
+                break;
+                case RoleId.Jester:
+                    if (Amnesiac.resetRole) Jester.clearAndReload();
+                    Jester.jester = amnesiac;
+                    Amnesiac.clearAndReload();
+                    Amnesiac.amnesiac = target;
+                    break;
+                /*case RoleId.Prosecutor:
+                    // Never reload Prosecutor
+                    Prosecutor.prosecutor = amnesiac;
+                    Amnesiac.clearAndReload();
+                    Amnesiac.amnesiac = target;
+                    break;*/
+                case RoleId.Mayor:
+                    if (Amnesiac.resetRole) Mayor.clearAndReload();
+                    Mayor.mayor = amnesiac;
+                    Amnesiac.clearAndReload();
+                    break;
+                case RoleId.Portalmaker:
+                    if (Amnesiac.resetRole) Portalmaker.clearAndReload();
+                    Portalmaker.portalmaker = amnesiac;
+                    Amnesiac.clearAndReload();
+                    break;
+                case RoleId.Engineer:
+                    if (Amnesiac.resetRole) Engineer.clearAndReload();
+                    Engineer.engineer = amnesiac;
+                    Amnesiac.clearAndReload();
+                    break;
+                case RoleId.Sheriff:
+                    // Never reload Sheriff
+                    if (Sheriff.formerDeputy != null && Sheriff.formerDeputy == Sheriff.sheriff) Sheriff.formerDeputy = amnesiac; // Ensure amni gets handcuffs
+                    Sheriff.sheriff = amnesiac;
+                    Amnesiac.clearAndReload();
+                    break;
+                case RoleId.Deputy:
+                    if (Amnesiac.resetRole) Deputy.clearAndReload();
+                    Deputy.deputy = amnesiac;
+                    Amnesiac.clearAndReload();
+                    break;
+                case RoleId.Lighter:
+                    if (Amnesiac.resetRole) Lighter.clearAndReload();
+                    Lighter.lighter = amnesiac;
+                    Amnesiac.clearAndReload();
+                    break;
+
+                case RoleId.Godfather:
+                    Helpers.turnToImpostor(Amnesiac.amnesiac);
+                    if (Amnesiac.resetRole) Godfather.clearAndReload();
+                    Godfather.godfather = amnesiac;
+                    Amnesiac.clearAndReload();
+                    break;
+
+                case RoleId.Mafioso:
+                    Helpers.turnToImpostor(Amnesiac.amnesiac);
+                    if (Amnesiac.resetRole) Mafioso.clearAndReload();
+                    Mafioso.mafioso = amnesiac;
+                    Amnesiac.clearAndReload();
+                    break;
+
+                case RoleId.Janitor:
+                    Helpers.turnToImpostor(Amnesiac.amnesiac);
+                    if (Amnesiac.resetRole) Janitor.clearAndReload();
+                    Janitor.janitor = amnesiac;
+                    Amnesiac.clearAndReload();
+                    break;
+                case RoleId.Detective:
+                    if (Amnesiac.resetRole) Detective.clearAndReload();
+                    Detective.detective = amnesiac;
+                    Amnesiac.clearAndReload();
+                    break;
+                case RoleId.TimeMaster:
+                    if (Amnesiac.resetRole) TimeMaster.clearAndReload();
+                    TimeMaster.timeMaster = amnesiac;
+                    Amnesiac.clearAndReload();
+                    break;
+                /*case RoleId.Veteren:
+                    if (Amnesiac.resetRole) Veteren.clearAndReload();
+                    Veteren.veteren = amnesiac;
+                    Amnesiac.clearAndReload();
+                    break;*/
+                case RoleId.Medic:
+                    if (Amnesiac.resetRole) Medic.clearAndReload();
+                    Medic.medic = amnesiac;
+                    Amnesiac.clearAndReload();
+                    break;
+                case RoleId.Shifter:
+                    if (Amnesiac.resetRole) Shifter.clearAndReload();
+                    Shifter.shifter = amnesiac;
+                    Amnesiac.clearAndReload();
+                    break;
+                case RoleId.Swapper:
+                    if (Amnesiac.resetRole) Swapper.clearAndReload();
+                    Swapper.swapper = amnesiac;
+                    Amnesiac.clearAndReload();
+                    break;
+                case RoleId.Seer:
+                    if (Amnesiac.resetRole) Seer.clearAndReload();
+                    Seer.seer = amnesiac;
+                    Amnesiac.clearAndReload();
+                    break;
+
+                case RoleId.Morphling:
+                    Helpers.turnToImpostor(Amnesiac.amnesiac);
+                    if (Amnesiac.resetRole) Morphling.clearAndReload();
+                    Morphling.morphling = amnesiac;
+                    Amnesiac.clearAndReload();
+                    break;
+
+                case RoleId.Camouflager:
+                    Helpers.turnToImpostor(Amnesiac.amnesiac);
+                    if (Amnesiac.resetRole) Camouflager.clearAndReload();
+                    Camouflager.camouflager = amnesiac;
+                    Amnesiac.clearAndReload();
+                    break;
+                case RoleId.Hacker:
+                    if (Amnesiac.resetRole) Hacker.clearAndReload();
+                    Hacker.hacker = amnesiac;
+                    Amnesiac.clearAndReload();
+                    break;
+                case RoleId.Tracker:
+                    if (Amnesiac.resetRole) Tracker.clearAndReload();
+                    Tracker.tracker = amnesiac;
+                    Amnesiac.clearAndReload();
+                    break;
+
+                case RoleId.Vampire:
+                    Helpers.turnToImpostor(Amnesiac.amnesiac);
+                    if (Amnesiac.resetRole) Vampire.clearAndReload();
+                    Vampire.vampire = amnesiac;
+                    Amnesiac.clearAndReload();
+                    break;
+                case RoleId.Snitch:
+                    if (Amnesiac.resetRole) Snitch.clearAndReload();
+                    Snitch.snitch = amnesiac;
+                    Amnesiac.clearAndReload();
+                    break;
+                case RoleId.Jackal:
+                    Jackal.jackal = amnesiac;
+                    Jackal.formerJackals.Add(target);
+                    Amnesiac.clearAndReload();
+                    break;
+                case RoleId.Sidekick:
+                    Jackal.formerJackals.Add(target);
+                    if (Amnesiac.resetRole) Sidekick.clearAndReload();
+                    Sidekick.sidekick = amnesiac;
+                    Amnesiac.clearAndReload();
+                    break;
+
+                case RoleId.Eraser:
+                    Helpers.turnToImpostor(Amnesiac.amnesiac);
+                    if (Amnesiac.resetRole) Eraser.clearAndReload();
+                    Eraser.eraser = amnesiac;
+                    Amnesiac.clearAndReload();
+                    break;
+                case RoleId.Spy:
+                    if (Amnesiac.resetRole) Spy.clearAndReload();
+                    Spy.spy = amnesiac;
+                    Amnesiac.clearAndReload();
+                    break;
+
+                case RoleId.Trickster:
+                    Helpers.turnToImpostor(Amnesiac.amnesiac);
+                    if (Amnesiac.resetRole) Trickster.clearAndReload();
+                    Trickster.trickster = amnesiac;
+                    Amnesiac.clearAndReload();
+                    break;
+
+                case RoleId.Cleaner:
+                    Helpers.turnToImpostor(Amnesiac.amnesiac);
+                    if (Amnesiac.resetRole) Cleaner.clearAndReload();
+                    Cleaner.cleaner = amnesiac;
+                    Amnesiac.clearAndReload();
+                    break;
+
+                case RoleId.Warlock:
+                    Helpers.turnToImpostor(Amnesiac.amnesiac);
+                    if (Amnesiac.resetRole) Warlock.clearAndReload();
+                    Warlock.warlock = amnesiac;
+                    Amnesiac.clearAndReload();
+                    break;
+                case RoleId.SecurityGuard:
+                    if (Amnesiac.resetRole) SecurityGuard.clearAndReload();
+                    SecurityGuard.securityGuard = amnesiac;
+                    Amnesiac.clearAndReload();
+                    break;
+                case RoleId.Arsonist:
+                    if (PlayerControl.LocalPlayer == Amnesiac.amnesiac)
+                    {
+                        Helpers.showFlash(Palette.ImpostorRed, duration: 1f);
+                    }
+                    break;
+                case RoleId.EvilGuesser:
+                    Helpers.turnToImpostor(Amnesiac.amnesiac);
+                    // Never Reload Guesser
+                    Guesser.evilGuesser = amnesiac;
+                    Amnesiac.clearAndReload();
+                    break;
+                case RoleId.NiceGuesser:
+                    // Never Reload Guesser
+                    Guesser.niceGuesser = amnesiac;
+                    Amnesiac.clearAndReload();
+                    break;
+                case RoleId.BountyHunter:
+                    Helpers.turnToImpostor(Amnesiac.amnesiac);
+                    if (PlayerControl.LocalPlayer == Amnesiac.amnesiac)
+                    {
+                        Helpers.showFlash(Palette.ImpostorRed, duration: 1f);
+                    }
+                    Amnesiac.clearAndReload();
+                    break;
+                case RoleId.Vulture:
+                    if (Amnesiac.resetRole) Vulture.clearAndReload();
+                    Vulture.vulture = amnesiac;
+                    Amnesiac.clearAndReload();
+                    Amnesiac.amnesiac = target;
+                    break;
+                case RoleId.Medium:
+                    if (Amnesiac.resetRole) Medium.clearAndReload();
+                    Medium.medium = amnesiac;
+                    Amnesiac.clearAndReload();
+                    break;
+                case RoleId.Lawyer:
+                    // Never reset Lawyer
+                    Lawyer.lawyer = amnesiac;
+                    Amnesiac.clearAndReload();
+                    Amnesiac.amnesiac = target;
+                    break;
+                case RoleId.Pursuer:
+                    if (Amnesiac.resetRole) Pursuer.clearAndReload();
+                    Pursuer.pursuer = amnesiac;
+                    Amnesiac.clearAndReload();
+                    Amnesiac.amnesiac = target;
+                    break;
+                case RoleId.Witch:
+                    Helpers.turnToImpostor(Amnesiac.amnesiac);
+                    if (Amnesiac.resetRole) Witch.clearAndReload();
+                    Witch.witch = amnesiac;
+                    Amnesiac.clearAndReload();
+                    break;
+                case RoleId.Phaser:
+                    Helpers.turnToImpostor(Amnesiac.amnesiac);
+                    if (Amnesiac.resetRole) Phaser.clearAndReload();
+                    Phaser.phaser = amnesiac;
+                    Amnesiac.clearAndReload();
+                    break;
+                /*case RoleId.Blackmailer:
+                    Helpers.turnToImpostor(Amnesiac.amnesiac);
+                    if (Amnesiac.resetRole) Blackmailer.clearAndReload();
+                    Blackmailer.blackmailer = amnesiac;
+                    Amnesiac.clearAndReload();
+                    break;*/
+            }
         }
 
         public static void medicSetShielded(byte shieldedId) {
@@ -1173,6 +1443,9 @@ namespace TheEpicRoles
                     break;
                 case (byte)CustomRPC.ArsonistWin:
                     RPCProcedure.arsonistWin();
+                    break;
+                case (byte)CustomRPC.AmnesiacTakeRole:
+                    RPCProcedure.amnesiacTakeRole(reader.ReadByte());
                     break;
                 case (byte)CustomRPC.GuesserShoot:
                     byte killerId = reader.ReadByte();
