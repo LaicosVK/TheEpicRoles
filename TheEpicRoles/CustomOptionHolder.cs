@@ -231,6 +231,8 @@ namespace TheEpicRoles {
         public static CustomOption jumperChargesGainOnMeeting;
         public static CustomOption jumperMaxCharges;
 
+        public static CustomOption enableCamoComms;
+
         public static CustomOption modifierBait;
         public static CustomOption modifierBaitQuantity;
         public static CustomOption modifierBaitReportDelayMin;
@@ -570,6 +572,8 @@ namespace TheEpicRoles {
             hidePlayerNames = CustomOption.Create(6, Types.General, "Hide Player Names", false);
             allowParallelMedBayScans = CustomOption.Create(7, Types.General, "Allow Parallel MedBay Scans", false);
             shieldFirstKill = CustomOption.Create(8, Types.General, "Shield Last Game First Kill", false);
+
+            enableCamoComms = CustomOption.Create(1105, Types.General, "Enable Camouflage Comms", false, null, false);
 
             //LVK. Setting if the target of a button should be shown
             showButtonTarget = CustomOption.Create(9040, Types.General, cs(new Color(0, 1, 217f / 255f, 1f), "Show Button Target"), true);

@@ -61,7 +61,7 @@ namespace TheEpicRoles.Patches {
                 bool isMorphedMorphling = target == Morphling.morphling && Morphling.morphTarget != null && Morphling.morphTimer > 0f;
                 bool hasVisibleShield = false;
                 Color color = Medic.shieldedColor;
-                if (Camouflager.camouflageTimer <= 0f && Medic.shielded != null && ((target == Medic.shielded && !isMorphedMorphling) || (isMorphedMorphling && Morphling.morphTarget == Medic.shielded))) {
+                if (!Helpers.isCamoComms() && Camouflager.camouflageTimer <= 0f && Medic.shielded != null && ((target == Medic.shielded && !isMorphedMorphling) || (isMorphedMorphling && Morphling.morphTarget == Medic.shielded))) {
                     hasVisibleShield = Medic.showShielded == 0 // Everyone
                         || (Medic.showShielded == 1 && (CachedPlayer.LocalPlayer.PlayerControl == Medic.shielded || CachedPlayer.LocalPlayer.PlayerControl == Medic.medic)) // Shielded + Medic
                         || (Medic.showShielded == 2 && CachedPlayer.LocalPlayer.PlayerControl == Medic.medic); // Medic only
@@ -69,7 +69,7 @@ namespace TheEpicRoles.Patches {
                     hasVisibleShield = hasVisibleShield && (Medic.meetingAfterShielding || !Medic.showShieldAfterMeeting || CachedPlayer.LocalPlayer.PlayerControl == Medic.medic);
                 }
 
-                if (Camouflager.camouflageTimer <= 0f && MapOptions.firstKillPlayer != null && MapOptions.shieldFirstKill && ((target == MapOptions.firstKillPlayer && !isMorphedMorphling) || (isMorphedMorphling && Morphling.morphTarget == MapOptions.firstKillPlayer))) {
+                if (!Helpers.isCamoComms() && Camouflager.camouflageTimer <= 0f && MapOptions.firstKillPlayer != null && MapOptions.shieldFirstKill && ((target == MapOptions.firstKillPlayer && !isMorphedMorphling) || (isMorphedMorphling && Morphling.morphTarget == MapOptions.firstKillPlayer))) {
                     hasVisibleShield = true;
                     color = Color.blue;
                 }
@@ -438,7 +438,7 @@ namespace TheEpicRoles.Patches {
             collider.offset = Mini.defaultColliderOffset * Vector2.down;
 
             // Set adapted player size to Mini and Morphling
-            if (Mini.mini == null || Camouflager.camouflageTimer > 0f || Mini.mini == Morphling.morphling && Morphling.morphTimer > 0) return;
+            if (Mini.mini == null || Helpers.isCamoComms() || Camouflager.camouflageTimer > 0f || Mini.mini == Morphling.morphling && Morphling.morphTimer > 0) return;
 
             float growingProgress = Mini.growingProgress();
             float scale = growingProgress * 0.35f + 0.35f;
@@ -703,19 +703,28 @@ namespace TheEpicRoles.Patches {
         }
 
         static void morphlingAndCamouflagerUpdate() {
+            if (Helpers.isCamoComms() && !Helpers.isActiveCamoComms())
+            {
+                MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(PlayerControl.LocalPlayer.NetId, (byte)CustomRPC.CamouflagerCamouflage, Hazel.SendOption.Reliable, -1);
+                writer.Write(0);
+                AmongUsClient.Instance.FinishRpcImmediately(writer);
+                RPCProcedure.camouflagerCamouflage(0);
+            }
             float oldCamouflageTimer = Camouflager.camouflageTimer;
             float oldMorphTimer = Morphling.morphTimer;
             Camouflager.camouflageTimer = Mathf.Max(0f, Camouflager.camouflageTimer - Time.fixedDeltaTime);
             Morphling.morphTimer = Mathf.Max(0f, Morphling.morphTimer - Time.fixedDeltaTime);
 
+            if (Helpers.isCamoComms()) return;
+            if (Helpers.wasActiveCamoComms() && Camouflager.camouflageTimer <= 0f)
+            {
+                Helpers.camoReset();
+            }
+
 
             // Camouflage reset and set Morphling look if necessary
             if (oldCamouflageTimer > 0f && Camouflager.camouflageTimer <= 0f) {
-                Camouflager.resetCamouflage();
-                if (Morphling.morphTimer > 0f && Morphling.morphling != null && Morphling.morphTarget != null) {
-                    PlayerControl target = Morphling.morphTarget;
-                    Morphling.morphling.setLook(target.Data.PlayerName, target.Data.DefaultOutfit.ColorId, target.Data.DefaultOutfit.HatId, target.Data.DefaultOutfit.VisorId, target.Data.DefaultOutfit.SkinId, target.Data.DefaultOutfit.PetId);
-                }
+                Helpers.camoReset();
             }
 
             // Morphling reset (only if camouflage is inactive)
@@ -937,7 +946,7 @@ namespace TheEpicRoles.Patches {
     class PlayerPhysicsWalkPlayerToPatch {
         private static Vector2 offset = Vector2.zero;
         public static void Prefix(PlayerPhysics __instance) {
-            bool correctOffset = Camouflager.camouflageTimer <= 0f && (__instance.myPlayer == Mini.mini ||  (Morphling.morphling != null && __instance.myPlayer == Morphling.morphling && Morphling.morphTarget == Mini.mini && Morphling.morphTimer > 0f));
+            bool correctOffset = !Helpers.isCamoComms() && Camouflager.camouflageTimer <= 0f && (__instance.myPlayer == Mini.mini || (Morphling.morphling != null && __instance.myPlayer == Morphling.morphling && Morphling.morphTarget == Mini.mini && Morphling.morphTimer > 0f));
             correctOffset = correctOffset && !(Mini.mini == Morphling.morphling && Morphling.morphTimer > 0f);
             if (correctOffset) {
                 float currentScaling = (Mini.growingProgress() + 1) * 0.5f;

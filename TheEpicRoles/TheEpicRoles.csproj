@@ -7,6 +7,7 @@
 		<LangVersion>latest</LangVersion>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+        <Configurations>Debug;Release;Prerelease</Configurations>
     </PropertyGroup>
 
     <ItemGroup>

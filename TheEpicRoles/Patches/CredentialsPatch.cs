@@ -14,12 +14,12 @@ $@"<size=130%><color=#00FFDD>TheEpicRoles</color></size> v{TheEpicRolesPlugin.Ve
 Design by <color=#FCCE03FF>moep424</color> & <color=#FCCE03FF>Bavari</color></size>";
 
     public static string mainMenuCredentials = 
-$@"Modded by <color=#FCCE03FF>LaicosVK</color>, <color=#FCCE03FF>Eisbison</color>, <color=#FCCE03FF>Thunderstorm584</color>, <color=#FCCE03FF>EndOfFile</color> & <color=#FCCE03FF>Mallöris</color>
+$@"Modded by <color=#FCCE03FF>LaicosVK</color>, <color=#FCCE03FF>DasMonschta</color>, <color=#FCCE03FF>Eisbison</color>, <color=#FCCE03FF>Thunderstorm584</color>, <color=#FCCE03FF>EndOfFile</color> & <color=#FCCE03FF>Mallöris</color>
 Design by <color=#FCCE03FF>moep424</color> & <color=#FCCE03FF>Bavari</color>";
 
         public static string contributorsCredentials =
 $@"<size=60%> <color=#FCCE03FF>Special thanks to K3ndo & Smeggy</color> 
-GitHub Contributors: Gendelo, Alex2911, amsyarasyiq, MaximeGillot, Psynomit, probablyadnf</size>";
+GitHub Contributors: ismywb, Gendelo, Alex2911, amsyarasyiq, MaximeGillot, Psynomit, probablyadnf</size>";
 
         [HarmonyPatch(typeof(VersionShower), nameof(VersionShower.Start))]
         private static class VersionShowerPatch
