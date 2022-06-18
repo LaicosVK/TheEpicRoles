@@ -583,7 +583,8 @@ namespace TheEpicRoles {
             //LVK. Cooldown on round start setting
             setRoundStartCooldown = CustomOption.Create(9043, Types.General, cs(new Color(0, 1, 217f / 255f, 1f), "Set Spawn Cooldown"), 30f, 10f, 60f, 2.5f, null, true);
             //Monschtalein. toggle lobby mode
-            toggleLobbyMode = CustomOption.Create(7000, Types.General, cs(new Color(0, 1, 217f / 255f, 1f), "Ignore Unready Players"), new string[] { "No", "Yes" }, null, false);
+            //Off because of no check
+            //toggleLobbyMode = CustomOption.Create(7000, Types.General, cs(new Color(0, 1, 217f / 255f, 1f), "Ignore Unready Players"), new string[] { "No", "Yes" }, null, false);
 
             dynamicMap = CustomOption.Create(500, Types.General, "Play On A Random Map", false, null, false);
             dynamicMapEnableSkeld = CustomOption.Create(501, Types.General, "Enable Skeld Rotation", true, dynamicMap, false);
