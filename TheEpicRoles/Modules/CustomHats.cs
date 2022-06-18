@@ -224,14 +224,6 @@ namespace TheEpicRoles.Modules {
             }
         }
 
-        // public void SetHat(HatData hat, HatViewData hatViewData, int color)
-        // {
-        //     this.Hat = hat;
-        //     this.hatView = hatViewData;
-        //     this.PopulateFromHatViewData();
-        //     this.SetColor(color);
-        // }
-
         [HarmonyPatch]
         private static class FreeplayHatTestingPatches
         {
@@ -312,11 +304,17 @@ namespace TheEpicRoles.Modules {
                     __instance.StartCoroutine(Effects.Lerp(0.1f, new System.Action<float>((p) => { title.SetText(packageName); })));
                     offset -= 0.8f * __instance.YOffset;
                 }
+
+                __instance.NumPerRow = 7;
+                __instance.XRange = new FloatRange(-1, __instance.NumPerRow - 2);
+                __instance.scroller.Inner.localScale = new Vector3(0.7f, 0.8f, 1f);
+                __instance.scroller.Inner.localPosition = new Vector3(-0.55f, 0f, 0f);
+
                 for (int i = 0; i < hats.Count; i++) {
                     HatData hat = hats[i].Item1;
                     HatExtension ext = hats[i].Item2;
 
-                    float xpos = __instance.XRange.Lerp((i % __instance.NumPerRow) / (__instance.NumPerRow - 1f));
+                    float xpos = __instance.XRange.Lerp((i % __instance.NumPerRow) / (__instance.NumPerRow - 0.8f));
                     float ypos = offset - (i / __instance.NumPerRow) * (isDefaultPackage ? 1f : 1.5f) * __instance.YOffset;
                     ColorChip colorChip = UnityEngine.Object.Instantiate<ColorChip>(__instance.ColorTabPrefab, __instance.scroller.Inner);
                     if (ActiveInputManager.currentControlType == ActiveInputManager.InputType.Keyboard) {
