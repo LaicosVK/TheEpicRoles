@@ -407,7 +407,13 @@ namespace TheEpicRoles {
             if (target == null || target.Data == null || target.Data.IsDead || target.Data.Disconnected) return MurderAttemptResult.SuppressKill; // Allow killing players in vents compared to vanilla code
 
             // Handle first kill attempt
-            if (MapOptions.shieldFirstKill && MapOptions.firstKillPlayer == target) return MurderAttemptResult.SuppressKill;
+            if (MapOptions.shieldFirstKill && MapOptions.firstKillPlayer == target) {
+                MapOptions.firstKillPlayer.protectedByGuardian = true;
+                RPCProcedure.uncheckedMurderPlayer(killer.PlayerId, target.PlayerId, Byte.MaxValue);
+                MapOptions.firstKillPlayer.protectedByGuardianThisRound = false;
+                PlayerControl.LocalPlayer.killTimer = 10f;
+                return MurderAttemptResult.SuppressKill;
+            }
 
             // Handle blank shot
             if (Pursuer.blankedList.Any(x => x.PlayerId == killer.PlayerId)) {
