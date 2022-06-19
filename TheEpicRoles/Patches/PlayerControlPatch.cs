@@ -817,13 +817,16 @@ namespace TheEpicRoles.Patches {
                 if (entry.Value <= 0) {
                     Bait.active.Remove(entry.Key);
                     if (entry.Key.killerIfExisting != null) {
-                        Helpers.handleVampireBiteOnBodyReport(); // Manually call Vampire handling, since the CmdReportDeadBody Prefix won't be called
-                        RPCProcedure.uncheckedCmdReportDeadBody(entry.Key.killerIfExisting.PlayerId, entry.Key.player.PlayerId);
+                        // Bait handles report RPC
+                        if (CachedPlayer.LocalPlayer.PlayerControl == entry.Key.player) {
+                            Helpers.handleKillOnBodyReport(); // Manually call Vampire and Shifter handling since the CmdReportDeadBody Prefix won't be called
+                            RPCProcedure.uncheckedCmdReportDeadBody(entry.Key.killerIfExisting.PlayerId, entry.Key.player.PlayerId);
 
-                        MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.UncheckedCmdReportDeadBody, Hazel.SendOption.Reliable, -1);
-                        writer.Write(entry.Key.killerIfExisting.PlayerId);
-                        writer.Write(entry.Key.player.PlayerId);
-                        AmongUsClient.Instance.FinishRpcImmediately(writer);
+                            MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.UncheckedCmdReportDeadBody, Hazel.SendOption.Reliable, -1);
+                            writer.Write(entry.Key.killerIfExisting.PlayerId);
+                            writer.Write(entry.Key.player.PlayerId);
+                            AmongUsClient.Instance.FinishRpcImmediately(writer);
+                        }
                     }
                 }
             }
@@ -971,7 +974,7 @@ namespace TheEpicRoles.Patches {
     [HarmonyPatch(typeof(PlayerControl), nameof(PlayerControl.CmdReportDeadBody))]
     class PlayerControlCmdReportDeadBodyPatch {
         public static void Prefix(PlayerControl __instance) {
-            Helpers.handleVampireBiteOnBodyReport();
+            Helpers.handleKillOnBodyReport();
         }
     }
 

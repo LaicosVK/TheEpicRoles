@@ -468,6 +468,9 @@ namespace TheEpicRoles
         public static PlayerControl futureShift;
         public static PlayerControl currentTarget;
         public static bool shiftModifiers = false;
+        public static bool shiftSelf = false;
+        public static bool diesBeforeMeeting = false;
+        public static bool shiftedBadRole = false;
 
         private static Sprite buttonSprite;
         public static Sprite getButtonSprite() {
@@ -476,12 +479,36 @@ namespace TheEpicRoles
             return buttonSprite;
         }
 
+        private static Sprite badShiftOverlaySprite;
+        public static Sprite getBadShiftOverlaySprite() {
+            if (badShiftOverlaySprite) return badShiftOverlaySprite;
+            badShiftOverlaySprite = Helpers.loadSpriteFromResources("TheEpicRoles.Resources.BadShiftMeeting.png", 225f);
+            return badShiftOverlaySprite;
+        }
+
         public static void clearAndReload() {
             shifter = null;
             currentTarget = null;
             futureShift = null;
             shiftModifiers = CustomOptionHolder.shifterShiftsModifiers.getBool();
+            shiftSelf = CustomOptionHolder.shifterShiftsSelf.getBool();
+            diesBeforeMeeting = CustomOptionHolder.shifterDiesBeforeMeeting.getBool();
+            shiftedBadRole = false;
         }
+
+        // return true when target is impostor or neutral role
+        public static bool checkTargetIsBad(PlayerControl target) {
+            return target.Data.Role.IsImpostor ||
+                target == Jackal.jackal ||
+                target == Sidekick.sidekick ||
+                Jackal.formerJackals.Contains(target) ||
+                target == TheEpicRoles.Jester.jester ||
+                target == Arsonist.arsonist ||
+                target == Vulture.vulture ||
+                target == Lawyer.lawyer ||
+                target == Amnesiac.amnesiac;
+        }
+
     }
 
     public static class Swapper {

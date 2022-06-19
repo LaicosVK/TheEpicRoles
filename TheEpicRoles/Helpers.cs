@@ -195,10 +195,27 @@ namespace TheEpicRoles {
             return res;
         }
 
-        public static void handleVampireBiteOnBodyReport() {
-            // Murder the bitten player and reset bitten (regardless whether the kill was successful or not)
-            Helpers.checkMuderAttemptAndKill(Vampire.vampire, Vampire.bitten, true, false);
-            MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.VampireSetBitten, Hazel.SendOption.Reliable, -1);
+        // Handle vampire bite and vampire shifting bad player on body report or meeting button
+        public static void handleKillOnBodyReport() {
+            MessageWriter writer;
+
+            // Vampire: Try to murder the bitten player
+            MurderAttemptResult vampireBite = checkMuderAttempt(Vampire.vampire, Vampire.bitten, true);
+            if (vampireBite == MurderAttemptResult.PerformKill) {
+                Helpers.uncheckedMurderPlayer(Vampire.vampire, Vampire.bitten, false);
+            }
+            // Shifter: Kill if shifted player is a bad role and shifter wasn't already killed by vampire bite.
+            if (Shifter.shifter != null && Shifter.diesBeforeMeeting && !Shifter.shifter.Data.IsDead && Shifter.futureShift != null && Shifter.checkTargetIsBad(Shifter.futureShift) &&
+                (Vampire.bitten == null || vampireBite != MurderAttemptResult.PerformKill || Vampire.bitten != Shifter.shifter)) {
+                Helpers.uncheckedMurderPlayer(Shifter.shifter, Shifter.shifter, false);
+
+                writer = AmongUsClient.Instance.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.ShifterKilledDueBadShift, Hazel.SendOption.Reliable, -1);
+                AmongUsClient.Instance.FinishRpcImmediately(writer);
+                RPCProcedure.shifterKilledDueBadShift();
+            }
+
+            // Vampire: Reset bitten (regardless whether the kill was successful or not)
+            writer = AmongUsClient.Instance.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.VampireSetBitten, Hazel.SendOption.Reliable, -1);
             writer.Write(byte.MaxValue);
             writer.Write(byte.MaxValue);
             AmongUsClient.Instance.FinishRpcImmediately(writer);
@@ -474,16 +491,19 @@ namespace TheEpicRoles {
 
             MurderAttemptResult murder = checkMuderAttempt(killer, target, isMeetingStart);
             if (murder == MurderAttemptResult.PerformKill) {
-                MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.UncheckedMurderPlayer, Hazel.SendOption.Reliable, -1);
-                writer.Write(killer.PlayerId);
-                writer.Write(target.PlayerId);
-                writer.Write(showAnimation ? Byte.MaxValue : 0);
-                AmongUsClient.Instance.FinishRpcImmediately(writer);
-                RPCProcedure.uncheckedMurderPlayer(killer.PlayerId, target.PlayerId, showAnimation ? Byte.MaxValue : (byte)0);
+                uncheckedMurderPlayer(killer, target, showAnimation);
             }
             return murder;            
         }
-    
+        public static void uncheckedMurderPlayer(PlayerControl killer, PlayerControl target, bool showAnimation = true) {
+            MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.UncheckedMurderPlayer, Hazel.SendOption.Reliable, -1);
+            writer.Write(killer.PlayerId);
+            writer.Write(target.PlayerId);
+            writer.Write(showAnimation ? Byte.MaxValue : 0);
+            AmongUsClient.Instance.FinishRpcImmediately(writer);
+            RPCProcedure.uncheckedMurderPlayer(killer.PlayerId, target.PlayerId, showAnimation ? Byte.MaxValue : (byte)0);
+        }
+
         public static void shareGameVersion() {
             MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.VersionHandshake, Hazel.SendOption.Reliable, -1);
             writer.Write((byte)TheEpicRolesPlugin.Version.Major);

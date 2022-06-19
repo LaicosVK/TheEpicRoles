@@ -1595,7 +1595,7 @@ namespace TheEpicRoles
                () => {
                    CachedPlayer.LocalPlayer.NetTransform.Halt(); // Stop current movement 
                    Mayor.remoteMeetingsLeft--;
-	               Helpers.handleVampireBiteOnBodyReport(); // Manually call Vampire handling, since the CmdReportDeadBody Prefix won't be called
+                   Helpers.handleKillOnBodyReport(); // Manually call Vampire and Shifter handling since the CmdReportDeadBody Prefix won't be called
                    RPCProcedure.uncheckedCmdReportDeadBody(CachedPlayer.LocalPlayer.PlayerId, Byte.MaxValue);
 
                    MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.UncheckedCmdReportDeadBody, Hazel.SendOption.Reliable, -1);

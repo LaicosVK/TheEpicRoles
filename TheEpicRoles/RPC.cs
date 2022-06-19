@@ -99,6 +99,7 @@ namespace TheEpicRoles
         TimeMasterShield,
         TimeMasterRewindTime,
         ShifterShift,
+        ShifterKilledDueBadShift,
         SwapperSwap,
         MorphlingMorph,
         CamouflagerCamouflage,
@@ -788,81 +789,161 @@ namespace TheEpicRoles
 
         public static void shifterShift(byte targetId) {
             PlayerControl oldShifter = Shifter.shifter;
-            PlayerControl player = Helpers.playerById(targetId);
-            if (player == null || oldShifter == null) return;
+            PlayerControl target = Helpers.playerById(targetId);
+            bool shiftMod = Shifter.shiftModifiers;
+            bool shiftSelf = Shifter.shiftSelf;
+            if (target == null || oldShifter == null) return;
 
             Shifter.futureShift = null;
-            Shifter.clearAndReload();
 
-            // Suicide (exile) when impostor or impostor variants
-            if (player.Data.Role.IsImpostor || player == Jackal.jackal || player == Sidekick.sidekick || Jackal.formerJackals.Contains(player) || player == Jester.jester || player == Arsonist.arsonist || player == Vulture.vulture || player == Lawyer.lawyer) {
+            if (Shifter.checkTargetIsBad(target)) {
                 oldShifter.Exiled();
                 return;
             }
 
-            if (Shifter.shiftModifiers) {
-                // Switch shield
-                if (Medic.shielded != null && Medic.shielded == player) {
-                    Medic.shielded = oldShifter;
-                } else if (Medic.shielded != null && Medic.shielded == oldShifter) {
-                    Medic.shielded = player;
-                }
-                // Shift Lovers Role
-                if (Lovers.lover1 != null && oldShifter == Lovers.lover1) Lovers.lover1 = player;
-                else if (Lovers.lover1 != null && player == Lovers.lover1) Lovers.lover1 = oldShifter;
-
-                if (Lovers.lover2 != null && oldShifter == Lovers.lover2) Lovers.lover2 = player;
-                else if (Lovers.lover2 != null && player == Lovers.lover2) Lovers.lover2 = oldShifter;
-
-                // TODO other Modifiers?
-            }
+            Shifter.clearAndReload();
 
             // Shift role
-            if (Mayor.mayor != null && Mayor.mayor == player)
+            if (Mayor.mayor != null && Mayor.mayor == target)
                 Mayor.mayor = oldShifter;
-            if (Portalmaker.portalmaker != null && Portalmaker.portalmaker == player)
+            if (Portalmaker.portalmaker != null && Portalmaker.portalmaker == target)
                 Portalmaker.portalmaker = oldShifter;
-            if (Engineer.engineer != null && Engineer.engineer == player)
+            if (Engineer.engineer != null && Engineer.engineer == target)
                 Engineer.engineer = oldShifter;
-            if (Sheriff.sheriff != null && Sheriff.sheriff == player) {
+            if (Sheriff.sheriff != null && Sheriff.sheriff == target) {
                 if (Sheriff.formerDeputy != null && Sheriff.formerDeputy == Sheriff.sheriff) Sheriff.formerDeputy = oldShifter;  // Shifter also shifts info on promoted deputy (to get handcuffs)
                 Sheriff.sheriff = oldShifter;
             }
-            if (Deputy.deputy != null && Deputy.deputy == player)
+            if (Deputy.deputy != null && Deputy.deputy == target)
                 Deputy.deputy = oldShifter;
-            if (Lighter.lighter != null && Lighter.lighter == player)
+            if (Lighter.lighter != null && Lighter.lighter == target)
                 Lighter.lighter = oldShifter;
-            if (Detective.detective != null && Detective.detective == player)
+            if (Detective.detective != null && Detective.detective == target)
                 Detective.detective = oldShifter;
-            if (TimeMaster.timeMaster != null && TimeMaster.timeMaster == player)
+            if (TimeMaster.timeMaster != null && TimeMaster.timeMaster == target)
                 TimeMaster.timeMaster = oldShifter;
-            if (Medic.medic != null && Medic.medic == player)
+            if (Medic.medic != null && Medic.medic == target)
                 Medic.medic = oldShifter;
-            if (Swapper.swapper != null && Swapper.swapper == player)
+            if (Swapper.swapper != null && Swapper.swapper == target)
                 Swapper.swapper = oldShifter;
-            if (Seer.seer != null && Seer.seer == player)
+            if (Seer.seer != null && Seer.seer == target)
                 Seer.seer = oldShifter;
-            if (Hacker.hacker != null && Hacker.hacker == player)
+            if (Hacker.hacker != null && Hacker.hacker == target)
                 Hacker.hacker = oldShifter;
-            if (Tracker.tracker != null && Tracker.tracker == player)
+            if (Tracker.tracker != null && Tracker.tracker == target)
                 Tracker.tracker = oldShifter;
-            if (Snitch.snitch != null && Snitch.snitch == player)
+            if (Snitch.snitch != null && Snitch.snitch == target)
                 Snitch.snitch = oldShifter;
-            if (Spy.spy != null && Spy.spy == player)
+            if (Spy.spy != null && Spy.spy == target)
                 Spy.spy = oldShifter;
-            if (SecurityGuard.securityGuard != null && SecurityGuard.securityGuard == player)
+            if (SecurityGuard.securityGuard != null && SecurityGuard.securityGuard == target)
                 SecurityGuard.securityGuard = oldShifter;
-            if (Guesser.niceGuesser != null && Guesser.niceGuesser == player)
+            if (Guesser.niceGuesser != null && Guesser.niceGuesser == target)
                 Guesser.niceGuesser = oldShifter;
-                
-            if (Medium.medium != null && Medium.medium == player)
+            if (Medium.medium != null && Medium.medium == target)
                 Medium.medium = oldShifter;
-            if (Jumper.jumper != null && Jumper.jumper == player)
+            if (Jumper.jumper != null && Jumper.jumper == target)
                 Jumper.jumper = oldShifter;
 
+            if (shiftSelf) {
+                Shifter.shifter = target;
+            }
+
+            if (shiftMod) {
+                if (Medic.shielded != null && Medic.shielded == target) {
+                    Medic.shielded = oldShifter;
+                }
+                else if (Medic.shielded != null && Medic.shielded == oldShifter) {
+                    Medic.shielded = target;
+                }
+
+                if (Lovers.lover1 != null && oldShifter == Lovers.lover1) Lovers.lover1 = target;
+                else if (Lovers.lover1 != null && target == Lovers.lover1) Lovers.lover1 = oldShifter;
+                if (Lovers.lover2 != null && oldShifter == Lovers.lover2) Lovers.lover2 = target;
+                else if (Lovers.lover2 != null && target == Lovers.lover2) Lovers.lover2 = oldShifter;
+
+                if (Bait.bait.Contains(target)) {
+                    if (!Bait.bait.Contains(oldShifter)) {
+                        Bait.bait.Remove(target);
+                        Bait.bait.Add(oldShifter);
+                    }
+                } else if (Bait.bait.Contains(oldShifter)) {
+                    Bait.bait.Remove(oldShifter);
+                    Bait.bait.Add(target);
+                }
+
+                if (Sunglasses.sunglasses.Contains(target)) {
+                    if (!Sunglasses.sunglasses.Contains(oldShifter)) {
+                        Sunglasses.sunglasses.Remove(target);
+                        Sunglasses.sunglasses.Add(oldShifter);
+                    }
+                } else if (Sunglasses.sunglasses.Contains(oldShifter)) {
+                    Sunglasses.sunglasses.Remove(oldShifter);
+                    Sunglasses.sunglasses.Add(target);
+                }
+
+                if (Vip.vip.Contains(target)) {
+                    if (!Vip.vip.Contains(oldShifter)) {
+                        Vip.vip.Remove(target);
+                        Vip.vip.Add(oldShifter);
+                    }
+                } else if (Vip.vip.Contains(oldShifter)) {
+                    Vip.vip.Remove(oldShifter);
+                    Vip.vip.Add(target);
+                }
+
+                if (Tiebreaker.tiebreaker == target) {
+                    Tiebreaker.tiebreaker = oldShifter;
+                } else if (Tiebreaker.tiebreaker == oldShifter) {
+                    Tiebreaker.tiebreaker = target;
+                }
+
+                if (Mini.mini == target) {
+                    Mini.mini = oldShifter;
+                } else if (Mini.mini == oldShifter) {
+                    Mini.mini = target;
+                }
+
+                if (Bloody.bloody.Contains(target)) {
+                    if (!Bloody.bloody.Contains(oldShifter)) {
+                        Bloody.bloody.Remove(target);
+                        Bloody.bloody.Add(oldShifter);
+                    }
+                } else if (Bloody.bloody.Contains(oldShifter)) {
+                    Bloody.bloody.Remove(oldShifter);
+                    Bloody.bloody.Add(target);
+                }
+                
+                if (Invert.invert.Contains(target)) {
+                    if (!Invert.invert.Contains(oldShifter)) {
+                        Invert.invert.Remove(target);
+                        Invert.invert.Add(oldShifter);
+                    }
+                } else if (Invert.invert.Contains(oldShifter)) {
+                    Invert.invert.Remove(oldShifter);
+                    Invert.invert.Add(target);
+                }
+
+                if (AntiTeleport.antiTeleport.Contains(target)) {
+                    if (!AntiTeleport.antiTeleport.Contains(oldShifter)) {
+                        AntiTeleport.antiTeleport.Remove(target);
+                        AntiTeleport.antiTeleport.Add(oldShifter);
+                    }
+                } else if (AntiTeleport.antiTeleport.Contains(oldShifter)) {
+                    AntiTeleport.antiTeleport.Remove(oldShifter);
+                    AntiTeleport.antiTeleport.Add(target);
+                }
+            }
+
             // Set cooldowns to max for both players
-            if (CachedPlayer.LocalPlayer.PlayerControl == oldShifter || CachedPlayer.LocalPlayer.PlayerControl == player)
+            if (CachedPlayer.LocalPlayer.PlayerControl == oldShifter || CachedPlayer.LocalPlayer.PlayerControl == target) {
                 CustomButton.ResetAllCooldowns();
+            }
+        }
+        public static void shifterKilledDueBadShift() {
+            if (Shifter.shifter != null) {
+                Shifter.shiftedBadRole = true;
+            }
         }
 
         public static void swapperSwap(byte playerId1, byte playerId2) {
@@ -1421,6 +1502,9 @@ namespace TheEpicRoles
                     break;
                 case (byte)CustomRPC.ShifterShift:
                     RPCProcedure.shifterShift(reader.ReadByte());
+                    break;
+                case (byte)CustomRPC.ShifterKilledDueBadShift:
+                    RPCProcedure.shifterKilledDueBadShift();
                     break;
                 case (byte)CustomRPC.SwapperSwap:
                     byte playerId1 = reader.ReadByte();

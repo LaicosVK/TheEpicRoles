@@ -97,6 +97,8 @@ namespace TheEpicRoles {
 
         public static CustomOption shifterSpawnRate;
         public static CustomOption shifterShiftsModifiers;
+        public static CustomOption shifterShiftsSelf;
+        public static CustomOption shifterDiesBeforeMeeting;
 
         public static CustomOption mayorSpawnRate;
         public static CustomOption mayorCanSeeVoteColors;
@@ -421,10 +423,12 @@ namespace TheEpicRoles {
             lawyerKnowsRole = CustomOption.Create(355, Types.Neutral, "Lawyer Knows Target Role", false, lawyerSpawnRate);
             pursuerCooldown = CustomOption.Create(356, Types.Neutral, "Pursuer Blank Cooldown", 30f, 5f, 60f, 2.5f, lawyerSpawnRate);
             pursuerBlanksNumber = CustomOption.Create(357, Types.Neutral, "Pursuer Number Of Blanks", 5f, 1f, 20f, 1f, lawyerSpawnRate);
-
+            
             shifterSpawnRate = CustomOption.Create(70, Types.Crewmate, cs(Shifter.color, "Shifter"), rates, null, true);
             shifterShiftsModifiers = CustomOption.Create(71, Types.Crewmate, "Shifter Shifts Modifiers", false, shifterSpawnRate);
-
+            shifterShiftsSelf = CustomOption.Create(9995, Types.Crewmate, "Shifter Shifts Self", false, shifterSpawnRate);
+            shifterDiesBeforeMeeting = CustomOption.Create(9994, Types.Crewmate, "Shifter Dies Before Meeting", false, shifterSpawnRate);
+            
             mayorSpawnRate = CustomOption.Create(80, Types.Crewmate, cs(Mayor.color, "Mayor"), rates, null, true);
             mayorCanSeeVoteColors = CustomOption.Create(81, Types.Crewmate, "Mayor Can See Vote Colors", false, mayorSpawnRate);
             mayorTasksNeededToSeeVoteColors = CustomOption.Create(82, Types.Crewmate, "Completed Tasks Needed To See Vote Colors", 5f, 0f, 20f, 1f, mayorCanSeeVoteColors);
