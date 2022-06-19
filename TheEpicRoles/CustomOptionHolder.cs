@@ -49,6 +49,7 @@ namespace TheEpicRoles {
         public static CustomOption guesserEvilCanKillSpy;
         public static CustomOption guesserSpawnBothRate;
         public static CustomOption guesserCantGuessSnitchIfTaksDone;
+        public static CustomOption guesserGuessModifiers;
 
         public static CustomOption jesterSpawnRate;
         public static CustomOption jesterCanCallEmergency;
@@ -386,6 +387,7 @@ namespace TheEpicRoles {
             guesserEvilCanKillSpy  = CustomOption.Create(316, Types.Neutral, "Evil Guesser Can Guess The Spy", true, guesserSpawnRate);
             guesserSpawnBothRate = CustomOption.Create(317, Types.Neutral, "Both Guesser Spawn Rate", rates, guesserSpawnRate);
             guesserCantGuessSnitchIfTaksDone = CustomOption.Create(318, Types.Neutral, "Guesser Can't Guess Snitch When Tasks Completed", true, guesserSpawnRate);
+            guesserGuessModifiers = CustomOption.Create(319, Types.Neutral, "Allow Guessing Some Modifiers", false, guesserSpawnRate);
 
             jesterSpawnRate = CustomOption.Create(60, Types.Neutral, cs(Jester.color, "Jester"), rates, null, true);
             jesterCanCallEmergency = CustomOption.Create(61, Types.Neutral, "Jester Can Call Emergency Meeting", true, jesterSpawnRate);
