@@ -657,6 +657,17 @@ namespace TheEpicRoles.Patches {
                 BountyHunter.arrow.Update();
             }
         }
+        static void arsonistUpdate()
+        {
+            if (Arsonist.arsonist == null || PlayerControl.LocalPlayer != Arsonist.arsonist) return;
+            foreach (PlayerControl p in Arsonist.dousedPlayers)
+            {
+                if (MapOptions.playerIcons.ContainsKey(p.PlayerId))
+                {
+                    MapOptions.playerIcons[p.PlayerId].setSemiTransparent(false);
+                }
+            }
+        }
 
         static void vultureUpdate() {
             if (Vulture.vulture == null || CachedPlayer.LocalPlayer.PlayerControl != Vulture.vulture || Vulture.localArrows == null || !Vulture.showArrows) return;
@@ -909,6 +920,8 @@ namespace TheEpicRoles.Patches {
                 snitchUpdate();
                 // BountyHunter
                 bountyHunterUpdate();
+                // Arsonist
+                arsonistUpdate();
                 // Vulture
                 vultureUpdate();
                 // Medium

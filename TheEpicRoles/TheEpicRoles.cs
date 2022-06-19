@@ -47,6 +47,7 @@ namespace TheEpicRoles
             Warlock.clearAndReload();
             SecurityGuard.clearAndReload();
             Arsonist.clearAndReload();
+            Amnesiac.clearAndReload();
             Guesser.clearAndReload();
             BountyHunter.clearAndReload();
             Vulture.clearAndReload();
@@ -386,6 +387,37 @@ namespace TheEpicRoles
             rewindTime = CustomOptionHolder.timeMasterRewindTime.getFloat();
             shieldDuration = CustomOptionHolder.timeMasterShieldDuration.getFloat();
             cooldown = CustomOptionHolder.timeMasterCooldown.getFloat();
+        }
+    }
+
+    public static class Amnesiac
+    {
+        public static PlayerControl amnesiac;
+        public static List<Arrow> localArrows = new List<Arrow>();
+        public static Color color = new Color(0.5f, 0.7f, 1f, 1f);
+        public static List<PoolablePlayer> poolIcons = new List<PoolablePlayer>();
+
+        public static bool showArrows = true;
+        public static bool resetRole = false;
+        private static Sprite buttonSprite;
+        public static Sprite getButtonSprite()
+        {
+            if (buttonSprite) return buttonSprite;
+            buttonSprite = Helpers.loadSpriteFromResources("TheEpicRoles.Resources.Remember.png", 115f);
+            return buttonSprite;
+        }
+        public static void clearAndReload()
+        {
+            amnesiac = null;
+            showArrows = CustomOptionHolder.amnesiacShowArrows.getBool();
+            resetRole = CustomOptionHolder.amnesiacResetRole.getBool();
+            if (localArrows != null)
+            {
+                foreach (Arrow arrow in localArrows)
+                    if (arrow?.arrow != null)
+                        UnityEngine.Object.Destroy(arrow.arrow);
+            }
+            localArrows = new List<Arrow>();
         }
     }
 
@@ -1166,6 +1198,7 @@ namespace TheEpicRoles
         public static PlayerControl currentTarget;
         public static PlayerControl douseTarget;
         public static List<PlayerControl> dousedPlayers = new List<PlayerControl>();
+        public static List<PoolablePlayer> poolIcons = new List<PoolablePlayer>();
 
         private static Sprite douseSprite;
         public static Sprite getDouseSprite() {

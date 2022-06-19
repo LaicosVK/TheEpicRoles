@@ -53,6 +53,10 @@ namespace TheEpicRoles {
         public static CustomOption jesterCanCallEmergency;
         public static CustomOption jesterHasImpostorVision;
 
+        public static CustomOption amnesiacSpawnRate;
+        public static CustomOption amnesiacShowArrows;
+        public static CustomOption amnesiacResetRole;
+
         public static CustomOption arsonistSpawnRate;
         public static CustomOption arsonistCooldown;
         public static CustomOption arsonistDuration;
@@ -384,6 +388,10 @@ namespace TheEpicRoles {
             jesterSpawnRate = CustomOption.Create(60, Types.Neutral, cs(Jester.color, "Jester"), rates, null, true);
             jesterCanCallEmergency = CustomOption.Create(61, Types.Neutral, "Jester Can Call Emergency Meeting", true, jesterSpawnRate);
             jesterHasImpostorVision = CustomOption.Create(62, Types.Neutral, "Jester Has Impostor Vision", false, jesterSpawnRate);
+            
+            amnesiacSpawnRate = CustomOption.Create(616, Types.Neutral, cs(Amnesiac.color, "Amnesiac"), rates, null, true);
+            amnesiacShowArrows = CustomOption.Create(617, Types.Neutral, cs(Amnesiac.color, "Show Arrows To Dead Bodies"), true, amnesiacSpawnRate);
+            amnesiacResetRole = CustomOption.Create(618, Types.Neutral, cs(Amnesiac.color, "Reset Role When Taken"), true, amnesiacSpawnRate);
 
             arsonistSpawnRate = CustomOption.Create(290, Types.Neutral, cs(Arsonist.color, "Arsonist"), rates, null, true);
             arsonistCooldown = CustomOption.Create(291, Types.Neutral, "Arsonist Cooldown", 12.5f, 2.5f, 60f, 2.5f, arsonistSpawnRate);
