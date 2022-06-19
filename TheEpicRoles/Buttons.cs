@@ -785,28 +785,32 @@ namespace TheEpicRoles
                 }
             );
 
-            garlicButton = new CustomButton(
-                () => {
-                    Vampire.localPlacedGarlic = true;
-                    var pos = CachedPlayer.LocalPlayer.transform.position;
-                    byte[] buff = new byte[sizeof(float) * 2];
-                    Buffer.BlockCopy(BitConverter.GetBytes(pos.x), 0, buff, 0*sizeof(float), sizeof(float));
-                    Buffer.BlockCopy(BitConverter.GetBytes(pos.y), 0, buff, 1*sizeof(float), sizeof(float));
+            if (Vampire.garlicButton)
+            {
+                garlicButton = new CustomButton(
+                    () =>
+                    {
+                        Vampire.localPlacedGarlic = true;
+                        var pos = CachedPlayer.LocalPlayer.transform.position;
+                        byte[] buff = new byte[sizeof(float) * 2];
+                        Buffer.BlockCopy(BitConverter.GetBytes(pos.x), 0, buff, 0 * sizeof(float), sizeof(float));
+                        Buffer.BlockCopy(BitConverter.GetBytes(pos.y), 0, buff, 1 * sizeof(float), sizeof(float));
 
-                    MessageWriter writer = AmongUsClient.Instance.StartRpc(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.PlaceGarlic, Hazel.SendOption.Reliable);
-                    writer.WriteBytesAndSize(buff);
-                    writer.EndMessage();
-                    RPCProcedure.placeGarlic(buff); 
-                },
-                () => { return !Vampire.localPlacedGarlic && !CachedPlayer.LocalPlayer.Data.IsDead && Vampire.garlicsActive; },
-                () => { return CachedPlayer.LocalPlayer.PlayerControl.CanMove && !Vampire.localPlacedGarlic; },
-                () => { },
-                Vampire.getGarlicButtonSprite(),
-                new Vector3(0, -0.06f, 0),
-                __instance,
-                null,
-                true
-            );
+                        MessageWriter writer = AmongUsClient.Instance.StartRpc(CachedPlayer.LocalPlayer.PlayerControl.NetId, (byte)CustomRPC.PlaceGarlic, Hazel.SendOption.Reliable);
+                        writer.WriteBytesAndSize(buff);
+                        writer.EndMessage();
+                        RPCProcedure.placeGarlic(buff);
+                    },
+                    () => { return !Vampire.localPlacedGarlic && !CachedPlayer.LocalPlayer.Data.IsDead && Vampire.garlicsActive; },
+                    () => { return CachedPlayer.LocalPlayer.PlayerControl.CanMove && !Vampire.localPlacedGarlic; },
+                    () => { },
+                    Vampire.getGarlicButtonSprite(),
+                    new Vector3(0, -0.06f, 0),
+                    __instance,
+                    null,
+                    true
+                );
+            }
 
             portalmakerPlacePortalButton = new CustomButton(
                 () => {

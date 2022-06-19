@@ -293,7 +293,7 @@ namespace TheEpicRoles.Patches {
             Transform exitButton = UnityEngine.Object.Instantiate(buttonTemplate.transform, exitButtonParent);
             Transform exitButtonMask = UnityEngine.Object.Instantiate(maskTemplate, exitButtonParent);
             exitButton.gameObject.GetComponent<SpriteRenderer>().sprite = smallButtonTemplate.GetComponent<SpriteRenderer>().sprite;
-            exitButtonParent.transform.localPosition = new Vector3(2.725f, 2.1f, -5);
+            exitButtonParent.transform.localPosition = new Vector3(2.725f, 2.2f, -5);
             exitButtonParent.transform.localScale = new Vector3(0.217f, 0.9f, 1);
             exitButton.GetComponent<PassiveButton>().OnClick.RemoveAllListeners();
             exitButton.GetComponent<PassiveButton>().OnClick.AddListener((System.Action)(() => {
@@ -306,8 +306,17 @@ namespace TheEpicRoles.Patches {
 
             foreach (RoleInfo roleInfo in RoleInfo.allRoleInfos) {
                 RoleId guesserRole = (Guesser.niceGuesser != null && CachedPlayer.LocalPlayer.PlayerId == Guesser.niceGuesser.PlayerId) ? RoleId.NiceGuesser :  RoleId.EvilGuesser;
-                if (roleInfo.isModifier || roleInfo.roleId == guesserRole || (!Guesser.evilGuesserCanGuessSpy && guesserRole == RoleId.EvilGuesser && roleInfo.roleId == RoleId.Spy)) continue; // Not guessable roles & modifier
-                
+                if (roleInfo.roleId == guesserRole || (!Guesser.evilGuesserCanGuessSpy && guesserRole == RoleId.EvilGuesser && roleInfo.roleId == RoleId.Spy)) continue; // Not guessable roles & modifier
+                if (CustomOptionHolder.guesserGuessModifiers.getBool() && roleInfo.isModifier)
+                {
+                    // Allow Guessing the following mods: Bait, TieBreaker, Bloody, and VIP
+                    if (roleInfo.roleId != RoleId.Bait &&
+                        roleInfo.roleId != RoleId.Tiebreaker &&
+                        roleInfo.roleId != RoleId.Bloody &&
+                        roleInfo.roleId != RoleId.Vip) continue;
+                }
+                else
+                    if (roleInfo.isModifier) continue;
                 if (Guesser.guesserCantGuessSnitch && Snitch.snitch != null) {
                     var (playerCompleted, playerTotal) = TasksHandler.taskInfo(Snitch.snitch.Data);
                     int numberOfLeftTasks = playerTotal - playerCompleted;
@@ -322,7 +331,7 @@ namespace TheEpicRoles.Patches {
                 button.GetComponent<SpriteRenderer>().sprite = FastDestroyableSingleton<HatManager>.Instance.GetNamePlateById("nameplate_NoPlate")?.viewData?.viewData?.Image;
                 buttons.Add(button);
                 int row = i/5, col = i%5;
-                buttonParent.localPosition = new Vector3(-3.47f + 1.75f * col, 1.5f - 0.45f * row, -5);
+                buttonParent.localPosition = new Vector3(-3.47f + 1.75f * col, 1.7f - 0.4f * row, -5); //set role positioning
                 buttonParent.localScale = new Vector3(0.55f, 0.55f, 1f);
                 label.text = Helpers.cs(roleInfo.color, roleInfo.name);
                 label.alignment = TMPro.TextAlignmentOptions.Center;
@@ -352,7 +361,9 @@ namespace TheEpicRoles.Patches {
                         var mainRoleInfo = RoleInfo.getRoleInfoForPlayer(focusedTarget, false).FirstOrDefault();
                         if (mainRoleInfo == null) return;
 
-                        PlayerControl dyingTarget = (mainRoleInfo == roleInfo) ? focusedTarget : CachedPlayer.LocalPlayer.PlayerControl;
+                        var modRoleInfo = RoleInfo.getRoleInfoForPlayer(focusedTarget, true, true).FirstOrDefault();
+
+                        PlayerControl dyingTarget = (mainRoleInfo == roleInfo || modRoleInfo == roleInfo) ? focusedTarget : PlayerControl.LocalPlayer;
 
                         // Reset the GUI
                         __instance.playerStates.ToList().ForEach(x => x.gameObject.SetActive(true));
