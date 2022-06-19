@@ -283,6 +283,9 @@ namespace TheEpicRoles
                     case RoleId.Arsonist:
                         Arsonist.arsonist = player;
                         break;
+                    case RoleId.Amnesiac:
+                        Amnesiac.amnesiac = player;
+                        break;
                     case RoleId.EvilGuesser:
                         Guesser.evilGuesser = player;
                         break;
@@ -653,9 +656,34 @@ namespace TheEpicRoles
                     Amnesiac.clearAndReload();
                     break;
                 case RoleId.Arsonist:
-                    if (PlayerControl.LocalPlayer == Amnesiac.amnesiac)
+                    if (Amnesiac.resetRole) Arsonist.clearAndReload();
+                    Arsonist.arsonist = amnesiac;
+                    Amnesiac.clearAndReload();
+                    Amnesiac.amnesiac = target;
+
+                    if (CachedPlayer.LocalPlayer.PlayerControl == Arsonist.arsonist)
                     {
-                        Helpers.showFlash(Palette.ImpostorRed, duration: 1f);
+                        int playerCounter = 0;
+                        Vector3 bottomLeft = new Vector3(-FastDestroyableSingleton<HudManager>.Instance.UseButton.transform.localPosition.x, FastDestroyableSingleton<HudManager>.Instance.UseButton.transform.localPosition.y, FastDestroyableSingleton<HudManager>.Instance.UseButton.transform.localPosition.z);
+                        foreach (PlayerControl p in CachedPlayer.AllPlayers)
+                        {
+                            if (MapOptions.playerIcons.ContainsKey(p.PlayerId) && p != Arsonist.arsonist)
+                            {
+                                //Arsonist.poolIcons.Add(p);
+                                if (Arsonist.dousedPlayers.Contains(p))
+                                {
+                                    MapOptions.playerIcons[p.PlayerId].setSemiTransparent(false);
+                                }
+                                else
+                                {
+                                    MapOptions.playerIcons[p.PlayerId].setSemiTransparent(true);
+                                }
+
+                                MapOptions.playerIcons[p.PlayerId].transform.localPosition = bottomLeft + new Vector3(-0.25f, -0.25f, 0) + Vector3.right * playerCounter++ * 0.35f;
+                                MapOptions.playerIcons[p.PlayerId].transform.localScale = Vector3.one * 0.2f;
+                                MapOptions.playerIcons[p.PlayerId].gameObject.SetActive(true);
+                            }
+                        }
                     }
                     break;
                 case RoleId.EvilGuesser:
@@ -671,11 +699,32 @@ namespace TheEpicRoles
                     break;
                 case RoleId.BountyHunter:
                     Helpers.turnToImpostor(Amnesiac.amnesiac);
-                    if (PlayerControl.LocalPlayer == Amnesiac.amnesiac)
-                    {
-                        Helpers.showFlash(Palette.ImpostorRed, duration: 1f);
-                    }
+                    if (Amnesiac.resetRole) BountyHunter.clearAndReload();
+                    BountyHunter.bountyHunter = amnesiac;
                     Amnesiac.clearAndReload();
+                    Amnesiac.amnesiac = target;
+
+                    BountyHunter.bountyUpdateTimer = 0f;
+                    if (CachedPlayer.LocalPlayer.PlayerControl == BountyHunter.bountyHunter)
+                    {
+                        Vector3 bottomLeft = new Vector3(-FastDestroyableSingleton<HudManager>.Instance.UseButton.transform.localPosition.x, FastDestroyableSingleton<HudManager>.Instance.UseButton.transform.localPosition.y, FastDestroyableSingleton<HudManager>.Instance.UseButton.transform.localPosition.z) + new Vector3(-0.25f, 1f, 0);
+                        BountyHunter.cooldownText = UnityEngine.Object.Instantiate<TMPro.TextMeshPro>(FastDestroyableSingleton<HudManager>.Instance.KillButton.cooldownTimerText, FastDestroyableSingleton<HudManager>.Instance.transform);
+                        BountyHunter.cooldownText.alignment = TMPro.TextAlignmentOptions.Center;
+                        BountyHunter.cooldownText.transform.localPosition = bottomLeft + new Vector3(0f, -1f, -1f);
+                        BountyHunter.cooldownText.gameObject.SetActive(true);
+
+                        foreach (PlayerControl p in CachedPlayer.AllPlayers)
+                        {
+                            if (MapOptions.playerIcons.ContainsKey(p.PlayerId))
+                            {
+                                MapOptions.playerIcons[p.PlayerId].setSemiTransparent(false);
+                                MapOptions.playerIcons[p.PlayerId].transform.localPosition = bottomLeft + new Vector3(0f, -1f, 0);
+                                MapOptions.playerIcons[p.PlayerId].transform.localScale = Vector3.one * 0.4f;
+                                MapOptions.playerIcons[p.PlayerId].gameObject.SetActive(false);
+                            }
+                        }
+                    }
+
                     break;
                 case RoleId.Vulture:
                     if (Amnesiac.resetRole) Vulture.clearAndReload();
