@@ -11,7 +11,7 @@ namespace TheEpicRoles.Patches {
 $@"<size=130%><color=#00FFDD>TheEpicRoles</color></size> v{TheEpicRolesPlugin.Version.ToString()}";
 
     public static string mainMenuCredentials = 
-$@"Modded by <color=#FCCE03FF>LaicosVK</color>, <color=#FCCE03FF>DasMonschta</color>, <color=#FCCE03FF>Eisbison</color>, <color=#FCCE03FF>Thunderstorm584</color>, <color=#FCCE03FF>EndOfFile</color> & <color=#FCCE03FF>Mallöris</color>
+$@"Modded by <color=#FCCE03FF>LaicosVK</color>, <color=#FCCE03FF>DasMonschta</color>, <color=#FCCE03FF>Nova</color>, <color=#FCCE03FF>Eisbison</color>, <color=#FCCE03FF>Thunderstorm584</color>, <color=#FCCE03FF>EndOfFile</color> & <color=#FCCE03FF>Mallöris</color>
 Design by <color=#FCCE03FF>moep424</color> & <color=#FCCE03FF>Bavari</color>";
 
         public static string contributorsCredentials =
