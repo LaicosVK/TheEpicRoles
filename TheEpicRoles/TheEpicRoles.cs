@@ -859,7 +859,10 @@ namespace TheEpicRoles
             targetNearGarlic = false;
             localPlacedGarlic = false;
             currentTarget = null;
-            garlicsActive = CustomOptionHolder.vampireSpawnRate.getSelection() > 0;
+            if(CustomOptionHolder.vampireSpawnRate.getSelection() > 0)
+                garlicsActive = CustomOptionHolder.vampireGarlicButton.getSelection() > 0;
+            else
+                garlicsActive = false;
             delay = CustomOptionHolder.vampireKillDelay.getFloat();
             cooldown = CustomOptionHolder.vampireCooldown.getFloat();
             canKillNearGarlics = CustomOptionHolder.vampireCanKillNearGarlics.getBool();
