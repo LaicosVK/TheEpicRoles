@@ -1331,7 +1331,7 @@ namespace TheEpicRoles
                 () => { return __instance.ReportButton.graphic.color == Palette.EnabledColor && PlayerControl.LocalPlayer.CanMove; },
                 () => { amnesiacRememberButton.Timer = 0f; },
                 Amnesiac.getButtonSprite(),
-                new Vector3(-1.8f, -0f, 0),
+                new Vector3(-1.8f, -0.06f, 0),
                 __instance,
                 KeyCode.F,
                 false,
