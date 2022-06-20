@@ -50,14 +50,14 @@ namespace TheEpicRoles.Patches {
 
             var crewmateMin = CustomOptionHolder.crewmateRolesCountMin.getSelection();
             var crewmateMax = CustomOptionHolder.crewmateRolesCountMax.getSelection();
-            var crewmateRolesMax = CustomOptionHolder.crewmateRolesMax.getSelection();
+            var crewmateRolesMax = CustomOptionHolder.crewmateRolesMax.getBool();
             var neutralMin = CustomOptionHolder.neutralRolesCountMin.getSelection();
             var neutralMax = CustomOptionHolder.neutralRolesCountMax.getSelection();
             var impostorMin = CustomOptionHolder.impostorRolesCountMin.getSelection();
             var impostorMax = CustomOptionHolder.impostorRolesCountMax.getSelection();
 
             // Fill Crewmate roles if setting is on
-            if (crewmateRolesMax == 1) {
+            if (crewmateRolesMax == true) {
                 crewmateMax = crewmates.Count - neutralMin;
                 crewmateMin = crewmateMax;
             }
