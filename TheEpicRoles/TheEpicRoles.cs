@@ -410,7 +410,8 @@ namespace TheEpicRoles
         {
             amnesiac = null;
             showArrows = CustomOptionHolder.amnesiacShowArrows.getBool();
-            resetRole = CustomOptionHolder.amnesiacResetRole.getBool();
+            //resetRole = CustomOptionHolder.amnesiacResetRole.getBool();
+            resetRole = false;
             if (localArrows != null)
             {
                 foreach (Arrow arrow in localArrows)
