@@ -126,9 +126,11 @@ namespace TheEpicRoles
             snitch,
             spy,
             securityGuard,
-            bait,
             medium,
             jumper,
+
+            // modifiers
+            bait,
             bloody,
             antiTeleport,
             tiebreaker,

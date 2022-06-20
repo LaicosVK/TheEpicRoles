@@ -399,7 +399,7 @@ namespace TheEpicRoles {
             
             amnesiacSpawnRate = CustomOption.Create(616, Types.Neutral, cs(Amnesiac.color, "Amnesiac"), rates, null, true);
             amnesiacShowArrows = CustomOption.Create(617, Types.Neutral, cs(Amnesiac.color, "Show Arrows To Dead Bodies"), true, amnesiacSpawnRate);
-            amnesiacResetRole = CustomOption.Create(618, Types.Neutral, cs(Amnesiac.color, "Reset Role When Taken"), true, amnesiacSpawnRate);
+            //amnesiacResetRole = CustomOption.Create(618, Types.Neutral, cs(Amnesiac.color, "Reset Role When Taken"), true, amnesiacSpawnRate);
 
             arsonistSpawnRate = CustomOption.Create(290, Types.Neutral, cs(Arsonist.color, "Arsonist"), rates, null, true);
             arsonistCooldown = CustomOption.Create(291, Types.Neutral, "Arsonist Cooldown", 12.5f, 2.5f, 60f, 2.5f, arsonistSpawnRate);

@@ -701,7 +701,6 @@ namespace TheEpicRoles
                 case RoleId.BountyHunter:
                     Helpers.turnToImpostor(Amnesiac.amnesiac);
                     if (Amnesiac.resetRole) BountyHunter.clearAndReload();
-                    BountyHunter.bountyHunter = amnesiac;
                     Amnesiac.clearAndReload();
                     Amnesiac.amnesiac = target;
 
@@ -762,12 +761,17 @@ namespace TheEpicRoles
                     Phaser.phaser = amnesiac;
                     Amnesiac.clearAndReload();
                     break;
-                /*case RoleId.Blackmailer:
-                    Helpers.turnToImpostor(Amnesiac.amnesiac);
-                    if (Amnesiac.resetRole) Blackmailer.clearAndReload();
-                    Blackmailer.blackmailer = amnesiac;
+                case RoleId.Jumper:
+                    if (Amnesiac.resetRole) Jumper.clearAndReload();
+                    Jumper.jumper = amnesiac;
                     Amnesiac.clearAndReload();
-                    break;*/
+                    break;
+                /*case RoleId.Blackmailer:
+                        Helpers.turnToImpostor(Amnesiac.amnesiac);
+                        if (Amnesiac.resetRole) Blackmailer.clearAndReload();
+                        Blackmailer.blackmailer = amnesiac;
+                        Amnesiac.clearAndReload();
+                        break;*/
             }
         }
 

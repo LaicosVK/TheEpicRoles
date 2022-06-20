@@ -1582,7 +1582,7 @@ namespace TheEpicRoles
     public static class Jumper
     {
         public static PlayerControl jumper;
-        public static Color color = new Color32(204, 155, 20, byte.MaxValue); // mint
+        public static Color color = new Color32(204, 155, 20, byte.MaxValue);
 
         public static float jumperJumpTime = 30f;
         public static float jumperChargesOnPlace = 1f;
