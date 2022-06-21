@@ -287,7 +287,6 @@ namespace TheEpicRoles {
         public static CustomOption showButtonTarget;
         public static CustomOption randomGameStartPosition;
         public static CustomOption randomMeetingStartPosition;
-        public static CustomOption setRoundStartCooldown;
         public static CustomOption toggleLobbyMode;
 
         public static CustomOption dynamicMap;
@@ -598,12 +597,7 @@ namespace TheEpicRoles {
             //LVK. Random Spawn on round start and meeting end
             randomGameStartPosition = CustomOption.Create(9041, Types.General, cs(new Color(0, 1, 217f / 255f, 1f), "Random Spawn Location\nOn Game Start"), true);
             randomMeetingStartPosition = CustomOption.Create(9042, Types.General, cs(new Color(0, 1, 217f / 255f, 1f), "Random Spawn Location\nAfter Meeting"), false);
-            //LVK. Cooldown on round start setting
-            setRoundStartCooldown = CustomOption.Create(9043, Types.General, cs(new Color(0, 1, 217f / 255f, 1f), "Set Spawn Cooldown"), 30f, 10f, 60f, 2.5f, null, true);
-            //Monschtalein. toggle lobby mode
-            //Off because of no check
-            //toggleLobbyMode = CustomOption.Create(7000, Types.General, cs(new Color(0, 1, 217f / 255f, 1f), "Ignore Unready Players"), new string[] { "No", "Yes" }, null, false);
-
+            
             dynamicMap = CustomOption.Create(500, Types.General, "Play On A Random Map", false, null, false);
             dynamicMapEnableSkeld = CustomOption.Create(501, Types.General, "Enable Skeld Rotation", true, dynamicMap, false);
             dynamicMapEnableMira = CustomOption.Create(502, Types.General, "Enable Mira Rotation", true, dynamicMap, false);

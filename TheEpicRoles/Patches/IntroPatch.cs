@@ -262,7 +262,7 @@ namespace TheEpicRoles.Patches {
 
             //reset cooldown on round start
             CustomButton.ResetAllCooldowns(); //reset button cooldowns
-            PlayerControl.LocalPlayer.killTimer = CustomOptionHolder.setRoundStartCooldown.getFloat(); //reset kill cooldowns
+            PlayerControl.LocalPlayer.killTimer = PlayerControl.GameOptions.KillCooldown; //reset kill cooldowns for imps in the first round
         }
     }
 
