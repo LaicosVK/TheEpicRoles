@@ -250,10 +250,6 @@ namespace TheEpicRoles.Patches {
                     new Vector3(6.5f, -4.5f, 0.0f) //medbay bottom
                     };
                 }
-                else if (PlayerControl.GameOptions.MapId == 4)
-                { //airship
-                    spawns = new List<Vector3>() { }; //no spawns since it already has random spawns
-                }
 
                 System.Random randomSpawn = new System.Random((int)seedString.GetHashCode());
                 foreach (PlayerControl player in PlayerControl.AllPlayerControls)
