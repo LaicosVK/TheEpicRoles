@@ -43,7 +43,7 @@ namespace TheEpicRoles.Objects {
             
             // Generate log info
             PlayerControl playerControl = Helpers.playerById(playerId);
-            bool flip = playerControl.MyRend.flipX; // use the original player control here, not the morhpTarget.
+            bool flip = playerControl.cosmetics.FlipX; // use the original player control here, not the morhpTarget.
             firstPortal.animationFgRenderer.flipX = flip;
             secondPortal.animationFgRenderer.flipX = flip;
             if (Morphling.morphling != null && Morphling.morphTimer > 0) playerControl = Morphling.morphTarget;  // Will output info of morph-target instead

@@ -115,7 +115,7 @@ namespace TheEpicRoles
     [HarmonyPatch(typeof(ChatController), nameof(ChatController.Awake))]
     public static class ChatControllerAwakePatch {
         private static void Prefix() {
-            if (!EOSManager.Instance.IsMinor()) {
+            if (!EOSManager.Instance.isKWSMinor) {
                 SaveManager.chatModeType = 1;
                 SaveManager.isGuest = false;
             }

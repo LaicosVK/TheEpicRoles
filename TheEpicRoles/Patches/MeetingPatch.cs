@@ -468,8 +468,8 @@ namespace TheEpicRoles.Patches {
 
             //Fix visor in Meetings 
             foreach (PlayerVoteArea pva in __instance.playerStates) {
-                if(pva.PlayerIcon != null && pva.PlayerIcon.VisorSlot != null){
-                    pva.PlayerIcon.VisorSlot.transform.position += new Vector3(0, 0, -1f);
+                if(pva.PlayerIcon != null && pva.PlayerIcon.cosmetics.visor != null){
+                    pva.PlayerIcon.cosmetics.visor.transform.position += new Vector3(0, 0, -1f);
                 }
             }
 
@@ -538,7 +538,7 @@ namespace TheEpicRoles.Patches {
             }
         }
 
-        [HarmonyPatch(typeof(PlayerControl), nameof(PlayerControl.CoStartMeeting))]
+        [HarmonyPatch(typeof(PlayerControl), nameof(PlayerControl.StartMeeting))]
         class StartMeetingPatch {
             public static void Prefix(PlayerControl __instance, [HarmonyArgument(0)]GameData.PlayerInfo meetingTarget) {
                 // Resett Bait list

@@ -44,7 +44,7 @@ namespace TheEpicRoles {
             {
                 if (player2.Data.Role.IsImpostor && PlayerControl.LocalPlayer.Data.Role.IsImpostor)
                 {
-                    player2.nameText.color = Palette.ImpostorRed;
+                    player2.cosmetics.nameText.color = Palette.ImpostorRed;
                 }
             }
         }
@@ -309,7 +309,7 @@ namespace TheEpicRoles {
             float alpha = value ? 0.25f : 1f;
             foreach (SpriteRenderer r in player.gameObject.GetComponentsInChildren<SpriteRenderer>())
                 r.color = new Color(r.color.r, r.color.g, r.color.b, alpha);
-            player.NameText.color = new Color(player.NameText.color.r, player.NameText.color.g, player.NameText.color.b, alpha);
+            player.cosmetics.nameText.color = new Color(player.cosmetics.nameText.color.r, player.cosmetics.nameText.color.g, player.cosmetics.nameText.color.b, alpha);
         }
 
         public static string GetString(this TranslationController t, StringNames key, params Il2CppSystem.Object[] parts) {
@@ -365,11 +365,11 @@ namespace TheEpicRoles {
             target.RawSetVisor(visorId);
             target.RawSetHat(hatId, colorId);
             target.RawSetName(hidePlayerName(CachedPlayer.LocalPlayer.PlayerControl, target) ? "" : playerName);
-
+            
             SkinViewData nextSkin = FastDestroyableSingleton<HatManager>.Instance.GetSkinById(skinId).viewData.viewData;
             PlayerPhysics playerPhysics = target.MyPhysics;
             AnimationClip clip = null;
-            var spriteAnim = playerPhysics.Skin.animator;
+            var spriteAnim = target.cosmetics.skin.animator;
             var currentPhysicsAnim = playerPhysics.Animator.GetCurrentAnimation();
             if (currentPhysicsAnim == playerPhysics.CurrentAnimationGroup.RunAnim) clip = nextSkin.RunAnim;
             else if (currentPhysicsAnim == playerPhysics.CurrentAnimationGroup.SpawnAnim) clip = nextSkin.SpawnAnim;
@@ -378,19 +378,19 @@ namespace TheEpicRoles {
             else if (currentPhysicsAnim == playerPhysics.CurrentAnimationGroup.IdleAnim) clip = nextSkin.IdleAnim;
             else clip = nextSkin.IdleAnim;
             float progress = playerPhysics.Animator.m_animator.GetCurrentAnimatorStateInfo(0).normalizedTime;
-            playerPhysics.Skin.skin = nextSkin;
-            if (playerPhysics.Skin.layer.material == FastDestroyableSingleton<HatManager>.Instance.PlayerMaterial)
-                PlayerControl.SetPlayerMaterialColors(colorId, playerPhysics.Skin.layer);
+            target.cosmetics.skin.skin = nextSkin;
+            if (target.cosmetics.skin.layer.material == FastDestroyableSingleton<HatManager>.Instance.PlayerMaterial)
+                PlayerControl.LocalPlayer.cosmetics.skin.SetColor(colorId);
             spriteAnim.Play(clip, 1f);
             spriteAnim.m_animator.Play("a", 0, progress % 1);
             spriteAnim.m_animator.Update(0f);
 
-            if (target.CurrentPet) UnityEngine.Object.Destroy(target.CurrentPet.gameObject);
-            target.CurrentPet = UnityEngine.Object.Instantiate<PetBehaviour>(FastDestroyableSingleton<HatManager>.Instance.GetPetById(petId).viewData.viewData);
-            target.CurrentPet.transform.position = target.transform.position;
-            target.CurrentPet.Source = target;
-            target.CurrentPet.Visible = target.Visible;
-            PlayerControl.SetPlayerMaterialColors(colorId, target.CurrentPet.rend);
+            if (target.cosmetics.currentPet) UnityEngine.Object.Destroy(target.cosmetics.currentPet.gameObject);
+            target.cosmetics.currentPet = UnityEngine.Object.Instantiate<PetBehaviour>(FastDestroyableSingleton<HatManager>.Instance.GetPetById(petId).viewData.viewData);
+            target.cosmetics.currentPet.transform.position = target.transform.position;
+            target.cosmetics.currentPet.Source = target;
+            target.cosmetics.currentPet.Visible = target.Visible;
+            PlayerControl.LocalPlayer.cosmetics.SetPetColor(colorId);
         }
 
         public static void showFlash(Color color, float duration=1f) {

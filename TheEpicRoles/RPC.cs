@@ -1034,7 +1034,7 @@ namespace TheEpicRoles
                 FastDestroyableSingleton<RoleManager>.Instance.SetRole(player, RoleTypes.Crewmate);
                 if (player == Lawyer.lawyer && Lawyer.target != null)
                 {
-                    Transform playerInfoTransform = Lawyer.target.nameText.transform.parent.FindChild("Info");
+                    Transform playerInfoTransform = Lawyer.target.cosmetics.nameText.transform.parent.FindChild("Info");
                     TMPro.TextMeshPro playerInfo = playerInfoTransform != null ? playerInfoTransform.GetComponent<TMPro.TextMeshPro>() : null;
                     if (playerInfo != null) playerInfo.text = "";
                 }
@@ -1170,7 +1170,7 @@ namespace TheEpicRoles
             if (target == null) return;
             if (flag == byte.MaxValue)
             {
-                target.MyRend.color = Color.white;
+                target.cosmetics.skin.layer.color = Color.white;
                 target.setDefaultLook();
                 Phaser.isInvisble = false;
                 return;
@@ -1179,7 +1179,7 @@ namespace TheEpicRoles
             target.setLook("", 6, "", "", "", "");
             Color color = Color.clear;           
             if (CachedPlayer.LocalPlayer.Data.Role.IsImpostor || CachedPlayer.LocalPlayer.Data.IsDead) color.a = 0.1f;
-            target.MyRend.color = color;
+            target.cosmetics.skin.layer.color = color;
             Phaser.invisibleTimer = Phaser.invisibleDuration;
             Phaser.isInvisble = true;
         }
@@ -1298,7 +1298,7 @@ namespace TheEpicRoles
             Pursuer.pursuer = player;
 
             if (player.PlayerId == CachedPlayer.LocalPlayer.PlayerId && client != null) {
-                    Transform playerInfoTransform = client.nameText.transform.parent.FindChild("Info");
+                    Transform playerInfoTransform = client.cosmetics.nameText.transform.parent.FindChild("Info");
                     TMPro.TextMeshPro playerInfo = playerInfoTransform != null ? playerInfoTransform.GetComponent<TMPro.TextMeshPro>() : null;
                     if (playerInfo != null) playerInfo.text = "";
             }
@@ -1397,9 +1397,9 @@ namespace TheEpicRoles
             readyStatus = playerIds.ToList();
             readyButtonCount.text = readyStatus.Count + " / " + AmongUsClient.Instance.allClients.Count;
             foreach (PlayerControl player in PlayerControl.AllPlayerControls) {
-                player.nameText.color = Color.white;
+                player.cosmetics.nameText.color = Color.white;
                 if (readyStatus.Contains(player.PlayerId)) {
-                    player.nameText.color = Color.green;
+                    player.cosmetics.nameText.color = Color.green;
                 }
             }
         }
