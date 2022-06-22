@@ -14,7 +14,6 @@ namespace TheEpicRoles.Patches
     public static class ClientOptionsPatch
     {
         private static SelectionBehaviour[] AllOptions = {
-            new SelectionBehaviour("Streamer Mode", () => TheEpicRolesPlugin.StreamerMode.Value = !TheEpicRolesPlugin.StreamerMode.Value, TheEpicRolesPlugin.StreamerMode.Value),
             new SelectionBehaviour("Ghosts See Remaining Tasks", () => MapOptions.ghostsSeeTasks = TheEpicRolesPlugin.GhostsSeeTasks.Value = !TheEpicRolesPlugin.GhostsSeeTasks.Value, TheEpicRolesPlugin.GhostsSeeTasks.Value),
             new SelectionBehaviour("Ghosts Can See Votes", () => MapOptions.ghostsSeeVotes = TheEpicRolesPlugin.GhostsSeeVotes.Value = !TheEpicRolesPlugin.GhostsSeeVotes.Value, TheEpicRolesPlugin.GhostsSeeVotes.Value),
             new SelectionBehaviour("Ghosts Can See Roles", () => MapOptions.ghostsSeeRoles = TheEpicRolesPlugin.GhostsSeeRoles.Value = !TheEpicRolesPlugin.GhostsSeeRoles.Value, TheEpicRolesPlugin.GhostsSeeRoles.Value),
@@ -213,15 +212,5 @@ namespace TheEpicRoles.Patches
                 DefaultValue = defaultValue;
             }
         }
-    }
-    
-    [HarmonyPatch(typeof(TextBoxTMP), nameof(TextBoxTMP.SetText))]
-	public static class HiddenTextPatch
-	{
-		private static void Postfix(TextBoxTMP __instance)
-		{
-			bool flag = TheEpicRolesPlugin.StreamerMode.Value && (__instance.name == "GameIdText" || __instance.name == "IpTextBox" || __instance.name == "PortTextBox");
-			if (flag) __instance.outputText.text = new string('*', __instance.text.Length);
-		}
-	}
+    }  
 }
