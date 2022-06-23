@@ -34,6 +34,7 @@ namespace TheEpicRoles
         public static int optionsPage = 2;
 
         public static ConfigEntry<bool> DebugMode { get; private set; }
+        public static ConfigEntry<bool> StreamerMode { get; set; }
         public static ConfigEntry<bool> GhostsSeeTasks { get; set; }
         public static ConfigEntry<bool> GhostsSeeRoles { get; set; }
         public static ConfigEntry<bool> GhostsSeeModifier { get; set; }
@@ -41,6 +42,8 @@ namespace TheEpicRoles
         public static ConfigEntry<bool> ShowRoleSummary { get; set; }
         public static ConfigEntry<bool> ShowLighterDarker { get; set; }
         public static ConfigEntry<bool> EnableHorseMode { get; set; }
+        public static ConfigEntry<string> StreamerModeReplacementText { get; set; }
+        public static ConfigEntry<string> StreamerModeReplacementColor { get; set; }
         public static ConfigEntry<string> Ip { get; set; }
         public static ConfigEntry<ushort> Port { get; set; }
         public static ConfigEntry<string> ShowPopUpVersion { get; set; }
@@ -63,6 +66,7 @@ namespace TheEpicRoles
             Instance = this;
 
             DebugMode = Config.Bind("Custom", "Enable Debug Mode", false);
+            StreamerMode = Config.Bind("Custom", "Enable Streamer Mode", false);
             GhostsSeeTasks = Config.Bind("Custom", "Ghosts See Remaining Tasks", true);
             GhostsSeeRoles = Config.Bind("Custom", "Ghosts See Roles", true);
             GhostsSeeModifier = Config.Bind("Custom", "Ghosts See Modifier", true);
@@ -71,6 +75,9 @@ namespace TheEpicRoles
             ShowLighterDarker = Config.Bind("Custom", "Show Lighter / Darker", true);
             EnableHorseMode = Config.Bind("Custom", "Enable Horse Mode", false);
             ShowPopUpVersion = Config.Bind("Custom", "Show PopUp", "0");
+            StreamerModeReplacementText = Config.Bind("Custom", "Streamer Mode Replacement Text", "\nThe Epic Roles");
+            StreamerModeReplacementColor = Config.Bind("Custom", "Streamer Mode Replacement Text Hex Color", "#00FFDD");
+            
 
             Ip = Config.Bind("Custom", "Custom Server IP", "127.0.0.1");
             Port = Config.Bind("Custom", "Custom Server Port", (ushort)22023);

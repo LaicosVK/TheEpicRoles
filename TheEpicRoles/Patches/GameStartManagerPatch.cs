@@ -144,6 +144,9 @@ namespace TheEpicRoles.Patches {
                     }
                 }
 
+                // Lobby code replacement
+                __instance.GameRoomName.text = TheEpicRolesPlugin.StreamerMode.Value ? $"<color={TheEpicRolesPlugin.StreamerModeReplacementColor.Value}>{TheEpicRolesPlugin.StreamerModeReplacementText.Value}</color>" : lobbyCodeText;
+
                 // Lobby timer
                 if (!AmongUsClient.Instance.AmHost || !GameData.Instance) return; // Not host or no instance
 
